@@ -1,0 +1,35 @@
+{
+  "name": "cyrene-admin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^0.2.7",
+    "@types/file-saver": "^2.0.5",
+    "@types/node": "^17.0.19",
+    "@vueuse/core": "^9.13.0",
+    "axios": "1.7.8",
+    "core-js": "^3.8.3",
+    "element-plus": "^2.6.3",
+    "file-saver": "^2.0.5",
+    "js-md5": "^0.7.3",
+    "pinia": "^2.2.8",
+    "sm-crypto": "^0.3.13",
+    "vue": "^3.5.13",
+    "vue-axios": "^3.4.1",
+    "vue-class-component": "^8.0.0-0",
+    "vue-router": "^4.0.12"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.2",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "vue-tsc": "^2.0.29"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

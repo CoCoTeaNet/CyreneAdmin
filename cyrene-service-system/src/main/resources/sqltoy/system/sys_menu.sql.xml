@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sqltoy xmlns="http://www.sagframe.com/schema/sqltoy"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sagframe.com/schema/sqltoy http://www.sagframe.com/schema/sqltoy/sqltoy.xsd">
+
+    <sql id="sys_menu_findList">
+        <value>
+            <![CDATA[
+            select id, menu_name, permission_code, router_path, parent_id, menu_type, is_menu, menu_status, component_path, is_external_link, icon_path, sort, create_by, create_time, update_by, update_time, is_deleted, revision
+            from sys_menu
+            where is_deleted = 0
+            #[and is_menu = :isMenu]
+            #[and permission_code = :permissionCode]
+            #[and menu_name like :menuName]
+            #[and menu_status = :menuStatus]
+            #[and id in (:menuIds)]
+            #[and parent_id = :parentId]
+            order by sort, id desc
+            ]]>
+        </value>
+    </sql>
+
+    <sql id="sys_menu_IN_findList">
+        <value>
+            <![CDATA[
+            select id, menu_name, permission_code, router_path, parent_id, menu_type, is_menu, menu_status, component_path, is_external_link, icon_path, sort, create_by, create_time, update_by, update_time, is_deleted, revision
+            from sys_menu
+            where is_deleted = 0
+            #[and id in (select menu_id from sys_role_menu where role_id = :roleId)]
+            order by sort, id desc
+            ]]>
+        </value>
+    </sql>
+
+    <sql id="sys_menu_findUserMenu">
+        <value>
+            <![CDATA[
+            select a.user_id, c.menu_id as id,
+            d.menu_name,d.permission_code,d.router_path,d.parent_id,d.menu_type,d.is_menu,d.menu_status,d.component_path,d.is_external_link,d.icon_path,d.sort
+            from sys_user_role a
+            inner join sys_role b on (a.role_id=b.id)
+            inner join sys_role_menu c on (a.role_id=c.role_id)
+            inner join sys_menu d on (d.id = c.menu_id)
+            where a.user_id in (:userIds)
+            and d.is_menu = 1
+            and d.is_deleted = 0
+            and d.menu_status = 0
+            order by d.sort,d.id desc
+            ]]>
+        </value>
+    </sql>
+
+</sqltoy>

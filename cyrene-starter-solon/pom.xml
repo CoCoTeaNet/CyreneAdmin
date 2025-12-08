@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>net.cocotea</groupId>
+        <artifactId>cyrene-admin</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>cyrene-starter-solon</artifactId>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <solon.version>3.7.2</solon.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.cocotea</groupId>
+            <artifactId>cyrene-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.cocotea</groupId>
+            <artifactId>cyrene-service-system</artifactId>
+        </dependency>
+
+        <!-- solon -->
+        <!-- solon -->
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>solon-web</artifactId>
+            <version>${solon.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>solon-security-validation</artifactId>
+            <version>${solon.version}</version>
+        </dependency>
+        <!--sqltoy-solon-->
+        <dependency>
+            <groupId>com.sagframe</groupId>
+            <artifactId>sagacity-sqltoy-solon-plugin</artifactId>
+            <version>5.6.57.1</version>
+        </dependency>
+        <!-- Sa-Token 权限认证-->
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>sa-token-solon-plugin</artifactId>
+            <version>${solon.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redisx</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-fastjson2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>solon-serialization-fastjson2</artifactId>
+            <version>${solon.version}</version>
+        </dependency>
+
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ly.smart-doc</groupId>
+            <artifactId>smart-doc</artifactId>
+            <version>${smart-doc.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.ibeetl</groupId>
+                    <artifactId>beetl-default-antlr4.9-support</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>solon-config-banner</artifactId>
+            <version>${solon.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>ca-launcher</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.noear</groupId>
+                <artifactId>solon-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+            <!--api文档生成插件-->
+            <plugin>
+                <groupId>com.ly.smart-doc</groupId>
+                <artifactId>smart-doc-maven-plugin</artifactId>
+                <version>${smart-doc.version}</version>
+                <configuration>
+                    <configFile>./smart-doc.json</configFile>
+                    <projectName>CyreneAdmin</projectName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!--如果不需要在执行编译时启动smart-doc，则将phase注释掉-->
+                        <!--<phase>compile</phase>-->
+                        <goals>
+                            <!--smart-doc提供了html、openapi、markdown等goal，可按需配置-->
+                            <goal>markdown</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
