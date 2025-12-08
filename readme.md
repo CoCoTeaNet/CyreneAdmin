@@ -69,62 +69,6 @@ CyreneAdmin 是一个现代化的后台管理系统，提供双框架支持（Sp
 - Node.js 20+ (前端)
 - npm 或 yarn
 
-## 快速开始
-
-### 后端部署
-
-1. 克隆项目
-```bash
-git clone https://github.com//CyreneAdmin.git
-cd CyreneAdmin
-```
-
-2. 创建数据库并导入脚本
-```sql
-CREATE DATABASE cyrene_admin DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-3. 修改配置文件
-```yaml
-# cyrene-starter-springboot/src/main/resources/application.yml 或
-# cyrene-starter-solon/src/main/resources/app.yml
-
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/cyrene_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-    username: your_username
-    password: your_password
-  redis:
-    host: localhost
-    port: 6379
-```
-
-4. 编译打包（任选其一）
-```bash
-# Spring Boot 版本
-mvn clean package -pl cyrene-starter-springboot -am
-
-# Solon 版本
-mvn clean package -pl cyrene-starter-solon -am
-```
-
-5. 运行应用
-```bash
-# Spring Boot 版本
-java -jar cyrene-starter-springboot/target/ca-launcher.jar
-
-# Solon 版本
-java -jar cyrene-starter-solon/target/ca-launcher.jar
-```
-
-### 前端部署
-
-```bash
-cd cyrene-ui
-npm install
-npm run dev
-```
-
 ## 项目结构
 
 ```
@@ -139,7 +83,7 @@ CyreneAdmin/
 ├── cyrene-service-system/      # 系统服务模块
 │   ├── model/                  # 系统模型（dto/po/vo）
 │   ├── service/                # 系统服务接口及实现
-│   └── resources/sqltoy/       # SQL配置文件
+│   └── resources/sqltoy/       # SQL文件
 ├── cyrene-starter-solon/       # Solon启动模块
 ├── cyrene-starter-springboot/  # Spring Boot启动模块
 ├── cyrene-ui/                  # 前端UI模块
@@ -149,9 +93,6 @@ CyreneAdmin/
 ## 默认账户
 
 - 管理员账号: `admin` / `123456`
-- 普通用户: `user` / `123456`
-
-> 首次登录后请立即修改默认密码以确保系统安全
 
 ## 许可证
 
