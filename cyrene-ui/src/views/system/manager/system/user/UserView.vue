@@ -159,7 +159,7 @@ const getSex: any = (status: number, type: number) => {
 const onEdit = (row: UserModel): void => {
   formShow.value = true;
   let roleIds:any = [];
-  row.roleList?.map(item => roleIds.push(item.id));
+  row.roleList?.map(item => roleIds.push(item.roleId));
   row.roleIds = roleIds;
   editUser.value = row;
   editType.value = 'update';
