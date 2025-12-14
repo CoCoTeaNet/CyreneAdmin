@@ -15,7 +15,7 @@ on:
         description: 'Release name'
         required: false
         type: string
-        default: 'Release ${{ github.event.inputs.release_tag }}'
+        # 移除了有问题的默认值表达式
 
 jobs:
   test:
