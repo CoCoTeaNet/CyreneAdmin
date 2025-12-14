@@ -30,12 +30,23 @@ jobs:
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
+        id: git-cliff
         with:
           config: cliff.toml
-          args: --verbose
+          args: -vv --latest --strip header
         env:
-          OUTPUT: CHANGELOG.md
+          OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
+
+      - name: Commit
+        run: |
+          git checkout origin/main
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          set +e
+          git add CHANGELOG.md
+          git commit -m "doc: Update changelog"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git origin/main
 
       - name: Create Release
         id: create_release
