@@ -22,7 +22,13 @@
               账号角色
             </div>
           </template>
-          {{ detailUser.roleName }}
+
+          <el-space>
+            <el-tag v-for="role in detailUser.roleList" :key="role.id" type="primary">
+              {{ role.roleName }}
+            </el-tag>
+          </el-space>
+
         </el-descriptions-item>
         <el-descriptions-item>
           <template #label>
@@ -246,14 +252,6 @@ const initUserDetail = () => {
         name: arr[arr.length - 1],
         url: `api/system/file/getAvatar?avatar=${data.avatar}`
       });
-      let roleNames = "";
-      data.roleList.map((item: any, index: number) => {
-        roleNames += item.roleName;
-        if (index !== data.roleList.length - 1) {
-          roleNames += ",";
-        }
-      });
-      detailUser.value.roleName = roleNames;
     }
   });
 }
