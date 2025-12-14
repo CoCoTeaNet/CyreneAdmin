@@ -94,6 +94,31 @@ CyreneAdmin/
 
 - 管理员账号: `admin` / `123456`
 
+## 演示图片
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="doc-img/1.png" alt="系统主界面" width="400"/>
+      <br/>
+    </td>
+    <td align="center">
+      <img src="doc-img/2.png" alt="权限管理" width="400"/>
+      <br/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="doc-img/3.png" alt="操作日志" width="400"/>
+      <br/>
+    </td>
+    <td align="center">
+      <img src="doc-img/4.png" alt="系统架构" width="400"/>
+      <br/>
+    </td>
+  </tr>
+</table>
+
 ## 许可证
 
 本项目采用 MIT 许可证，详情请参见 [LICENSE](LICENSE) 文件。
