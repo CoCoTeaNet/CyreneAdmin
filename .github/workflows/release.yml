@@ -15,7 +15,6 @@ on:
         description: 'Release name'
         required: false
         type: string
-        # 移除了有问题的默认值表达式
 
 jobs:
   release:
@@ -35,7 +34,7 @@ jobs:
           config: cliff.toml
           args: -vv --latest --strip header
         env:
-          OUTPUT: CHANGES.md
+          OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Create Release
@@ -43,7 +42,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
           bodyFile: CHANGELOG.md
           draft: false
           prerelease: false
