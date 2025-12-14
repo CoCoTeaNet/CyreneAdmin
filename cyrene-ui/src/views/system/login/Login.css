@@ -1,57 +1,175 @@
 .a-login {
     position: fixed;
-    width: 100%;
-    height: 100vh;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    inset: 0;
     display: flex;
-    justify-content: center;
     align-items: center;
-    background: -webkit-linear-gradient(300deg, #ecf5ff 25%, #fafcff);
+    justify-content: center;
+    --primary: var(--el-color-primary, #409EFF);
+    --accent: var(--login-accent, #9b2b6e);
+    /* 使用 Element Plus 主色为背景 */
+    background: radial-gradient(1200px 600px at 10% 20%, rgba(64,158,255,0.32), transparent 18%),
+                radial-gradient(1000px 500px at 90% 80%, rgba(64,158,255,0.18), transparent 18%),
+                linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 45%, #ffffff 100%);
+    background-blend-mode: overlay, overlay, normal;
+    -webkit-font-smoothing: antialiased;
 }
 
+.a-login::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    /* 轻微噪点，使用内联 SVG turbulence（填充改为主色蓝） */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04' fill='%23409EFF'/></svg>");
+    background-repeat: repeat;
+    mix-blend-mode: overlay;
+    opacity: 0.9;
+}
 .a-login-inner {
-    margin: 0 auto;
     display: flex;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.50);
-    padding: 72px;
-    border-radius: 8px;
+    gap: 24px;
+    align-items: stretch;
+    max-width: 980px;
+    width: calc(100% - 48px);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(16,24,40,0.12);
+    backdrop-filter: blur(6px);
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
 }
 
 .a-login-left {
-    flex: 1;
-    margin-right: 16px;
-}
-.a-login-right {
-    width: 366px;
+    flex: 1 1 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(64,158,255,0.12), rgba(64,158,255,0.04));
+    color: #0f172a;
 }
 
-@media screen and (max-width: 1439px) {
-    .a-login-inner {
-      border-radius: 0;
-    }
+.a-login-left .welcome-title {
+    font-size: 28px;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    color: #0b1220;
+    font-weight: 700;
+}
+
+.a-login-left .welcome-sub {
+    margin: 0;
+    color: #334155;
+    opacity: 0.95;
+    font-size: 14px;
+}
+
+.a-login-right {
+    flex: 0 0 45%;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.a-login-card {
+    width: 100%;
+    border-radius: 10px;
+    padding: 20px 18px;
+    box-shadow: none;
+    border: 1px solid rgba(64,158,255,0.12);
+    background: rgba(255,255,255,0.98);
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary, #409EFF);
+}
+
+.login-subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 18px;
+}
+
+.el-form-item {
+    margin-bottom: 16px;
+}
+
+.captcha-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.captcha-row .el-input { flex: 1; }
+.captcha-img {
+    width: 96px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid rgba(15,23,42,0.06);
+    box-shadow: 0 2px 8px rgba(2,6,23,0.06);
+    cursor: pointer;
+}
+
+.a-login-right .el-button--primary {
+    border-radius: 8px;
 }
 
 @media screen and (max-width: 1023px) {
+    /* 小屏优化：去掉外层卡片的背景与阴影，隐藏噪点，卡片居中且宽度为可用宽度 */
     .a-login-inner {
-        background: none;
+        padding: 12px;
         width: 100%;
-        padding: 0;
-        margin: 0;
-        justify-content: center;
+        max-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        backdrop-filter: none;
+        background: none;
     }
-    .a-login-left {
-        display: none;
-    }
+    .a-login-left { display: none; }
     .a-login-right {
-        width: 366px;
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 420px;
+        justify-content: center;
+        padding: 0 12px;
+    }
+    /* 隐藏噪点层，避免在小屏显得杂乱 */
+    .a-login::before { display: none; }
+
+    /* 卡片微调：更小圆角、更紧凑内边距、轻微边框以保持分离感 */
+    .a-login-card {
+        border-radius: 8px;
+        padding: 16px;
+        border: 1px solid rgba(155,43,110,0.08);
+        background: rgba(255,255,255,0.98);
     }
 }
 
-@media screen and (max-width: 767px) {
+/* 在小于 1280px 时，让登录卡片居中显示（修复在中等宽度下偏移问题） */
+@media screen and (max-width: 1279px) {
     .a-login-right {
-        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        max-width: 420px;
+        padding: 0 12px;
     }
+    .a-login-inner {
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 420px) {
+    .a-login-inner { padding: 16px; }
+    .a-login-right { width: 100%; }
+    .captcha-img { width: 90px; height: 36px; }
 }

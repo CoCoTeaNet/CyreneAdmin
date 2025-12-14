@@ -2,36 +2,32 @@
   <el-row class="a-login">
     <div class="a-login-inner">
       <div class="a-login-left">
-        <h2 style="text-align: center; color: #fff; ">
-          ~Welcome to login admin system~
-        </h2>
+        <h1 class="welcome-title">Welcome to Cyrene Admin</h1>
+        <p class="welcome-sub">轻量 · 高效 · 可定制的后台管理模板，欢迎使用管理平台</p>
       </div>
-      <el-card class="a-login-right" shadow="always">
-        <h2 style="text-align: center; padding-bottom: 16px;">
-          欢 迎 登 录
-        </h2>
+
+      <el-card class="a-login-right a-login-card" shadow="always">
+        <div>
+          <div class="login-title">欢 迎 登 录</div>
+          <div class="login-subtitle">请输入账号、密码与验证码以继续</div>
+        </div>
 
         <el-form ref="loginFormRef" :model="loginForm" status-icon :rules="rules" size="large">
           <el-form-item prop="username">
-            <el-input placeholder="账号" :prefix-icon="UserFilled" v-model="loginForm.username"
-                      autocomplete="off">
-            </el-input>
+            <el-input placeholder="账号" :prefix-icon="UserFilled" v-model="loginForm.username" autocomplete="off" />
           </el-form-item>
 
           <el-form-item prop="password">
             <el-input placeholder="密码" :prefix-icon="Lock" v-model="loginForm.password"
-                      @keypress.enter="submitForm(loginFormRef)"
-                      type="password"
-                      autocomplete="off">
-            </el-input>
+                      @keypress.enter="submitForm(loginFormRef)" type="password" autocomplete="off" />
           </el-form-item>
 
           <el-form-item prop="captcha">
-            <el-input style="width: 75%;" placeholder="验证码" :prefix-icon="Connection"
-                      @keydown.enter="submitForm(loginFormRef)"
-                      v-model="loginForm.captcha">
-            </el-input>
-            <el-image @click="getVerifyCodeImage" style="width: 25%;cursor: pointer" :src="captcha"/>
+            <div class="captcha-row">
+              <el-input placeholder="验证码" :prefix-icon="Connection" @keydown.enter="submitForm(loginFormRef)"
+                        v-model="loginForm.captcha" />
+              <el-image class="captcha-img" @click="getVerifyCodeImage" :src="captcha" fit="cover" />
+            </div>
           </el-form-item>
 
           <el-form-item>
