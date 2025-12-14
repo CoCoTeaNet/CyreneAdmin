@@ -15,9 +15,14 @@ on:
         # 移除了有问题的默认值表达式
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare
+        run: echo "Preparing release workflow"
+
   release:
     runs-on: ubuntu-latest
-    needs: test
     permissions:
       contents: write
     steps:
