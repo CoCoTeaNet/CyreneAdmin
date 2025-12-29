@@ -1,14 +1,20 @@
 package net.cocotea.cyreneadmin.config;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import net.cocotea.cyreneadmin.filter.ParameterInterceptor;
 import net.cocotea.cyreneadmin.properties.AppSystemProp;
 import net.cocotea.cyreneadmin.service.*;
 import net.cocotea.cyreneadmin.service.impl.*;
 import net.cocotea.cyreneadmin.util.SecurityUtils;
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.noear.redisx.RedisClient;
 import org.noear.solon.annotation.Bean;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.core.AppContext;
+import org.noear.solon.validation.annotation.Valid;
 import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.solon.annotation.Db;
 
@@ -47,6 +53,18 @@ public class BeanConfig {
         context.wrapAndPut(SysRoleService.class, new SysRoleServiceImpl(lightDao));
         context.wrapAndPut(SysMenuService.class, new SysMenuServiceImpl(lightDao, redisService));
         context.wrapAndPut(SysUserService.class, new SysUserServiceImpl(systemProp, redisService, securityUtils, lightDao));
+
+        context.beanInterceptorAdd(Valid.class, new ParameterInterceptor());
+    }
+
+    @Bean
+    public Validator myValidator() {
+        try (ValidatorFactory factory = Validation.byDefaultProvider()
+                .configure()
+                .messageInterpolator(new ParameterMessageInterpolator())
+                .buildValidatorFactory()) {
+            return factory.getValidator();
+        }
     }
 
 }

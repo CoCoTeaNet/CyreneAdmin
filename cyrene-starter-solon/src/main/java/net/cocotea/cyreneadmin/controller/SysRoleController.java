@@ -12,6 +12,7 @@ import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.model.ApiResult;
 import net.cocotea.cyreneadmin.model.BusinessException;
 import org.noear.solon.annotation.*;
+import org.noear.solon.validation.annotation.Valid;
 import org.noear.solon.validation.annotation.Validated;
 
 import java.math.BigInteger;
@@ -25,6 +26,7 @@ import java.util.List;
  */
 @Mapping("/system/role")
 @Controller
+@Valid
 public class SysRoleController {
 
     @Inject

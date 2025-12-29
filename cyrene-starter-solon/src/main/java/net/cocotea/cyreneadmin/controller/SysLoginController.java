@@ -23,6 +23,7 @@ import net.cocotea.cyreneadmin.service.RedisService;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.noear.solon.annotation.*;
 import org.noear.solon.core.handle.Context;
+import org.noear.solon.validation.annotation.Valid;
 import org.noear.solon.validation.annotation.Validated;
 
 import java.util.Locale;
@@ -35,6 +36,7 @@ import java.util.Locale;
 @Slf4j
 @Controller
 @Mapping("/system")
+@Valid
 public class SysLoginController {
 
     @Inject

@@ -8,6 +8,7 @@ import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
 import org.noear.solon.core.handle.MethodType;
+import org.noear.solon.validation.annotation.Valid;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ import java.util.List;
  */
 @Controller
 @Mapping("/system/dashboard")
+@Valid
 public class SysDashboardController {
     @Inject
     private SysDashboardService sysDashboardService;
