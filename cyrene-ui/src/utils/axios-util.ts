@@ -31,7 +31,6 @@ export async function request(url: string, data: any, method: any): Promise<any>
             let dataJson = JSON.parse(data);
             // 无权限，跳转admin首页
             if (dataJson.code === ApiResultEnum.NOT_PERMISSION) {
-                console.log('go to home')
                 router.push({name: 'Home'});
             }
             return dataJson;

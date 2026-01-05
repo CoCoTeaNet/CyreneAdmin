@@ -1,5 +1,5 @@
-import {defineStore} from "pinia";
-import {router} from "@/router";
+import { defineStore } from "pinia";
+import { router } from "@/router";
 // @ts-ignore
 import md5 from 'js-md5';
 
@@ -20,10 +20,11 @@ export const useMenuStore = defineStore('menu', {
             if (arr.length > 0) {
                 let activeTab = arr[arr.length - 1];
                 activeTab.isActive = true;
-                router.push({path: activeTab.url ? activeTab.url : ''}).then(r => console.log(r));
+                router.push({ path: activeTab.url ? activeTab.url : '' }).then(r => console.log(r));
             } else {
                 this.initTabItems();
             }
+            localStorage.setItem("userTabs", JSON.stringify(this.tabItems));
         },
         addTabItem(tab: TabItem) {
             tab.id = md5(tab.url);
@@ -45,12 +46,25 @@ export const useMenuStore = defineStore('menu', {
                     });
                 }
             }
+            localStorage.setItem("userTabs", JSON.stringify(this.tabItems));
         },
         initTabItems() {
             this.tabItems = [];
+            this.goHome();
+        },
+        loadTabItems() {
+            let userTabs = localStorage.getItem("userTabs");
+            this.tabItems = [];
+            if (userTabs) {
+                this.tabItems = JSON.parse(userTabs);
+            } else {
+                this.goHome();
+            }
+        },
+        goHome() {
             let url: string = '/admin/home';
-            this.tabItems.push({name: '首页', id: md5(url), isActive: true, url: url});
-            router.push({path: url}).then(r => console.log(r));
+            this.tabItems.push({ name: '首页', id: md5(url), isActive: true, url: url });
+            router.push({ path: url }).then(r => console.log(r));
         },
         /**
          * 设置是否折叠菜单

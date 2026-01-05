@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import BaseLayout from "@/layout/BaseLayout.vue";
 import {useUserStore} from "@/stores/user.ts";
+import {useMenuStore} from "@/stores/menu.ts";
+import {onMounted} from "vue";
+
 const userStore = useUserStore();
+const menuStore = useMenuStore();
 
 // 读取缓存，以免用户F5刷新登录失效
 let userInfo = JSON.parse(`${localStorage.getItem("userInfo")}`);
 if (userInfo) {
   userStore.setUserInfo(userInfo);
 }
+
+onMounted(() => {
+  // 初始化tabItems
+  menuStore.loadTabItems();
+});
 </script>
 
 <template>
