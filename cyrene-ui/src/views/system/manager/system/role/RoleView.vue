@@ -63,7 +63,7 @@
       </el-dialog>
 
       <el-dialog v-model="dialogEditVisible">
-        <el-form ref="sstFormRef" :model="editForm" label-width="100px">
+        <el-form ref="sstFormRef" :model="editForm" :rules="rules" label-width="100px">
           <el-form-item prop="roleName" label="角色名称">
             <el-input v-model="editForm.roleName"></el-input>
           </el-form-item>
