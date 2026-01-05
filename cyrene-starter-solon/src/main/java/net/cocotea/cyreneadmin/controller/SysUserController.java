@@ -2,21 +2,30 @@ package net.cocotea.cyreneadmin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.text.CharPool;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSONObject;
 import net.cocotea.cyreneadmin.model.dto.SysLoginUserUpdateDTO;
 import net.cocotea.cyreneadmin.model.dto.SysUserAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysUserPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysUserUpdateDTO;
 import net.cocotea.cyreneadmin.model.vo.SysUserVO;
+import net.cocotea.cyreneadmin.properties.AppSystemProp;
 import net.cocotea.cyreneadmin.service.SysUserService;
 import net.cocotea.cyreneadmin.annotation.LogPersistence;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.model.ApiResult;
 import net.cocotea.cyreneadmin.model.BusinessException;
+import net.cocotea.cyreneadmin.util.FileUploadUtils;
 import org.noear.solon.annotation.*;
+import org.noear.solon.core.handle.Context;
+import org.noear.solon.core.handle.UploadedFile;
 import org.noear.solon.validation.annotation.Valid;
 import org.noear.solon.validation.annotation.Validated;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -30,6 +39,10 @@ import java.util.List;
 @Controller
 @Valid
 public class SysUserController {
+
+    @Inject
+    private AppSystemProp appSystemProp;
+
     @Inject
     private SysUserService sysUserService;
 
@@ -125,7 +138,7 @@ public class SysUserController {
     }
 
     /**
-     * 修稿用户密码
+     * 修改用户密码
      *
      * @param obj oldPassword:旧密码，newPassword:新密码
      * @return 成功返回TRUE
@@ -135,4 +148,37 @@ public class SysUserController {
         boolean r = sysUserService.doModifyPassword(obj.getString("oldPassword"), obj.getString("newPassword"));
         return ApiResult.ok(r);
     }
+
+    /**
+     * 系统用户头像文件获取
+     *
+     * @param avatar 头像文件名称
+     */
+    @Get
+    @Mapping("/getAvatar")
+    public void getAvatar(@Param("avatar") String avatar, Context context) throws BusinessException, IOException {
+        sysUserService.getAvatar(avatar, context.outputStream());
+    }
+
+    /**
+     * 系统用户头像上传
+     *
+     * @param uploadedFile {@link UploadedFile}
+     * @return 成功返回 true
+     */
+    @Post
+    @Mapping("/avatar/upload")
+    public ApiResult<Boolean> uploadAvatar(@Param("file") UploadedFile uploadedFile) throws BusinessException, IOException {
+        FileUploadUtils.filter(uploadedFile.getName(), appSystemProp.getSupportFiletype());
+        String saveName = IdUtil.objectId() + CharPool.UNDERLINE + uploadedFile.getName();
+        String fullPath = appSystemProp.getAvatarPath() + saveName;
+        File file = new File(fullPath);
+        if (!file.exists()) {
+            FileUtil.mkdir(appSystemProp.getAvatarPath());
+        }
+        uploadedFile.transferTo(file);
+        sysUserService.doModifyAvatar(saveName);
+        return ApiResult.ok(true);
+    }
+
 }

@@ -112,7 +112,7 @@
       <el-form ref="ucvFormRef" label-width="120px" label-position="right" :rules="rules" :model="editForm">
         <el-form-item prop="avatar" label="修改头像" :auto-upload="false" list-type="picture-card">
           <el-upload ref="upload"
-                     action="/api/system/file/avatar/upload"
+                     :action="uploadUrl"
                      list-type="picture-card"
                      drag
                      :auto-upload="false"
@@ -190,6 +190,7 @@ import {useUserStore} from "@/stores/user.ts";
 const userStore = useUserStore();
 const upload = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
+const uploadUrl = `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/avatar/upload`;
 
 const validatePhone = (rule: any, value: any, callback: any) => {
   if (!RULE_MOBILE.test(value)) {
@@ -252,7 +253,7 @@ const initUserDetail = () => {
       let arr = data.avatar.split('/');
       fileList.value.push({
         name: arr[arr.length - 1],
-        url: `api/system/file/getAvatar?avatar=${data.avatar}`
+        url: `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/getAvatar?avatar=${data.avatar}`
       });
     }
   });

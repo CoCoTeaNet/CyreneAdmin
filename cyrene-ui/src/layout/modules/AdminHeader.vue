@@ -93,7 +93,7 @@ const doFullScreen = (event: { exitFullscreen: () => void; }) => {
 watch(()=>userStore.userinfo, (userinfo) => {
   let avatarJpg = userinfo.avatar;
   if (avatarJpg) {
-    avatar.value = `api/system/file/getAvatar?avatar=${avatarJpg}`;
+    avatar.value = `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/getAvatar?avatar=${avatarJpg}`;
   }
 });
 </script>
