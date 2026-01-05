@@ -151,7 +151,9 @@
 
       <!--修改密码-->
       <el-divider>修改密码</el-divider>
-      <el-form ref="mpFormRef" label-width="120px" label-position="right" :rules="mpRules" :model="mpFormObj">
+      <el-form
+        style="width: 50%;"
+        ref="mpFormRef" label-width="120px" label-position="right" :rules="mpRules" :model="mpFormObj">
         <el-form-item prop="oldPassword" label="原密码">
           <el-input :prefix-icon="Lock" v-model="mpFormObj.oldPassword" type="password"
                     autocomplete="off"></el-input>
