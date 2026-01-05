@@ -11,6 +11,12 @@
 
 - **springboot:** 修复redis缓存token失效问题
 
+- **ui:** 修复创建角色表单没有校验数据问题
+
+- 修复头像上传和访问异常问题
+
+- **springboot:** 修复redis缓存token失效问题
+
 
 
 ### Features
@@ -21,7 +27,17 @@
 
 
 
+### Miscellaneous
+
+- **ui:** 修改密码表单宽度缩小一半
+
+- **ui:** 调整后台头部样式
+
+
+
 ### Refactor
+
+- **common:** 删除StrcUtils工具类、变更PpUtils类名为ParamValidUtils
 
 - **common:** 删除StrcUtils工具类、变更PpUtils类名为ParamValidUtils
 
