@@ -51,6 +51,7 @@ export const useMenuStore = defineStore('menu', {
         initTabItems() {
             this.tabItems = [];
             this.goHome();
+            localStorage.setItem("userTabs", JSON.stringify(this.tabItems));
         },
         loadTabItems() {
             let userTabs = localStorage.getItem("userTabs");
