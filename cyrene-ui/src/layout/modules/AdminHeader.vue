@@ -54,7 +54,7 @@ const userStore = useUserStore();
 const menuStore = useMenuStore();
 const route = useRoute();
 
-const iconSize = ref<number>(26);
+const iconSize = ref<number>(24);
 const avatar = ref<any>(default_avatar);
 
 onMounted(() => {
