@@ -47,6 +47,6 @@ import AdminHeader from "./modules/AdminHeader.vue";
 <style>
 .layout-box-shadow {
   border-bottom: 1px solid var(--el-border-color);
-  box-shadow: var(--el-box-shadow-lighter);
+  box-shadow: var(--el-box-shadow-light);
 }
 </style>
