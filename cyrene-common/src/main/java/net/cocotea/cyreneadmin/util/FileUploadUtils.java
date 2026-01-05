@@ -1,9 +1,14 @@
 package net.cocotea.cyreneadmin.util;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.text.CharPool;
+import cn.hutool.core.text.StrPool;
+import cn.hutool.core.util.StrUtil;
+import net.cocotea.cyreneadmin.model.BusinessException;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 /**
  * 文件上传工具类
@@ -46,6 +51,23 @@ public class FileUploadUtils {
         return now.getYear() + String.valueOf(CharPool.SLASH) +
                 now.getMonthValue() + CharPool.SLASH +
                 now.getDayOfMonth() + CharPool.SLASH;
+    }
+
+    public static void filter(String originalFilename, String supportFiletype) throws BusinessException {
+        if (originalFilename != null) {
+            String[] split = originalFilename.split("\\.");
+            String fileType = split[split.length - 1];
+            if (StrUtil.isBlank(fileType)) {
+                throw new BusinessException("未知文件格式");
+            } else {
+                boolean supportFlag = Arrays.stream(supportFiletype.split(StrPool.COMMA))
+                        .toList()
+                        .contains(fileType);
+                Assert.isTrue(supportFlag, () -> new BusinessException("该文件格式不支持上传"));
+            }
+        } else {
+            throw new BusinessException("文件名为空");
+        }
     }
 
 }

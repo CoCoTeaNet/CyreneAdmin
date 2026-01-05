@@ -43,4 +43,14 @@ public class AppSystemProp {
      */
     private String excludes;
 
+    /**
+     * 头像保存路径
+     */
+    private String avatarPath;
+
+    /**
+     * 支持的文件格式
+     */
+    private String supportFiletype;
+
 }

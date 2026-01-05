@@ -27,20 +27,24 @@ public class BeanConfig {
                                           @Inject("${myapp.password}") String password,
                                           @Inject("${myapp.password-salt}") String passwordSalt,
                                           @Inject("${myapp.permission-cache}") Boolean permissionCache,
-                                          @Inject("${myapp.save-log}") Boolean saveLog) {
+                                          @Inject("${myapp.save-log}") Boolean saveLog,
+                                          @Inject("${myapp.file.avatar}") String avatarPath,
+                                          @Inject("${myapp.file.support-filetype}") String supportFiletype) {
         return new AppSystemProp().setExcludes(excludes)
                 .setStrongPassword(strongPassword)
                 .setPassword(password)
                 .setPasswordSalt(passwordSalt)
                 .setPermissionCache(permissionCache)
-                .setSaveLog(saveLog);
+                .setSaveLog(saveLog)
+                .setAvatarPath(avatarPath)
+                .setSupportFiletype(supportFiletype);
     }
 
     @Bean
     public void init(AppContext context,
                      @Db LightDao lightDao,
                      @Inject AppSystemProp systemProp,
-                     @Inject RedisClient redisClient){
+                     @Inject RedisClient redisClient) {
         context.wrapAndPut(RedisService.class, new RedisServiceImpl(redisClient));
         RedisService redisService = context.getBean(RedisService.class);
 

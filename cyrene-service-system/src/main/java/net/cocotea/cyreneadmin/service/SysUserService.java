@@ -7,6 +7,7 @@ import net.cocotea.cyreneadmin.model.vo.SysUserVO;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.model.BusinessException;
 
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -70,4 +71,10 @@ public interface SysUserService extends DetailService<ApiPage<SysUserVO>, SysUse
      * @param avatarName 头像名称
      */
     void doModifyAvatar(String avatarName);
+
+    /**
+     * 获取用户头像
+     */
+    void getAvatar(String avatar, OutputStream outputStream) throws BusinessException;
+
 }

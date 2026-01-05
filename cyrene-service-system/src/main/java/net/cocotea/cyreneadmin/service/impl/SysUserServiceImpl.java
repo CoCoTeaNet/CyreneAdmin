@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
@@ -27,6 +28,8 @@ import org.sagacity.sqltoy.model.EntityQuery;
 import org.sagacity.sqltoy.model.Page;
 import org.sagacity.sqltoy.utils.StringUtil;
 
+import java.io.File;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -233,6 +236,17 @@ public class SysUserServiceImpl implements SysUserService {
         BigInteger loginId = LoginUtils.loginId();
         SysUser sysUser = new SysUser().setId(loginId).setAvatar(avatarName);
         lightDao.update(sysUser);
+    }
+
+    @Override
+    public void getAvatar(String avatar, OutputStream outputStream) throws BusinessException {
+        String fullPath = appSystemProp.getAvatarPath() + avatar;
+        File file = FileUtil.file(fullPath);
+        if (file.exists()) {
+            FileUtil.writeToStream(file, outputStream);
+        } else {
+            throw new BusinessException("File is not found");
+        }
     }
 
     private Map<BigInteger, List<SysUserRoleVO>> userRoleMap(List<BigInteger> userIds) {

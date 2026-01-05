@@ -38,6 +38,12 @@ public class AppConfig {
     @Value("${myapp.rd1.db}")
     private String rdDb;
 
+    @Value("${myapp.file.avatar}")
+    private String avatar;
+
+    @Value("${myapp.file.support-filetype}")
+    private String supportFiletype;
+
     @Bean
     public AppSystemProp appSystemProp() {
         return new AppSystemProp()
@@ -46,7 +52,9 @@ public class AppConfig {
                 .setPassword(password)
                 .setPasswordSalt(passwordSalt)
                 .setPermissionCache(permissionCache)
-                .setSaveLog(saveLog);
+                .setSaveLog(saveLog)
+                .setAvatarPath(avatar)
+                .setSupportFiletype(supportFiletype);
     }
 
     @Bean
