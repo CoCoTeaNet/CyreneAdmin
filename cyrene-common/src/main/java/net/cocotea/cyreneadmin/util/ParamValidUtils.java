@@ -8,7 +8,7 @@ import net.cocotea.cyreneadmin.model.BusinessException;
  * @author CoCoTea
  * @since 2022-12-30 16:01:28
  */
-public class PpUtils {
+public class ParamValidUtils {
 
     /**
      * 解析时间范围
