@@ -1,6 +1,8 @@
 package net.cocotea.cyreneadmin.config;
 
 import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.dao.SaTokenDao;
+import cn.dev33.satoken.dao.SaTokenDaoForRedisx;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
@@ -11,8 +13,10 @@ import com.alibaba.fastjson2.support.spring6.http.converter.FastJsonHttpMessageC
 import jakarta.annotation.Resource;
 import net.cocotea.cyreneadmin.handler.WebApiInterceptor;
 import net.cocotea.cyreneadmin.properties.AppSystemProp;
+import org.noear.redisx.RedisClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -37,6 +41,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Resource
     private WebApiInterceptor webApiInterceptor;
+
+    @Autowired
+    private RedisClient redisClient;
 
     @Bean
     public FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
@@ -111,4 +118,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
         logger.info("~~~~~~~~~~~");
         return excludes;
     }
+
+    /**
+     * 使用Redis缓存token
+     */
+    @Bean
+    public SaTokenDao saTokenDaoInit() {
+        return new SaTokenDaoForRedisx(redisClient);
+    }
+
 }
