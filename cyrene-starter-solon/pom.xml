@@ -103,11 +103,24 @@
     </dependencies>
 
     <build>
-        <finalName>ca-launcher</finalName>
+        <finalName>launcher</finalName>
         <plugins>
             <plugin>
                 <groupId>org.noear</groupId>
                 <artifactId>solon-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 指定启动主类 -->
+                    <mainClass>net.cocotea.cyreneadmin.SolonStarter</mainClass>
+                </configuration>
+                <executions>
+                    <!-- 没有 solon-parent 时，要加这块-->
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
