@@ -1,19 +1,19 @@
 <template>
   <el-container style="height: 100vh;">
     <el-aside width="300">
-      <NavMenu style="height: 100%;overflow: auto"/>
+      <NavMenu style="height: 100%;overflow: auto" />
     </el-aside>
 
     <el-container>
-      <el-header class="layout-box-shadow"><admin-header/></el-header>
+      <el-header class="layout-box-shadow"><admin-header /></el-header>
 
       <el-main>
-        <router-view v-slot="{Component}">
-          <keep-alive>
-            <transition :name="`slide-fade`" :mode="`out-in`">
-              <component :is="Component"/>
-            </transition>
-          </keep-alive>
+        <router-view v-slot="{ Component }">
+          <transition :name="`slide-fade`" :mode="`out-in`">
+            <keep-alive>
+              <component :is="Component" />
+            </keep-alive>
+          </transition>
         </router-view>
       </el-main>
 
@@ -38,7 +38,8 @@ import AdminHeader from "./modules/AdminHeader.vue";
   transition: all .3s cubic-bezier(0.42, 0, 0.58, 1);
 }
 
-.slide-fade-enter, .slide-fade-leave-to {
+.slide-fade-enter,
+.slide-fade-leave-to {
   transform: translateX(74px);
   opacity: 0;
 }
