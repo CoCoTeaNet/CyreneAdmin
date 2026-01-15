@@ -185,6 +185,7 @@ public class SysUserController {
             FileUtil.mkdir(appSystemProp.getAvatarPath());
         }
         multipartFile.transferTo(file);
+        FileUploadUtils.validAvatar(file);
         userService.doModifyAvatar(saveName);
         return ApiResult.ok(true);
     }
