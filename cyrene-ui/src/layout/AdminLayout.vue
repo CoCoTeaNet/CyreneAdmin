@@ -9,7 +9,7 @@
 
       <el-main>
         <router-view v-slot="{ Component }">
-          <transition :name="`slide-fade`" :mode="`out-in`">
+          <transition name="fade-slide" mode="out-in">
             <keep-alive>
               <component :is="Component" />
             </keep-alive>
@@ -26,22 +26,23 @@ import NavMenu from "./modules/NavMenu.vue";
 import AdminHeader from "./modules/AdminHeader.vue";
 </script>
 
-<!--私有样式-->
 <style scoped>
-/* 可以设置不同的进入和离开动画 */
-/* 设置持续时间和动画函数 */
-.slide-fade-enter-active {
-  transition: all .6s ease;
+/* 核心动画设置 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.slide-fade-leave-active {
-  transition: all .3s cubic-bezier(0.42, 0, 0.58, 1);
-}
-
-.slide-fade-enter,
-.slide-fade-leave-to {
-  transform: translateX(74px);
+/* 进入时的状态：从下方 20px 处浮现 */
+.fade-slide-enter-from {
   opacity: 0;
+  transform: translateY(20px);
+}
+
+/* 离开时的状态：向消失并稍微上浮（或保持原地消失） */
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>
 
