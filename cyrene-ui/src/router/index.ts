@@ -22,7 +22,7 @@ router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized):b
 router.afterEach(function (to: any, from: any) {
     let title = '';
     to.matched.forEach((item: any, index: any) => {
-        let field = (index === to.matched.length - 1 ? '' : ' - ');
+        let field = (index === to.matched.length - 1 ? '' : ' / ');
         title += item.meta.title + field;
     });
     // 动态刷新title
