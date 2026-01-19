@@ -1,24 +1,33 @@
 <template>
-  <div style="display: flex">
+  <div class="tabs-wrapper">
     <el-scrollbar>
-      <div class="scrollbar-flex-content">
-        <p v-for="item in menuStore.tabItems" :key="item" :class="`scrollbar-tab-item ${item.isActive?'active':''}`">
-          <span @click="onClick(item)">{{ item.name }}</span>
-          <el-icon class="tab-icon" @click="menuStore.removeTabItem(item.id)">
+      <div class="tabs-container">
+        <div 
+          v-for="item in menuStore.tabItems" 
+          :key="item.url" 
+          :class="['tab-item', { active: item.isActive }]"
+          @click="onClick(item)"
+        >
+          <span class="tab-dot" v-if="item.isActive"></span>
+          <span class="tab-title">{{ item.name }}</span>
+          <el-icon 
+            v-if="menuStore.tabItems.length > 1" 
+            class="tab-close" 
+            @click.stop="menuStore.removeTabItem(item.id)"
+          >
             <close/>
           </el-icon>
-        </p>
+        </div>
       </div>
     </el-scrollbar>
-    <el-dropdown>
-        <span class="el-dropdown-link">
-          <el-icon class="el-icon--right">
-            <arrow-down/>
-          </el-icon>
-        </span>
+    
+    <el-dropdown trigger="click">
+      <div class="tab-more">
+        <el-icon><arrow-down/></el-icon>
+      </div>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item @click="refresh">刷新页面</el-dropdown-item>
+          <el-dropdown-item @click="refresh">刷新当前</el-dropdown-item>
           <el-dropdown-item @click="onCloseAll">关闭所有</el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -57,53 +66,73 @@ const refresh = () => {
 </script>
 
 <style scoped>
-.scrollbar-flex-content {
-  display: flex;
-}
-
-.tab-icon {
-  margin-left: 1px;
-  padding: 1px;
-  /* 过渡效果设置 */
-  transition: all 0.3s ease-in-out;
-}
-
-.tab-icon:hover {
-  border-radius: 16px;
-  color: var(--el-color-primary);
-  background-color: var(--el-color-white);
-}
-
-.scrollbar-tab-item {
-  font-size: 12px;
-  flex-shrink: 0;
+.tabs-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 23px;
-  margin: 3px;
-  padding: 0 0.8em;
-  text-align: center;
-  background: var(--el-color-white);
-  border: 1px solid var(--el-border-color);
-  border-radius: 3px;
-  color: var(--el-button-text-color);
-  /* 过渡效果设置 */
-  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  height: 40px;
 }
 
-.scrollbar-tab-item:hover {
+.tabs-container {
+  display: flex;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.tab-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--el-fill-color-lighter);
+  color: var(--el-text-color-regular);
+  font-size: 13px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  border: 1px solid transparent;
+  white-space: nowrap;
 }
 
-.active {
-  background-color: var(--el-color-primary);
-  color: var(--el-color-white);
-}
-
-.el-dropdown-link {
-  cursor: pointer;
+.tab-item:hover {
+  background: var(--el-fill-color-light);
   color: var(--el-color-primary);
+}
+
+/* 激活状态 */
+.tab-item.active {
+  background: #fff;
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary-light-7);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tab-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--el-color-primary);
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.tab-close {
+  margin-left: 8px;
+  font-size: 12px;
+  border-radius: 50%;
+  padding: 2px;
+  transition: all 0.2s;
+}
+
+.tab-close:hover {
+  background-color: var(--el-color-danger-light-9);
+  color: var(--el-color-danger);
+}
+
+.tab-more {
+  padding: 0 10px;
+  cursor: pointer;
+  color: var(--el-text-color-secondary);
   display: flex;
   align-items: center;
 }

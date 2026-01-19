@@ -48,7 +48,11 @@ import AdminHeader from "./modules/AdminHeader.vue";
 
 <style>
 .layout-box-shadow {
-  border-bottom: 1px solid var(--el-border-color);
-  box-shadow: var(--el-box-shadow-light);
+  background-color: #fff; /* 确保有背景色 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  
+  /* 关键属性：防止阴影被下方内容遮挡 */
+  position: relative;
+  z-index: 10; 
 }
 </style>
