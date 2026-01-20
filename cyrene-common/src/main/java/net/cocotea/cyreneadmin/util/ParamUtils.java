@@ -1,6 +1,10 @@
 package net.cocotea.cyreneadmin.util;
 
+import cn.hutool.core.map.MapUtil;
 import net.cocotea.cyreneadmin.model.BusinessException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 参数解析工具
@@ -8,7 +12,7 @@ import net.cocotea.cyreneadmin.model.BusinessException;
  * @author CoCoTea
  * @since 2022-12-30 16:01:28
  */
-public class ParamValidUtils {
+public class ParamUtils {
 
     /**
      * 解析时间范围
