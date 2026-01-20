@@ -53,7 +53,7 @@
 import {router} from "@/router";
 import {useRoute} from "vue-router";
 import {reqCommonFeedback} from "@/api/ApiFeedback";
-import {loginInfo, logout} from "@/api/system/sys-login-api";
+import {loginInfo, logout, userMenu} from "@/api/system/sys-login-api";
 import AdminTab from "@/layout/modules/AdminTab.vue";
 import {Expand, Fold, FullScreen, House} from "@element-plus/icons-vue";
 import {onMounted, ref, watch} from 'vue';
@@ -70,6 +70,7 @@ const avatar = ref<any>(default_avatar);
 
 onMounted(() => {
   reqCommonFeedback(loginInfo(), (data:any) => userStore.setUserInfo(data));
+  reqCommonFeedback(userMenu(), (data:MenuModel[]) => menuStore.setUserMenu(data));
 });
 
 /**
@@ -85,6 +86,8 @@ const clickToGo = (name: string) => {
 const doLogout = () => {
   reqCommonFeedback(logout(), () => {
     userStore.setUserInfo({id: '', username: '', nickname: ''});
+    menuStore.setUserMenu([]);
+    menuStore.initTabItems();
     router.push({name: 'Login', query: {redirect: route.name ? route.name.toString() : ''}});
   });
 }
