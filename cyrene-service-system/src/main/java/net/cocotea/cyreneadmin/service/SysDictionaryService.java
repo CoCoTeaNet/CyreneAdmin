@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.service;
 
+import cn.hutool.core.lang.tree.Tree;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryTreeDTO;
@@ -7,6 +8,7 @@ import net.cocotea.cyreneadmin.model.dto.SysDictionaryUpdateDTO;
 import net.cocotea.cyreneadmin.model.vo.SysDictionaryVO;
 import net.cocotea.cyreneadmin.model.ApiPage;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -21,5 +23,5 @@ public interface SysDictionaryService extends BaseService<ApiPage<SysDictionaryV
      * @param param 分页参数
      * @return 分页对象
      */
-    List<SysDictionaryVO> listByTree(SysDictionaryTreeDTO param);
+    List<Tree<BigInteger>> listByTree(SysDictionaryTreeDTO param);
 }

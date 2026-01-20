@@ -2,6 +2,9 @@ package net.cocotea.cyreneadmin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.lang.tree.TreeNode;
+import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.CharPool;
 import cn.hutool.json.JSONUtil;
@@ -13,13 +16,13 @@ import net.cocotea.cyreneadmin.model.dto.SysMenuUpdateDTO;
 import net.cocotea.cyreneadmin.model.po.SysMenu;
 import net.cocotea.cyreneadmin.model.po.SysRoleMenu;
 import net.cocotea.cyreneadmin.model.po.SysUserRole;
+import net.cocotea.cyreneadmin.model.vo.SysMenuTreeVO;
 import net.cocotea.cyreneadmin.model.vo.SysMenuVO;
 import net.cocotea.cyreneadmin.service.SysMenuService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
 import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.service.RedisService;
-import net.cocotea.cyreneadmin.util.TreeBuilder;
 import net.cocotea.cyreneadmin.util.LoginUtils;
 import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.model.Page;
@@ -74,10 +77,18 @@ public class SysMenuServiceImpl implements SysMenuService {
     }
 
     @Override
-    public List<SysMenuVO> listByTree(SysMenuTreeDTO treeDTO) {
+    public List<Tree<BigInteger>> listByTree(SysMenuTreeDTO treeDTO) {
         Map<String, Object> map = BeanUtil.beanToMap(treeDTO);
         List<SysMenuVO> list = lightDao.find("sys_menu_findList", map, SysMenuVO.class);
-        return new TreeBuilder<SysMenuVO>().get(list);
+
+        List<TreeNode<BigInteger>> nodeList = list.stream()
+                .map(menuVO -> {
+                    TreeNode<BigInteger> node = new TreeNode<>(menuVO.getId(), menuVO.getParentId(), menuVO.getMenuName(), menuVO.getSort());
+                    node.setExtra(BeanUtil.beanToMap(menuVO));
+                    return node;
+                }).toList();
+
+        return TreeUtil.build(nodeList, BigInteger.ZERO);
     }
 
     @Override
@@ -124,7 +135,7 @@ public class SysMenuServiceImpl implements SysMenuService {
     }
 
     @Override
-    public List<SysMenuVO> listByRoleId(String roleId) {
+    public List<SysMenuVO> listByRoleId(BigInteger roleId) {
         Map<String, Object> sysMenuMap = MapUtil.newHashMap(1);
         sysMenuMap.put("roleId", roleId);
         List<SysMenu> list = lightDao.find("sys_menu_IN_findList", sysMenuMap, SysMenu.class);
@@ -147,10 +158,32 @@ public class SysMenuServiceImpl implements SysMenuService {
     }
 
     @Override
-    public List<SysMenuVO> listByTreeAsRoleSelection(SysMenuTreeDTO treeDTO) {
+    public List<Tree<BigInteger>> listByTreeAsRoleSelection(SysMenuTreeDTO treeDTO) {
         Map<String, Object> map = BeanUtil.beanToMap(treeDTO);
-        List<SysMenuVO> list = lightDao.find("sys_menu_findList", map, SysMenuVO.class);
-        return new TreeBuilder<SysMenuVO>().get(list);
+        List<TreeNode<BigInteger>> nodeList = lightDao.find("sys_menu_findList", map, SysMenuVO.class)
+                .stream()
+                .map(menuVO -> {
+                    TreeNode<BigInteger> node = new TreeNode<>(menuVO.getId(), menuVO.getParentId(), menuVO.getMenuName(), menuVO.getSort());
+                    node.setExtra(BeanUtil.beanToMap(menuVO));
+                    return node;
+                }).toList();
+        return TreeUtil.build(nodeList, BigInteger.ZERO);
+    }
+
+    @Override
+    public List<Tree<BigInteger>> userMenu() {
+        Map<String, Object> params = MapUtil.builder(new HashMap<String, Object>())
+                .put("userIds", List.of(LoginUtils.loginId()))
+                .build();
+        List<TreeNode<BigInteger>> nodeList = lightDao.find("sys_menu_findUserMenu", params, SysMenuTreeVO.class)
+                .stream()
+                .map(menu -> {
+                    TreeNode<BigInteger> node = new TreeNode<>(menu.getId(), menu.getParentId(), menu.getMenuName(), menu.getSort());
+                    node.setExtra(BeanUtil.beanToMap(menu));
+                    return node;
+                })
+                .toList();
+        return TreeUtil.build(nodeList, BigInteger.ZERO);
     }
 
 }

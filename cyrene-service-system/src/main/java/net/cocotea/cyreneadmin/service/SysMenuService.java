@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.service;
 
+import cn.hutool.core.lang.tree.Tree;
 import net.cocotea.cyreneadmin.model.dto.SysMenuAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysMenuPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysMenuTreeDTO;
@@ -21,7 +22,7 @@ public interface SysMenuService extends BaseService<ApiPage<SysMenuVO>, SysMenuP
      * @param menuTreeDTO 分页参数
      * @return 分页结果集
      */
-    List<SysMenuVO> listByTree(SysMenuTreeDTO menuTreeDTO);
+    List<Tree<BigInteger>> listByTree(SysMenuTreeDTO menuTreeDTO);
 
     /**
      * 获取用户的所有菜单
@@ -37,7 +38,7 @@ public interface SysMenuService extends BaseService<ApiPage<SysMenuVO>, SysMenuP
      * @param roleId 角色主键id
      * @return 菜单列表
      */
-    List<SysMenuVO> listByRoleId(String roleId);
+    List<SysMenuVO> listByRoleId(BigInteger roleId);
 
     /**
      * 缓存用户权限
@@ -61,5 +62,13 @@ public interface SysMenuService extends BaseService<ApiPage<SysMenuVO>, SysMenuP
      * @param pageDTO {@linkplain SysMenuTreeDTO}
      * @return {@link SysMenuVO}
      */
-    List<SysMenuVO> listByTreeAsRoleSelection(SysMenuTreeDTO pageDTO);
+    List<Tree<BigInteger>> listByTreeAsRoleSelection(SysMenuTreeDTO pageDTO);
+
+    /**
+     * 获取用户菜单
+     *
+     * @return 菜单列表
+     */
+    List<Tree<BigInteger>> userMenu();
+
 }

@@ -2,6 +2,7 @@ package net.cocotea.cyreneadmin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.hutool.core.lang.tree.Tree;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import net.cocotea.cyreneadmin.model.dto.SysMenuAddDTO;
@@ -86,13 +87,12 @@ public class SysMenuController {
      * 查询菜单或权限树形数据
      *
      * @param pageDTO {@link SysMenuPageDTO}
-     * @return {@link List<SysMenuVO>}
+     * @return {@link SysMenuVO}
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @PostMapping("listByTree")
-    public ApiResult<List<SysMenuVO>> listByTree(@Valid @RequestBody SysMenuTreeDTO pageDTO) {
-        List<SysMenuVO> menus = sysMenuService.listByTree(pageDTO);
-        return ApiResult.ok(menus);
+    public ApiResult<List<Tree<BigInteger>>> listByTree(@Valid @RequestBody SysMenuTreeDTO pageDTO) {
+        return ApiResult.ok(sysMenuService.listByTree(pageDTO));
     }
 
     /**
@@ -103,9 +103,8 @@ public class SysMenuController {
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @PostMapping("listByTreeAsRoleSelection")
-    public ApiResult<List<SysMenuVO>> listByTreeAsRoleSelection(@Valid @RequestBody SysMenuTreeDTO pageDTO) {
-        List<SysMenuVO> menus = sysMenuService.listByTreeAsRoleSelection(pageDTO);
-        return ApiResult.ok(menus);
+    public ApiResult<List<Tree<BigInteger>>> listByTreeAsRoleSelection(@Valid @RequestBody SysMenuTreeDTO pageDTO) {
+        return ApiResult.ok(sysMenuService.listByTreeAsRoleSelection(pageDTO));
     }
 
     /**
@@ -116,7 +115,7 @@ public class SysMenuController {
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @GetMapping("listByRoleId/{roleId}")
-    public ApiResult<List<SysMenuVO>> listByRoleId(@PathVariable("roleId") String roleId) {
+    public ApiResult<List<SysMenuVO>> listByRoleId(@PathVariable("roleId") BigInteger roleId) {
         List<SysMenuVO> menus = sysMenuService.listByRoleId(roleId);
         return ApiResult.ok(menus);
     }

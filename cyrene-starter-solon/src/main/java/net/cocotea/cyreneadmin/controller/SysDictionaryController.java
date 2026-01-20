@@ -2,6 +2,8 @@ package net.cocotea.cyreneadmin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.lang.tree.TreeNode;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryTreeDTO;
@@ -84,8 +86,7 @@ public class SysDictionaryController {
     @Mapping("/listByTree")
     @Post
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
-    public ApiResult<List<SysDictionaryVO>> listByTree(@Validated @Body SysDictionaryTreeDTO dictionaryPageDTO) {
-        List<SysDictionaryVO> list = sysDictionaryService.listByTree(dictionaryPageDTO);
-        return ApiResult.ok(list);
+    public ApiResult<List<Tree<BigInteger>>> listByTree(@Validated @Body SysDictionaryTreeDTO dictionaryPageDTO) {
+        return ApiResult.ok(sysDictionaryService.listByTree(dictionaryPageDTO));
     }
 }

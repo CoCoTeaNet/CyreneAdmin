@@ -2,6 +2,9 @@ package net.cocotea.cyreneadmin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.lang.tree.TreeNode;
+import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.core.text.CharPool;
 import lombok.RequiredArgsConstructor;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryAddDTO;
@@ -14,7 +17,6 @@ import net.cocotea.cyreneadmin.model.vo.SysDictionaryVO;
 import net.cocotea.cyreneadmin.service.SysDictionaryService;
 import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
-import net.cocotea.cyreneadmin.util.TreeBuilder;
 import org.sagacity.sqltoy.dao.LightDao;
 
 import java.math.BigInteger;
@@ -60,15 +62,15 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
     }
 
     @Override
-    public List<SysDictionaryVO> listByTree(SysDictionaryTreeDTO dictionaryTreeDTO) {
+    public List<Tree<BigInteger>> listByTree(SysDictionaryTreeDTO dictionaryTreeDTO) {
         SysDictionaryVO dictionaryVO = new SysDictionaryVO()
                 .setDictionaryName(dictionaryTreeDTO.getDictionaryName())
                 .setEnableStatus(dictionaryTreeDTO.getEnableStatus());
-        List<SysDictionaryVO> list = findList(dictionaryVO);
-        return new TreeBuilder<SysDictionaryVO>().get(list);
+        List<TreeNode<BigInteger>> nodeList = findNodeList(dictionaryVO);
+        return TreeUtil.build(nodeList, BigInteger.ZERO);
     }
 
-    private List<SysDictionaryVO> findList(SysDictionaryVO sysDictionaryVO) {
+    private List<TreeNode<BigInteger>> findNodeList(SysDictionaryVO sysDictionaryVO) {
         List<SysDictionary> dictionaryList = lightDao.find("sys_dictionary_findList", BeanUtil.toBean(sysDictionaryVO, SysDictionary.class), SysDictionary.class);
         // 查询关联的用户名称
         List<BigInteger> userIds = dictionaryList.stream().map(SysDictionary::getCreateBy).collect(Collectors.toList());
@@ -76,16 +78,19 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
         Map<BigInteger, String> userMap = sysUsers
                 .stream()
                 .collect(Collectors.toMap(SysUser::getId, i -> i.getUsername().concat(String.valueOf(CharPool.AT)).concat(i.getNickname())));
-        List<SysDictionaryVO> dictionaryVOList = new ArrayList<>(dictionaryList.size());
+        // 创建树节点
+        List<TreeNode<BigInteger>> nodeList = new ArrayList<>(dictionaryList.size());
         for (SysDictionary dictionary : dictionaryList) {
-            SysDictionaryVO dictionaryVO = Convert.convert(SysDictionaryVO.class, dictionary);
+            Map<String, Object> extraMap = BeanUtil.beanToMap(dictionary);
             if (dictionary.getCreateBy() != null) {
                 String username = userMap.get(dictionary.getCreateBy());
-                dictionaryVO.setCreateBy(username);
+                extraMap.put("createBy", username);
             }
-            dictionaryVOList.add(dictionaryVO);
+            TreeNode<BigInteger> node = new TreeNode<>(dictionary.getId(), dictionary.getParentId(), dictionary.getDictionaryName(), dictionary.getSort());
+            node.setExtra(extraMap);
+            nodeList.add(node);
         }
-        return dictionaryVOList;
+        return nodeList;
     }
 
     @Override

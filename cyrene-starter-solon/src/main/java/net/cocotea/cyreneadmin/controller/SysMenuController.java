@@ -2,6 +2,7 @@ package net.cocotea.cyreneadmin.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.hutool.core.lang.tree.Tree;
 import net.cocotea.cyreneadmin.model.dto.SysMenuAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysMenuPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysMenuTreeDTO;
@@ -91,40 +92,38 @@ public class SysMenuController {
      * 查询菜单或权限树形数据
      *
      * @param pageDTO {@link SysMenuPageDTO}
-     * @return {@link List<SysMenuVO>}
+     * @return {@link SysMenuVO}
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @Post
     @Mapping("listByTree")
-    public ApiResult<List<SysMenuVO>> listByTree(@Validated @Body SysMenuTreeDTO pageDTO) {
-        List<SysMenuVO> menus = sysMenuService.listByTree(pageDTO);
-        return ApiResult.ok(menus);
+    public ApiResult<List<Tree<BigInteger>>> listByTree(@Validated @Body SysMenuTreeDTO pageDTO) {
+        return ApiResult.ok(sysMenuService.listByTree(pageDTO));
     }
 
     /**
      * 通关角色获取菜单或权限
      *
      * @param pageDTO {@link SysMenuPageDTO}
-     * @return {@link List<SysMenuVO>}
+     * @return {@link SysMenuVO}
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @Post
     @Mapping("listByTreeAsRoleSelection")
-    public ApiResult<List<SysMenuVO>> listByTreeAsRoleSelection(@Validated @Body SysMenuTreeDTO pageDTO) {
-        List<SysMenuVO> menus = sysMenuService.listByTreeAsRoleSelection(pageDTO);
-        return ApiResult.ok(menus);
+    public ApiResult<List<Tree<BigInteger>>> listByTreeAsRoleSelection(@Validated @Body SysMenuTreeDTO pageDTO) {
+        return ApiResult.ok(sysMenuService.listByTreeAsRoleSelection(pageDTO));
     }
 
     /**
      * 通关角色获取请所有菜单
      *
      * @param roleId 角色ID
-     * @return {@link List<SysMenuVO>}
+     * @return {@link SysMenuVO}
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @Get
     @Mapping("listByRoleId/{roleId}")
-    public ApiResult<List<SysMenuVO>> listByRoleId(@Path String roleId) {
+    public ApiResult<List<SysMenuVO>> listByRoleId(@Path("roleId") BigInteger roleId) {
         List<SysMenuVO> menus = sysMenuService.listByRoleId(roleId);
         return ApiResult.ok(menus);
     }
