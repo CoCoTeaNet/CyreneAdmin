@@ -8,8 +8,7 @@ export const useUserStore = defineStore('user', {
             nickname: '',
             token: '',
             loginStatus: false,
-            avatar: '',
-            menuList: []
+            avatar: ''
         }
     }),
 
@@ -25,12 +24,10 @@ export const useUserStore = defineStore('user', {
         },
         /**
          * 更新用户信息
-         * 不包括菜单
          *
          * @param userModel 用户模型
          */
         updateUserInfo(userModel: UserModel) {
-            userModel.menuList = this.userinfo.menuList;
             userModel.loginStatus = this.userinfo.loginStatus;
             userModel.token = this.userinfo.token;
             this.setUserInfo(userModel);

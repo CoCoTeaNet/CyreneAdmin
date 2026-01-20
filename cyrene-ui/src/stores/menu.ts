@@ -7,9 +7,24 @@ export const useMenuStore = defineStore('menu', {
     state: () => ({
         isCollapseMenu: false,
         tabItems: [],
+        menus: []
     }),
 
     actions: {
+        /**
+         * 设置用户菜单
+         *
+         * @param menuList 菜单列表
+         */
+        setUserMenu(menuList: MenuModel[]) {
+            this.menus = menuList;        
+            localStorage.setItem("menus", JSON.stringify(menuList));
+        },
+        /** 
+         * 移除标签页
+         * 
+         * @param id 标签页ID
+         */
         removeTabItem(id: string) {
             let arr: TabItem[] = [];
             this.tabItems.forEach((item: TabItem) => {

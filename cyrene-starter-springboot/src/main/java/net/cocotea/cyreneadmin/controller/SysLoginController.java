@@ -3,18 +3,19 @@ package net.cocotea.cyreneadmin.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.CircleCaptcha;
+import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SmUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.SM2;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import net.cocotea.cyreneadmin.model.dto.SysLoginDTO;
 import net.cocotea.cyreneadmin.model.vo.SysCaptchaVO;
 import net.cocotea.cyreneadmin.model.vo.SysLoginUserVO;
+import net.cocotea.cyreneadmin.service.SysMenuService;
 import net.cocotea.cyreneadmin.service.SysUserService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
 import net.cocotea.cyreneadmin.model.ApiResult;
@@ -24,8 +25,11 @@ import net.cocotea.cyreneadmin.util.IpUtils;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -39,10 +43,13 @@ public class SysLoginController {
 
     private static final Logger log = LoggerFactory.getLogger(SysLoginController.class);
 
-    @Resource
+    @Autowired
+    private SysMenuService sysMenuService;
+
+    @Autowired
     private SysUserService userService;
 
-    @Resource
+    @Autowired
     private RedisService redisService;
 
     /**
@@ -94,6 +101,16 @@ public class SysLoginController {
     public ApiResult<SysLoginUserVO> loginInfo() {
         SysLoginUserVO r = userService.loginUser();
         return ApiResult.ok(r);
+    }
+
+    /**
+     * 获取用户菜单
+     *
+     * @return {@link net.cocotea.cyreneadmin.model.vo.SysMenuTreeVO}
+     */
+    @GetMapping("/user/menus")
+    public ApiResult<List<Tree<BigInteger>>> userMenu() {
+        return ApiResult.ok(sysMenuService.userMenu());
     }
 
     /**

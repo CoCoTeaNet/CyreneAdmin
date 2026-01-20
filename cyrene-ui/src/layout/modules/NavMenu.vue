@@ -13,7 +13,7 @@
       <img src="@/assets/logo.png" style="width: 36px" alt="logo">
     </div>
     <!-- 菜单渲染 -->
-    <child-menu :menu-list="userStore.userinfo.menuList"/>
+    <child-menu :menu-list="menuStore.menus"/>
   </el-menu>
 </template>
 

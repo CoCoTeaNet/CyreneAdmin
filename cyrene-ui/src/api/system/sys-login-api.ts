@@ -27,3 +27,10 @@ export function loginInfo() {
 export function logout() {
     return request('system/logout', {}, 'POST');
 }
+
+/**
+ * 获取用户菜单
+ */
+export function userMenu() {
+    return request('system/user/menus', {}, get);
+}

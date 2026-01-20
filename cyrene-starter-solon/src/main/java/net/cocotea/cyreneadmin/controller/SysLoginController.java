@@ -3,6 +3,7 @@ package net.cocotea.cyreneadmin.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.CircleCaptcha;
+import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,6 +15,7 @@ import net.cocotea.cyreneadmin.model.dto.SysLoginDTO;
 import net.cocotea.cyreneadmin.model.vo.SysCaptchaVO;
 import net.cocotea.cyreneadmin.model.vo.SysLoginUserVO;
 import net.cocotea.cyreneadmin.service.SysLogService;
+import net.cocotea.cyreneadmin.service.SysMenuService;
 import net.cocotea.cyreneadmin.service.SysUserService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
 import net.cocotea.cyreneadmin.enums.LogTypeEnum;
@@ -26,6 +28,8 @@ import org.noear.solon.core.handle.Context;
 import org.noear.solon.validation.annotation.Valid;
 import org.noear.solon.validation.annotation.Validated;
 
+import java.math.BigInteger;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -41,6 +45,9 @@ public class SysLoginController {
 
     @Inject
     private SysUserService sysUserService;
+
+    @Inject
+    private SysMenuService sysMenuService;
 
     @Inject
     private RedisService redisService;
@@ -102,6 +109,18 @@ public class SysLoginController {
     public ApiResult<SysLoginUserVO> loginInfo() {
         SysLoginUserVO r = sysUserService.loginUser();
         return ApiResult.ok(r);
+    }
+
+    /**
+     * 获取用户菜单
+     *
+     * @return {@link net.cocotea.cyreneadmin.model.vo.SysMenuTreeVO}
+     */
+    @Get
+    @Mapping("/user/menus")
+    public ApiResult<List<Tree<BigInteger>>> userMenu() {
+        List<Tree<BigInteger>> menus = sysMenuService.userMenu();
+        return ApiResult.ok(menus);
     }
 
     /**

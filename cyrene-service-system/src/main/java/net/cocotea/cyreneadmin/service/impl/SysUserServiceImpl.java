@@ -20,7 +20,6 @@ import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.model.BusinessException;
 import net.cocotea.cyreneadmin.service.RedisService;
-import net.cocotea.cyreneadmin.util.TreeBuilder;
 import net.cocotea.cyreneadmin.util.LoginUtils;
 import net.cocotea.cyreneadmin.util.SecurityUtils;
 import org.sagacity.sqltoy.dao.LightDao;
@@ -182,19 +181,12 @@ public class SysUserServiceImpl implements SysUserService {
     public SysLoginUserVO loginUser() {
         BigInteger loginId = LoginUtils.loginIdEx();
         SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setId(loginId), SysUser.class);
-        SysLoginUserVO sysLoginUser = new SysLoginUserVO();
-        // 用户菜单
-        List<SysMenuTreeVO> userMenus = userMenu(loginId);
-        List<SysMenuTreeVO> menuList = new TreeBuilder<SysMenuTreeVO>().get(userMenus);
-        sysLoginUser.setMenuList(menuList);
-        // 用户基本信息
-        sysLoginUser.setId(sysUser.getId())
+        return new SysLoginUserVO().setId(sysUser.getId())
                 .setUsername(sysUser.getUsername())
                 .setNickname(sysUser.getNickname())
                 .setAvatar(sysUser.getAvatar())
                 .setLoginStatus(true)
                 .setToken(StpUtil.getTokenValue());
-        return sysLoginUser;
     }
 
     @Override
@@ -259,16 +251,6 @@ public class SysUserServiceImpl implements SysUserService {
         return lightDao.find("sys_role_findUserRole", params, SysUserRoleVO.class)
                 .stream()
                 .collect(groupingBy(SysUserRole::getUserId));
-    }
-
-    private List<SysMenuTreeVO> userMenu(BigInteger userId) {
-        if (userId == null) {
-            return Collections.emptyList();
-        }
-        Map<String, Object> params = MapUtil.builder(new HashMap<String, Object>())
-                .put("userIds", List.of(userId))
-                .build();
-        return lightDao.find("sys_menu_findUserMenu", params, SysMenuTreeVO.class);
     }
 
 }

@@ -14,6 +14,5 @@ interface UserModel {
     roleName?: string,
     password?: string,
     token?: string,
-    loginStatus?: boolean,
-    menuList?: MenuModel[]
+    loginStatus?: boolean
 }
