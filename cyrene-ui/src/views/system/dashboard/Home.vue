@@ -1,7 +1,7 @@
 <template>
   <div class="home-container">
     <!-- 欢迎卡片 -->
-    <el-card class="welcome-card">
+    <el-card class="welcome-card" shadow="never">
       <template #header>
         <div class="card-header">
           <span class="title">欢迎来到 Cyrene Admin</span>
@@ -10,10 +10,9 @@
       <div class="welcome-content">
         <p class="subtitle">一个现代化的管理后台系统</p>
         <p class="description">
-          Cyrene Admin 是一个基于 Solon 和 Vue 3 的现代化管理后台系统，采用前后端分离架构，
-          提供了完整的用户管理、角色权限、菜单配置等功能，帮助您快速构建企业级应用。
+          Cyrene Admin 是一个基于 Solon 和 Vue 3 的现代化管理后台系统。
         </p>
-        <div class="features">
+          <div class="features">
           <el-row :gutter="20">
             <el-col :span="6" v-for="(feature, index) in features" :key="index">
               <div class="feature-item">
@@ -32,13 +31,13 @@
     </el-card>
 
     <!-- 快速开始指南 -->
-    <el-card class="guide-card">
+    <el-card class="guide-card" shadow="never">
       <template #header>
         <div class="card-header">
           <span class="title">快速开始指南</span>
         </div>
       </template>
-      <el-steps :active="3" finish-status="success" align-center class="guide-steps">
+      <el-steps :active="3" finish-status="success" align-center simple class="guide-steps">
         <el-step title="注册账户" description="创建您的管理员账户" />
         <el-step title="配置权限" description="设置角色和权限" />
         <el-step title="管理内容" description="开始管理您的业务数据" />
@@ -47,7 +46,7 @@
     </el-card>
 
     <!-- 项目信息 -->
-    <el-card class="info-card">
+    <el-card class="info-card" shadow="never">
       <template #header>
         <div class="card-header">
           <span class="title">项目信息</span>
@@ -103,25 +102,25 @@ interface Feature {
 const features: Feature[] = [
   {
     title: '用户管理',
-    desc: '管理系统的用户账户、权限和角色分配',
+    desc: '管理用户账户',
     icon: 'User',
     color: '#409EFF'
   },
   {
     title: '角色权限',
-    desc: '灵活配置角色权限，实现精细化权限控制',
+    desc: '配置角色权限',
     icon: 'Avatar',
     color: '#67C23A'
   },
   {
     title: '菜单管理',
-    desc: '动态配置系统菜单，支持多级菜单结构',
+    desc: '配置系统菜单',
     icon: 'Grid',
     color: '#E6A23C'
   },
   {
     title: '系统日志',
-    desc: '记录系统操作日志，便于问题追踪和审计',
+    desc: '查看操作日志',
     icon: 'Document',
     color: '#F56C6C'
   }
@@ -130,17 +129,22 @@ const features: Feature[] = [
 
 <style scoped>
 .home-container {
-  padding: 20px;
-  background-color: #f5f7fa;
   min-height: 100vh;
 }
 
 .welcome-card {
   margin-bottom: 20px;
+  border-radius: 8px;
 }
 
 .guide-card {
   margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.info-card {
+  margin-top: 20px;
+  border-radius: 8px;
 }
 
 .card-header {
@@ -151,7 +155,7 @@ const features: Feature[] = [
 
 .title {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   color: #303133;
 }
 
@@ -163,6 +167,8 @@ const features: Feature[] = [
   font-size: 16px;
   color: #606266;
   margin-bottom: 15px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .description {
@@ -170,27 +176,22 @@ const features: Feature[] = [
   color: #909399;
   line-height: 1.6;
   margin-bottom: 30px;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .features {
-  margin-top: 20px;
+  margin: 20px 0;
+  text-align: center;
 }
 
 .feature-item {
   text-align: center;
   padding: 20px 10px;
-  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s ease;
 }
 
 .feature-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
+  background-color: #f5f7fa;
 }
 
 .feature-icon {
@@ -205,23 +206,26 @@ const features: Feature[] = [
 }
 
 .feature-item h4 {
-  margin: 10px 0;
+  margin: 12px 0 8px;
   color: #303133;
   font-size: 16px;
+  font-weight: 600;
+  text-align: center;
 }
 
 .feature-item p {
   margin: 5px 0;
-  color: #909399;
+  color: #7a7c85;
   font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .guide-steps {
   margin: 30px 0;
-}
-
-.info-card {
-  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .features-tags {
@@ -230,15 +234,35 @@ const features: Feature[] = [
   flex-wrap: wrap;
 }
 
-:deep(.el-descriptions__header) {
-  margin-bottom: 20px;
+:deep(.el-card__header) {
+  border-bottom: 1px solid #ebeef5;
 }
 
-:deep(.el-descriptions__cell) {
-  padding-bottom: 12px;
+:deep(.el-step__head) {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #d9ecff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-:deep(.el-descriptions__content) {
-  word-break: break-all;
+:deep(.el-step__title) {
+  font-weight: 500;
+  text-align: center;
+  font-size: 14px;
+}
+
+:deep(.el-step__description) {
+  padding-top: 4px;
+  font-size: 12px;
+  color: #909399;
+  text-align: center;
+  line-height: 1.4;
+}
+
+:deep(.el-tag) {
+  border: none;
+  border-radius: 6px;
 }
 </style>
