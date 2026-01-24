@@ -6,7 +6,7 @@
         <p class="welcome-sub">轻量 · 高效 · 可定制的后台管理模板，欢迎使用管理平台</p>
       </div>
 
-      <el-card class="a-login-right a-login-card" shadow="always">
+      <el-card class="a-login-right a-login-card" shadow="never">
         <div>
           <div class="login-title">欢 迎 登 录</div>
           <div class="login-subtitle">请输入账号、密码与验证码以继续</div>
