@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  cyrene-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cyrene-admin
+    ports:
+      - "80:80"      # Frontend
+      - "9000:9000"  # Backend API
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - cyrene-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: cyrene-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: cyrene_admin
+      MYSQL_USER: tester
+      MYSQL_PASSWORD: tester
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/ddl.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cyrene-network
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --lower-case-table-names=0
+
+  redis:
+    image: redis:7-alpine
+    container_name: cyrene-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cyrene-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  cyrene-network:
+    driver: bridge
