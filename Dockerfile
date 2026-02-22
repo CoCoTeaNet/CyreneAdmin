@@ -1,6 +1,6 @@
 # Multi-stage build for CyreneAdmin backend and frontend
 # Stage 1: Build backend JAR
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS backend-builder
+FROM maven:3.9.12-eclipse-temurin-17 AS backend-builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ COPY cyrene-starter-springboot/ ./cyrene-starter-springboot/
 RUN mvn clean package -pl cyrene-starter-solon -am -DskipTests
 
 # Stage 2: Build frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:current-alpine AS frontend-builder
 
 WORKDIR /app
 
@@ -33,25 +33,29 @@ COPY cyrene-ui/babel.config.js ./cyrene-ui/
 
 # Change to frontend directory and install dependencies
 WORKDIR /app/cyrene-ui
-RUN npm install
+RUN npm install -g pnpm && \
+    pnpm config set store-dir ~/.pnpm-store && \
+    pnpm install --frozen-lockfile=false
 
 # Copy remaining frontend source
 COPY cyrene-ui/src ./src/
 COPY cyrene-ui/index.html ./
-COPY cyrene-ui/shims-vue.d.ts ./
+COPY cyrene-ui/src/shims-vue.d.ts ./src/
 
 # Build frontend
-RUN npm run build
+RUN pnpm run build || (echo "Build failed, showing logs:" && ls -la /root/.npm/_logs/ 2>/dev/null && exit 1)
 
 # Stage 3: Create runtime image
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk-ubi9-minimal
 
 LABEL maintainer="CyreneAdmin" \
       description="CyreneAdmin Backend and Frontend Application" \
       version="1.0.0"
 
 # Install nginx and supervisor
-RUN apk add --no-cache nginx supervisor
+FROM nginx:stable-alpine3.23-perl
+
+RUN apk add --no-cache supervisor
 
 # Create app directory
 WORKDIR /app
@@ -70,7 +74,7 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 80 9000
 
 # Set health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:80/ || exit 1
 
 # Run supervisord to manage both processes
