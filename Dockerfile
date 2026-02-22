@@ -66,6 +66,8 @@ COPY --from=backend-builder /app/cyrene-starter-solon/target/launcher.jar app.ja
 # Copy built frontend from frontend builder
 COPY --from=frontend-builder /app/cyrene-ui/dist/ /var/www/html/
 
+RUN mkdir -p /var/log/supervisor && chmod 755 /var/log/supervisor
+
 # Copy configuration files
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf

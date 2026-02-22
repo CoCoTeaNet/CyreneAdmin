@@ -1,4 +1,8 @@
-CREATE DATABASE `cyrene_admin` ;
+-- 如果数据库不存在则创建
+CREATE DATABASE IF NOT EXISTS cyrene_admin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 使用数据库
+USE cyrene_admin;
 
 -- cyrene_admin.sys_dictionary definition
 
