@@ -45,17 +45,24 @@ COPY cyrene-ui/src/shims-vue.d.ts ./src/
 # Build frontend
 RUN pnpm run build || (echo "Build failed, showing logs:" && ls -la /root/.npm/_logs/ 2>/dev/null && exit 1)
 
-# Stage 3: Create runtime image
-FROM eclipse-temurin:17-jdk-ubi9-minimal
+# Stage 3: Create runtime image with Alpine, Nginx and JDK 17
+FROM alpine:latest
 
 LABEL maintainer="CyreneAdmin" \
       description="CyreneAdmin Backend and Frontend Application" \
       version="1.0.0"
 
-# Install nginx and supervisor
-FROM nginx:stable-alpine3.23-perl
+# Configure APK repositories to use Aliyun mirror for better reliability
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
+# Update package index
+RUN apk update
+
+# Install packages in separate steps for better reliability
+RUN apk add --no-cache nginx
+RUN apk add --no-cache openjdk17-jre
 RUN apk add --no-cache supervisor
+RUN apk add --no-cache curl
 
 # Create app directory
 WORKDIR /app
@@ -66,11 +73,17 @@ COPY --from=backend-builder /app/cyrene-starter-solon/target/launcher.jar app.ja
 # Copy built frontend from frontend builder
 COPY --from=frontend-builder /app/cyrene-ui/dist/ /var/www/html/
 
-RUN mkdir -p /var/log/supervisor && chmod 755 /var/log/supervisor
+# Create necessary directories
+RUN mkdir -p /var/log/supervisor /var/run/nginx && \
+    chmod 755 /var/log/supervisor && \
+    chown -R nginx:nginx /var/www/html
 
 # Copy configuration files
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Configure Nginx
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 # Expose ports
 EXPOSE 80 9000
