@@ -1,4 +1,4 @@
--- 如果数据库不存在则创建
+﻿-- 如果数据库不存在则创建
 CREATE DATABASE IF NOT EXISTS cyrene_admin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 使用数据库
@@ -20,7 +20,7 @@ CREATE TABLE `sys_dictionary` (
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `revision` int(11) DEFAULT NULL COMMENT '乐观锁',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统字典表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统字典表';
 
 
 -- cyrene_admin.sys_log definition
@@ -36,7 +36,7 @@ CREATE TABLE `sys_log` (
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
   KEY `sys_log_request_way_index` (`request_way`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统操作日志表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统操作日志表';
 
 
 -- cyrene_admin.sys_menu definition
@@ -61,7 +61,7 @@ CREATE TABLE `sys_menu` (
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `revision` int(11) DEFAULT NULL COMMENT '乐观锁',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统菜单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统菜单表';
 
 
 -- cyrene_admin.sys_role definition
@@ -79,7 +79,7 @@ CREATE TABLE `sys_role` (
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `revision` int(11) DEFAULT NULL COMMENT '乐观锁',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统角色表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统角色表';
 
 
 -- cyrene_admin.sys_role_menu definition
@@ -89,7 +89,7 @@ CREATE TABLE `sys_role_menu` (
   `role_id` bigint(20) NOT NULL COMMENT '角色id',
   `menu_id` bigint(20) NOT NULL COMMENT '菜单id',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='角色菜单关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='角色菜单关联表';
 
 
 -- cyrene_admin.sys_user definition
@@ -113,7 +113,7 @@ CREATE TABLE `sys_user` (
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `revision` int(11) DEFAULT NULL COMMENT '乐观锁',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统用户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统用户表';
 
 
 -- cyrene_admin.sys_user_role definition
@@ -123,4 +123,4 @@ CREATE TABLE `sys_user_role` (
   `user_id` bigint(20) NOT NULL COMMENT '用户id',
   `role_id` bigint(20) NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='用户角色关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='用户角色关联表';
