@@ -22,4 +22,4 @@ echo "Nginx started successfully"
 echo "Starting Java application..."
 exec java -Xms512m -Xmx512m -XX:+UseContainerSupport \
     -Dfile.encoding=UTF-8 \
-    -jar /app/app.jar
+    -jar /app/app.jar --env=docker

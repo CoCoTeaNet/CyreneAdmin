@@ -62,6 +62,7 @@ RUN apk update
 RUN apk add --no-cache nginx
 RUN apk add --no-cache openjdk17-jre
 RUN apk add --no-cache curl
+RUN apk add --no-cache fontconfig ttf-dejavu
 
 # Create app directory
 WORKDIR /app
