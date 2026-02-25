@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: cyrene-admin
+    container_name: starter-solon
     ports:
       - "8080:80"    # Frontend
       - "9000:9000"  # Backend API
