@@ -61,7 +61,6 @@ RUN apk update
 # Install packages in separate steps for better reliability
 RUN apk add --no-cache nginx
 RUN apk add --no-cache openjdk17-jre
-RUN apk add --no-cache supervisor
 RUN apk add --no-cache curl
 
 # Create app directory
@@ -73,14 +72,15 @@ COPY --from=backend-builder /app/cyrene-starter-solon/target/launcher.jar app.ja
 # Copy built frontend from frontend builder
 COPY --from=frontend-builder /app/cyrene-ui/dist/ /var/www/html/
 
-# Create necessary directories
+# Create necessary directories and set permissions
 RUN mkdir -p /var/log/supervisor /var/run/nginx && \
     chmod 755 /var/log/supervisor && \
     chown -R nginx:nginx /var/www/html
 
 # Copy configuration files
 COPY nginx.conf /etc/nginx/http.d/default.conf
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Configure Nginx
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
@@ -92,5 +92,5 @@ EXPOSE 80 9000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:80/ || exit 1
 
-# Run supervisord to manage both processes
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Run start script to manage both processes
+CMD ["/start.sh"]
