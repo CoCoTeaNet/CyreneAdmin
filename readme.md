@@ -34,6 +34,41 @@ CyreneAdmin 是一个现代化的后台管理系统，提供双框架支持（Sp
 - 🔐 安全认证：集成 Sa-Token 权限认证框架
 - 🛠️ 代码规范：遵循主流编码规范，易于维护和扩展
 
+## 默认账户
+
+- 管理员账号: `admin` / `123456`
+
+## Docker 部署演示
+
+```shell
+docker pull cocoteanet/cyrene-admin:latest
+```
+
+## 演示图片
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="doc-img/1.png" alt="系统主界面" width="400"/>
+      <br/>
+    </td>
+    <td align="center">
+      <img src="doc-img/2.png" alt="权限管理" width="400"/>
+      <br/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="doc-img/3.png" alt="操作日志" width="400"/>
+      <br/>
+    </td>
+    <td align="center">
+      <img src="doc-img/4.png" alt="系统架构" width="400"/>
+      <br/>
+    </td>
+  </tr>
+</table>
+
 ## 技术架构
 
 ### 后端技术栈
@@ -89,35 +124,6 @@ CyreneAdmin/
 ├── cyrene-ui/                  # 前端UI模块
 └── scripts/                    # 脚本文件
 ```
-
-## 默认账户
-
-- 管理员账号: `admin` / `123456`
-
-## 演示图片
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="doc-img/1.png" alt="系统主界面" width="400"/>
-      <br/>
-    </td>
-    <td align="center">
-      <img src="doc-img/2.png" alt="权限管理" width="400"/>
-      <br/>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="doc-img/3.png" alt="操作日志" width="400"/>
-      <br/>
-    </td>
-    <td align="center">
-      <img src="doc-img/4.png" alt="系统架构" width="400"/>
-      <br/>
-    </td>
-  </tr>
-</table>
 
 ## 许可证
 
