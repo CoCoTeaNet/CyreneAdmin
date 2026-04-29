@@ -1,0 +1,8 @@
+参考提示词：
+
+根据cyrene-starter-solon的controller生成markdown格式的接口文档放在doc-api目录
+要求：
+1. 每个控制器生成一个接口文档文件
+2. 命名格式 {控制器的文件名}_api.md
+3. 接口文档规范参考postman
+4. 禁止vo、dto等实体类直接使用注释一笔带过

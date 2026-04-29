@@ -23,7 +23,6 @@
         <utf-8>UTF-8</utf-8>
         <!-- 插件版本 -->
         <lombok.version>1.18.32</lombok.version>
-        <smart-doc.version>3.1.2</smart-doc.version>
         <!-- 外部框架版本 -->
         <sqltoy.version>5.6.56</sqltoy.version>
         <sa-token.version>1.44.0</sa-token.version>

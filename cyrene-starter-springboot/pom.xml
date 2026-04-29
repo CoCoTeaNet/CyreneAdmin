@@ -34,19 +34,6 @@
             <groupId>net.cocotea</groupId>
             <artifactId>cyrene-service-system</artifactId>
         </dependency>
-        <!-- api文档生成工具：smart-doc -->
-        <dependency>
-            <groupId>com.ly.smart-doc</groupId>
-            <artifactId>smart-doc</artifactId>
-            <version>${smart-doc.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.ibeetl</groupId>
-                    <artifactId>beetl-default-antlr4.9-support</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
         <!-- springboot3 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -119,26 +106,6 @@
                     <source>17</source>
                     <target>17</target>
                 </configuration>
-            </plugin>
-            <!--api文档生成插件-->
-            <plugin>
-                <groupId>com.ly.smart-doc</groupId>
-                <artifactId>smart-doc-maven-plugin</artifactId>
-                <version>${smart-doc.version}</version>
-                <configuration>
-                    <configFile>./smart-doc.json</configFile>
-                    <projectName>CyreneAdmin</projectName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <!--如果不需要在执行编译时启动smart-doc，则将phase注释掉-->
-                        <!--<phase>compile</phase>-->
-                        <goals>
-                            <!--smart-doc提供了html、openapi、markdown等goal，可按需配置-->
-                            <goal>markdown</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
