@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class BusinessException extends Exception implements Serializable {
+public class BusinessException extends RuntimeException implements Serializable {
     @Serial
     private static final long serialVersionUID = 4843777456195536990L;
 
