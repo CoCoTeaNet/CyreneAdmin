@@ -13,7 +13,7 @@ enum ApiResultEnum {
     /**
      * 未找到资源
      */
-    NOT_FOUNT = 404,
+    NOT_FOUND = 404,
     /**
      * 拒绝请求
      */

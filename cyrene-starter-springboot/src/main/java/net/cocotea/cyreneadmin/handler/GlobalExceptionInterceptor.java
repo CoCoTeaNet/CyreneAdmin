@@ -48,7 +48,7 @@ public class GlobalExceptionInterceptor {
     @ExceptionHandler(NoResourceFoundException.class)
     public ApiResult<?> handlerNoResourceFoundException(Exception ex) {
         logger.error(">>>>> NoResourceFoundException msg:{}", ex.getMessage());
-        return ApiResult.error(ApiResultEnum.NOT_FOUNT.getCode(), ApiResultEnum.NOT_FOUNT.getDesc());
+        return ApiResult.error(ApiResultEnum.NOT_FOUND.getCode(), ApiResultEnum.NOT_FOUND.getDesc());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

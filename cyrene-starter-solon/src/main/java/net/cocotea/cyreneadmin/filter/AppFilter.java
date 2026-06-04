@@ -53,7 +53,7 @@ public class AppFilter implements Filter {
             }
 
             if (ctx.status() == 404) {
-                ApiResult<Object> result = new ApiResult<>(ApiResultEnum.NOT_FOUNT.getCode(), null, ApiResultEnum.NOT_FOUNT.getDesc());
+                ApiResult<Object> result = new ApiResult<>(ApiResultEnum.NOT_FOUND.getCode(), null, ApiResultEnum.NOT_FOUND.getDesc());
                 ctx.render(result);
             }
 

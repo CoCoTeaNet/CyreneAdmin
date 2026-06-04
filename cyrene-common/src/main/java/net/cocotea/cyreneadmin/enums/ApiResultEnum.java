@@ -23,7 +23,7 @@ public enum ApiResultEnum {
     /**
      * 未找到资源
      */
-    NOT_FOUNT(404, "未找到资源"),
+    NOT_FOUND(404, "未找到资源"),
     /**
      * 拒绝请求
      */
