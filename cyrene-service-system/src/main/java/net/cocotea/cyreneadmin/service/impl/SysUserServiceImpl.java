@@ -181,6 +181,11 @@ public class SysUserServiceImpl implements SysUserService {
     public SysLoginUserVO loginUser() {
         BigInteger loginId = LoginUtils.loginIdEx();
         SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setId(loginId), SysUser.class);
+        // 强制退出登录
+        if (sysUser == null) {
+            StpUtil.logout();
+            throw new BusinessException("用户已退出登录");
+        }
         return new SysLoginUserVO().setId(sysUser.getId())
                 .setUsername(sysUser.getUsername())
                 .setNickname(sysUser.getNickname())
