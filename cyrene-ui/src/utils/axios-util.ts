@@ -89,6 +89,8 @@ export async function requestFile(url: string, data: any, method: any): Promise<
             data: method === 'GET' ? null : data,
             // `responseType` 表示服务器响应的数据类型，可以是 "arraybuffer", "blob", "document", "json", "text", "stream"
             responseType: "blob",
+            // 文件下载超时设置为5分钟
+            timeout: 300000,
         }
     );
 
