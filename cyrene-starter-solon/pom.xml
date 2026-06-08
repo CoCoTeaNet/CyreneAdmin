@@ -34,7 +34,6 @@
         </dependency>
 
         <!-- solon -->
-        <!-- solon -->
         <dependency>
             <groupId>org.noear</groupId>
             <artifactId>solon-web</artifactId>

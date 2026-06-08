@@ -43,10 +43,10 @@ myapp:
   # MySQL
   db1:
     schema: cyrene_admin
-    jdbcUrl: jdbc:mysql://192.168.31.143:3306/cyrene_admin?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=Asia/Shanghai&tinyInt1isBit=false
+    jdbcUrl: jdbc:mysql://127.0.0.1:3306/cyrene_admin?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=Asia/Shanghai&tinyInt1isBit=false
     driverClassName: com.mysql.cj.jdbc.Driver
-    username: tester
-    password: tester
+    username: root
+    password: root
   # Redis
   rd1:
     server: 127.0.0.1:6379
