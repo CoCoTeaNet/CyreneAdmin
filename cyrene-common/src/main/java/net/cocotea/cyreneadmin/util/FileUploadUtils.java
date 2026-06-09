@@ -83,9 +83,10 @@ public class FileUploadUtils {
     public static void validAvatar(File file) throws BusinessException, IOException {
         Assert.isFalse(file == null, () -> new BusinessException("空文件对象"));
         Assert.isTrue(file.exists(), () -> new BusinessException("文件不存在"));
-        BufferedInputStream inputStream = FileUtil.getInputStream(file);
-        String type = FileTypeUtil.getType(inputStream);
-        inputStream.close();
+        String type;
+        try (BufferedInputStream inputStream = FileUtil.getInputStream(file)) {
+            type = FileTypeUtil.getType(inputStream);
+        }
         Assert.isFalse(type == null, () -> {
             FileUtil.del(file);
             return new BusinessException("未知文件格式");
