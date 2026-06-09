@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@element-plus/icons-vue':
-        specifier: ^0.2.7
-        version: 0.2.7(vue@3.5.29(typescript@5.9.3))
+        specifier: ^2.3.1
+        version: 2.3.2(vue@3.5.29(typescript@5.9.3))
       '@types/file-saver':
-        specifier: ^2.0.5
+        specifier: ^2.0.7
         version: 2.0.7
       '@types/node':
-        specifier: ^17.0.19
-        version: 17.0.45
+        specifier: ^22.10.0
+        version: 22.19.20
       '@vueuse/core':
         specifier: ^9.13.0
         version: 9.13.0(vue@3.5.29(typescript@5.9.3))
@@ -47,22 +47,19 @@ importers:
       vue-axios:
         specifier: ^3.4.1
         version: 3.5.2(axios@1.17.0)(vue@3.5.29(typescript@5.9.3))
-      vue-class-component:
-        specifier: ^8.0.0-0
-        version: 8.0.0-rc.1(vue@3.5.29(typescript@5.9.3))
       vue-router:
-        specifier: ^4.0.12
+        specifier: ^4.5.0
         version: 4.6.4(vue@3.5.29(typescript@5.9.3))
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.1.2
-        version: 5.2.4(vite@5.4.21(@types/node@17.0.45))(vue@3.5.29(typescript@5.9.3))
+        version: 5.2.4(vite@5.4.21(@types/node@22.19.20))(vue@3.5.29(typescript@5.9.3))
       typescript:
         specifier: ^5.5.3
         version: 5.9.3
       vite:
         specifier: ^5.4.18
-        version: 5.4.21(@types/node@17.0.45)
+        version: 5.4.21(@types/node@22.19.20)
       vue-tsc:
         specifier: ^2.0.29
         version: 2.2.12(typescript@5.9.3)
@@ -89,11 +86,6 @@ packages:
   '@ctrl/tinycolor@3.6.1':
     resolution: {integrity: sha512-SITSV6aIXsuVNV3f3O0f2n/cgyEDWoSqtZMYiAmcsYHydcKrOz3gUxB/iXd/Qf08+IZX4KpgNbvUdMBmWz+kcA==}
     engines: {node: '>=10'}
-
-  '@element-plus/icons-vue@0.2.7':
-    resolution: {integrity: sha512-S8kDbfVaWkQvbUYQE1ui448tzaHfUvyESCep9J6uPRlViyQPXjdIfwLBhV6AmQSOfFS8rL+xehJGhvzPXLrSBg==}
-    peerDependencies:
-      vue: ^3.2.0
 
   '@element-plus/icons-vue@2.3.2':
     resolution: {integrity: sha512-OzIuTaIfC8QXEPmJvB4Y4kw34rSXdCJzxcD1kFStBvr8bK6X1zQAYDo0CNMjojnfTqRQCJ0I7prlErcoRiET2A==}
@@ -403,8 +395,8 @@ packages:
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
-  '@types/node@17.0.45':
-    resolution: {integrity: sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==}
+  '@types/node@22.19.20':
+    resolution: {integrity: sha512-6tELRwSDYWW9EdZhbeZmYGZ1/7Djkt+Ah3/ScEYT9cDord7UJzasR/4D3VONg9tQI5CDp+/CZC1AXj2pCFOvpw==}
 
   '@types/web-bluetooth@0.0.16':
     resolution: {integrity: sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ==}
@@ -734,6 +726,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
   vite@5.4.21:
     resolution: {integrity: sha512-o5a9xKjbtuhY6Bi5S3+HvbRERmouabWbyUcpXXUA1u+GNUKoROi9byOJ8M0nHbHYHkYICiMlqxkg1KkYmm25Sw==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -773,11 +768,6 @@ packages:
     peerDependencies:
       axios: '*'
       vue: ^3.0.0 || ^2.0.0
-
-  vue-class-component@8.0.0-rc.1:
-    resolution: {integrity: sha512-w1nMzsT/UdbDAXKqhwTmSoyuJzUXKrxLE77PCFVuC6syr8acdFDAq116xgvZh9UCuV0h+rlCtxXolr3Hi3HyPQ==}
-    peerDependencies:
-      vue: ^3.0.0
 
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
@@ -825,10 +815,6 @@ snapshots:
       '@babel/helper-validator-identifier': 7.28.5
 
   '@ctrl/tinycolor@3.6.1': {}
-
-  '@element-plus/icons-vue@0.2.7(vue@3.5.29(typescript@5.9.3))':
-    dependencies:
-      vue: 3.5.29(typescript@5.9.3)
 
   '@element-plus/icons-vue@2.3.2(vue@3.5.29(typescript@5.9.3))':
     dependencies:
@@ -1003,15 +989,17 @@ snapshots:
 
   '@types/lodash@4.17.24': {}
 
-  '@types/node@17.0.45': {}
+  '@types/node@22.19.20':
+    dependencies:
+      undici-types: 6.21.0
 
   '@types/web-bluetooth@0.0.16': {}
 
   '@types/web-bluetooth@0.0.20': {}
 
-  '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@17.0.45))(vue@3.5.29(typescript@5.9.3))':
+  '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@22.19.20))(vue@3.5.29(typescript@5.9.3))':
     dependencies:
-      vite: 5.4.21(@types/node@17.0.45)
+      vite: 5.4.21(@types/node@22.19.20)
       vue: 3.5.29(typescript@5.9.3)
 
   '@volar/language-core@2.4.15':
@@ -1417,13 +1405,15 @@ snapshots:
 
   typescript@5.9.3: {}
 
-  vite@5.4.21(@types/node@17.0.45):
+  undici-types@6.21.0: {}
+
+  vite@5.4.21(@types/node@22.19.20):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.6
       rollup: 4.59.0
     optionalDependencies:
-      '@types/node': 17.0.45
+      '@types/node': 22.19.20
       fsevents: 2.3.3
 
   vscode-uri@3.1.0: {}
@@ -1431,10 +1421,6 @@ snapshots:
   vue-axios@3.5.2(axios@1.17.0)(vue@3.5.29(typescript@5.9.3)):
     dependencies:
       axios: 1.17.0
-      vue: 3.5.29(typescript@5.9.3)
-
-  vue-class-component@8.0.0-rc.1(vue@3.5.29(typescript@5.9.3)):
-    dependencies:
       vue: 3.5.29(typescript@5.9.3)
 
   vue-demi@0.14.10(vue@3.5.29(typescript@5.9.3)):

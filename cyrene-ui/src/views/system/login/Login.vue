@@ -124,9 +124,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         login(loginParams).then((res: any) => {
           if (res.code === ApiResultEnum.SUCCESS) {
             if (route.query.redirect) {
-              if (route.query.redirect) {
-                router.push({name: route.query.redirect + ''});
-              }
+              router.push({name: route.query.redirect + ''});
             } else {
               router.push({name: 'Home'});
             }
