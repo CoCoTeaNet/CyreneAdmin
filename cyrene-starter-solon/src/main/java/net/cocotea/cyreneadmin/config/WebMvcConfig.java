@@ -6,21 +6,13 @@ import cn.dev33.satoken.dao.SaTokenDaoForRedisx;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.solon.integration.SaTokenInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
-import com.alibaba.fastjson2.JSONWriter;
 import org.noear.solon.annotation.Bean;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.serialization.fastjson2.Fastjson2ActionExecutor;
-import org.noear.solon.serialization.fastjson2.Fastjson2RenderFactory;
 import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.solon.annotation.Db;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * @author jwss
@@ -66,22 +58,6 @@ public class WebMvcConfig {
         });
 
         return interceptor;
-    }
-
-    @Bean
-    public void jsonInit(@Inject Fastjson2RenderFactory factory, @Inject Fastjson2ActionExecutor executor){
-        // 日期转换
-        factory.addConvertor(Date.class, s -> DateUtil.format(s, DatePattern.NORM_DATETIME_PATTERN));
-        factory.addConvertor(LocalDateTime.class, s -> DateUtil.format(s, DatePattern.NORM_DATETIME_PATTERN));
-
-        factory.addFeatures(
-                JSONWriter.Feature.PrettyFormat,
-                JSONWriter.Feature.WriteMapNullValue,
-                JSONWriter.Feature.WriteNullNumberAsZero,
-                JSONWriter.Feature.WriteNullStringAsEmpty,
-                JSONWriter.Feature.WriteBigDecimalAsPlain,
-                JSONWriter.Feature.BrowserCompatible
-        );
     }
 
     /**
