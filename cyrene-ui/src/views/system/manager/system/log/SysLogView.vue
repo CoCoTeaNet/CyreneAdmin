@@ -1,52 +1,52 @@
 <template>
   <table-manage>
     <template #search>
-      <el-form-item label="日志编号">
-        <el-input placeholder="日志编号" v-model="pageParam.searchObject.id"/>
+      <el-form-item :label="t('sysLog.logId')">
+        <el-input :placeholder="t('sysLog.logId')" v-model="pageParam.searchObject.id"/>
       </el-form-item>
-      <el-form-item label="操作人员">
-        <el-input placeholder="操作人员" v-model="pageParam.searchObject.operator"/>
+      <el-form-item :label="t('sysLog.operator')">
+        <el-input :placeholder="t('sysLog.operator')" v-model="pageParam.searchObject.operator"/>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="loadTableData" :icon="Search">搜索</el-button>
-        <el-button @click="onReset" :icon="Refresh">重置</el-button>
+        <el-button type="primary" @click="loadTableData" :icon="Search">{{ t('common.search') }}</el-button>
+        <el-button @click="onReset" :icon="Refresh">{{ t('common.reset') }}</el-button>
       </el-form-item>
     </template>
 
     <template #operate>
-      <el-button type="danger" @click="onBatchDelete" :icon="DeleteFilled">批量删除</el-button>
+      <el-button type="danger" @click="onBatchDelete" :icon="DeleteFilled">{{ t('dictionary.batchDelete') }}</el-button>
     </template>
 
     <template #default>
       <el-table v-loading="loading" :data="pageVo.records" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55"/>
-        <el-table-column prop="id" label="日志编号" width="200"/>
-        <el-table-column prop="operator" label="操作人" show-overflow-tooltip>
+        <el-table-column prop="id" :label="t('sysLog.logId')" width="200"/>
+        <el-table-column prop="operator" :label="t('sysLog.operationPerson')" show-overflow-tooltip>
           <template #default="scope">
             <el-text>{{`${scope.row.username}@${scope.row.nickname}`}}</el-text>
           </template>
         </el-table-column>
-        <el-table-column prop="apiPath" label="接口名称" width="250" show-overflow-tooltip/>
-        <el-table-column prop="ipAddress" label="IP地址" show-overflow-tooltip/>
-        <el-table-column prop="requestWay" label="请求方式"/>
-        <el-table-column prop="logStatus" label="操作状态">
+        <el-table-column prop="apiPath" :label="t('sysLog.apiName')" width="250" show-overflow-tooltip/>
+        <el-table-column prop="ipAddress" :label="t('sysLog.ipAddress')" show-overflow-tooltip/>
+        <el-table-column prop="requestWay" :label="t('sysLog.requestWay')"/>
+        <el-table-column prop="logStatus" :label="t('sysLog.operationStatus')">
           <template #default="scope">
             <el-tag :type="getOperationStatus(scope.row.logStatus, 0)">
               {{getOperationStatus(scope.row.logStatus, 1)}}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="logType" label="日志类型">
+        <el-table-column prop="logType" :label="t('sysLog.logType')">
           <template #default="scope">
             <el-tag :type="getLogType(scope.row.logType, 0)">{{getLogType(scope.row.logType, 1)}}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="操作时间" width="200"/>
+        <el-table-column prop="createTime" :label="t('sysLog.operationTime')" width="200"/>
 
-        <el-table-column fixed="right" label="操作" width="80">
+        <el-table-column fixed="right" :label="t('dictionary.operation')" width="80">
           <template #default="scope">
             <el-button size="small" type="danger" plain @click="onDelete(scope.row.id)" :icon="DeleteFilled">
-              删除
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -68,6 +68,9 @@ import operationLogApi from "@/api/system/sys-log-api";
 import TableManage from "@/components/container/TableManage.vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {DeleteFilled, Refresh, Search} from "@element-plus/icons-vue";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 // 分页参数
 const pageParam = ref<PageParam>({pageNo: 1, pageSize: 20, searchObject: {}});
@@ -79,10 +82,10 @@ const getLogType: any = (status: number, type: number) => {
   let obj = {color: '', text: ''};
   switch (status) {
     case 1:
-      obj = {color: 'success', text: '登录日志'};
+      obj = {color: 'success', text: t('sysLog.loginLog')};
       break;
     case 2:
-      obj = {color: 'warning', text: '操作日志'};
+      obj = {color: 'warning', text: t('sysLog.operationLog')};
       break;
   }
   if (type === 0) {
@@ -95,10 +98,10 @@ const getOperationStatus: any = (status: number, type: number) => {
   let obj = {color: '', text: ''};
   switch (status) {
     case 0:
-      obj = {color: 'danger', text: '异常'};
+      obj = {color: 'danger', text: t('sysLog.abnormal')};
       break;
     case 1:
-      obj = {color: 'success', text: '成功'};
+      obj = {color: 'success', text: t('sysLog.success')};
       break;
   }
   if (type === 0) {
@@ -119,7 +122,7 @@ const onReset = (): void => {
 }
 
 const onDelete = (id: string) => {
-  reqSuccessFeedback(operationLogApi.deleteBatch([id]), '删除成功', () => {
+  reqSuccessFeedback(operationLogApi.deleteBatch([id]), t('common.deleteSuccess'), () => {
     loadTableData();
   });
 }
@@ -140,14 +143,14 @@ const loadTableData = () => {
 const onBatchDelete = () => {
   let ids: string[] = [];
   multipleSelection.value.map((item) => ids.push(item.id));
-  ElMessageBox.confirm('确认删除所选日志?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+  ElMessageBox.confirm(t('sysLog.confirmDeleteSelected'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning',
       }
   ).then(() => {
     reqCommonFeedback(operationLogApi.deleteBatch(ids), () => {
-      ElMessage({type: 'success', message: '删除成功'});
+      ElMessage({type: 'success', message: t('common.deleteSuccess')});
       loadTableData();
     });
   });

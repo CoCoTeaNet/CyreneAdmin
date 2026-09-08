@@ -1,33 +1,33 @@
 <template>
   <table-manage>
     <template #search>
-      <el-form-item label="角色名称">
-        <el-input placeholder="角色名称" v-model="pageParam.searchObject.roleName"/>
+      <el-form-item :label="t('role.roleName')">
+        <el-input :placeholder="t('role.roleName')" v-model="pageParam.searchObject.roleName"/>
       </el-form-item>
-      <el-form-item label="角色标识">
-        <el-input placeholder="角色标识" v-model="pageParam.searchObject.roleKey"/>
+      <el-form-item :label="t('role.roleKey')">
+        <el-input :placeholder="t('role.roleKey')" v-model="pageParam.searchObject.roleKey"/>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="loadTableData" :icon="Search">搜索</el-button>
-        <el-button @click="onResetSearchForm" :icon="Refresh">重置</el-button>
+        <el-button type="primary" @click="loadTableData" :icon="Search">{{ t('common.search') }}</el-button>
+        <el-button @click="onResetSearchForm" :icon="Refresh">{{ t('common.reset') }}</el-button>
       </el-form-item>
     </template>
 
     <template #operate>
-      <el-button type="primary" @click="onCreate" :icon="Plus">添加角色</el-button>
-      <el-button plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">批量删除</el-button>
+      <el-button type="primary" @click="onCreate" :icon="Plus">{{ t('role.add') }}</el-button>
+      <el-button plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">{{ t('role.batchDelete') }}</el-button>
     </template>
 
     <template #default>
       <el-table v-loading="loading" :data="pageVo.records" style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55"/>
-        <el-table-column prop="roleName" label="角色名称"/>
-        <el-table-column prop="roleKey" label="角色标识"/>
-        <el-table-column prop="sort" label="排序" sortable/>
-        <el-table-column label="权限操作">
+        <el-table-column prop="roleName" :label="t('role.roleName')"/>
+        <el-table-column prop="roleKey" :label="t('role.roleKey')"/>
+        <el-table-column prop="sort" :label="t('role.sort')" sortable/>
+        <el-table-column :label="t('role.permissionAction')">
           <template #default="scope">
-            <el-button size="small" @click="showDialogMenu(scope.row, 1)">赋予菜单</el-button>
-            <el-button size="small" @click="showDialogMenu(scope.row, 0)">授予权限</el-button>
+            <el-button size="small" @click="showDialogMenu(scope.row, 1)">{{ t('role.assignMenu') }}</el-button>
+            <el-button size="small" @click="showDialogMenu(scope.row, 0)">{{ t('role.assignPermission') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -44,7 +44,7 @@
 
     <template #form>
       <!-- 权限操作 -->
-      <el-dialog v-model="dialogMenuVisible" :title="dialogMenuStatus == 1 ? '赋予菜单' : '授予权限'" width="50%">
+      <el-dialog v-model="dialogMenuVisible" :title="dialogMenuStatus == 1 ? t('role.assignMenu') : t('role.assignPermission')" width="50%">
         <el-tree v-model:default-checked-keys="defaultSelectMenuIdList"
                  @check-change="checkChange"
                  :data="menuOptions"
@@ -56,28 +56,28 @@
         />
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="dialogMenuVisible = false">取消</el-button>
-            <el-button type="primary" @click="dialogConfirm">确认</el-button>
+            <el-button @click="dialogMenuVisible = false">{{ t('common.cancel') }}</el-button>
+            <el-button type="primary" @click="dialogConfirm">{{ t('common.confirm') }}</el-button>
           </span>
         </template>
       </el-dialog>
 
       <el-dialog v-model="dialogEditVisible">
         <el-form ref="sstFormRef" :model="editForm" :rules="rules" label-width="100px">
-          <el-form-item prop="roleName" label="角色名称">
+          <el-form-item prop="roleName" :label="t('role.roleName')">
             <el-input v-model="editForm.roleName"></el-input>
           </el-form-item>
-          <el-form-item prop="roleKey" label="角色标识">
+          <el-form-item prop="roleKey" :label="t('role.roleKey')">
             <el-input v-model="editForm.roleKey"></el-input>
           </el-form-item>
-          <el-form-item prop="sort" label="排序">
+          <el-form-item prop="sort" :label="t('role.sort')">
             <el-input type="number" v-model="editForm.sort"></el-input>
           </el-form-item>
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="dialogEditVisible = false">取消</el-button>
-            <el-button type="primary" @click="onUpdateFormConfirm(sstFormRef)">确认</el-button>
+            <el-button @click="dialogEditVisible = false">{{ t('common.cancel') }}</el-button>
+            <el-button type="primary" @click="onUpdateFormConfirm(sstFormRef)">{{ t('common.confirm') }}</el-button>
           </span>
         </template>
       </el-dialog>
@@ -93,6 +93,9 @@ import {listByTreeAsRoleSelection, listByRoleId} from "@/api/system/sys-menu-api
 import TableManage from "@/components/container/TableManage.vue";
 import {ElMessage, ElMessageBox, FormInstance} from "element-plus";
 import {DeleteFilled, Plus, Refresh, Search} from "@element-plus/icons-vue";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 // 树形选择框配置
 const defaultProps = {
@@ -123,8 +126,8 @@ const pageVo = ref<PageVO>({pageNo: 1, pageSize: 15, total: 0, records: []});
 const loading = ref<boolean>(true);
 // 表单校验规则
 const rules = reactive({
-  roleName: [{required: true, min: 2, max: 30, message: '长度限制2~30', trigger: 'blur'}],
-  roleKey: [{required: true, min: 2, max: 255, message: '长度限制2~155', trigger: 'blur'}]
+  roleName: [{required: true, min: 2, max: 30, message: t('common.lengthLimit', {min: 2, max: 30}), trigger: 'blur'}],
+  roleKey: [{required: true, min: 2, max: 255, message: t('common.lengthLimit', {min: 2, max: 155}), trigger: 'blur'}]
 });
 const dialogEditVisible = ref<boolean>(false);
 const sstFormRef = ref<FormInstance>();
@@ -153,13 +156,13 @@ const onUpdateFormConfirm = (formEl: any): void => {
     if (valid) {
       if (!editForm.value.id) {
         // 新增
-        reqSuccessFeedback(roleApi.add(editForm.value), '新增成功', () => {
+        reqSuccessFeedback(roleApi.add(editForm.value), t('common.addSuccess'), () => {
           loadTableData();
           dialogEditVisible.value = false;
         });
       } else {
         // 修改
-        reqSuccessFeedback(roleApi.update(editForm.value), '修改成功', () => {
+        reqSuccessFeedback(roleApi.update(editForm.value), t('common.updateSuccess'), () => {
           loadTableData();
           dialogEditVisible.value = false;
         });
@@ -176,7 +179,7 @@ const dialogConfirm = () => {
   defaultSelectMenuIdList.value.forEach((item: string) => {
     param.push({roleId: selectId.value, menuId: item});
   });
-  reqSuccessFeedback(grantPermissionsByRoleId(param), '修改成功', () => {
+  reqSuccessFeedback(grantPermissionsByRoleId(param), t('common.updateSuccess'), () => {
     dialogMenuVisible.value = false;
   });
 }
@@ -257,14 +260,14 @@ const onDeleteBatch = () => {
   multipleSelection.value.map((item) => {
     ids.push(item.id);
   });
-  ElMessageBox.confirm('确认删除所选角色?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+  ElMessageBox.confirm(t('role.confirmDeleteSelected'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning',
       }
   ).then(() => {
     reqCommonFeedback(roleApi.deleteBatch(ids), () => {
-      ElMessage({type: 'success', message: '删除成功'});
+      ElMessage({type: 'success', message: t('common.deleteSuccess')});
       loadTableData();
     });
   });

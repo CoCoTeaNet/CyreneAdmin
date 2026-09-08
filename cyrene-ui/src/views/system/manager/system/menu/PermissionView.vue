@@ -3,24 +3,24 @@
     <!-- 表格操作 -->
     <template #search>
       <el-form>
-        <el-form-item label="权限名称">
-          <el-input placeholder="权限名称" v-model:model-value="searchObj.menuName"/>
+        <el-form-item :label="t('permission.permissionName')">
+          <el-input :placeholder="t('permission.permissionName')" v-model:model-value="searchObj.menuName"/>
         </el-form-item>
       </el-form>
-      <el-button type="primary" @click="loadTableData" :icon="Search">搜索</el-button>
-      <el-button @click="resetSearchForm" :icon="Refresh">重置</el-button>
+      <el-button type="primary" @click="loadTableData" :icon="Search">{{ t('common.search') }}</el-button>
+      <el-button @click="resetSearchForm" :icon="Refresh">{{ t('common.reset') }}</el-button>
       <el-button @click="onExpandAll">
         <el-icon>
           <arrow-right-bold v-if="!isExpandAll"/>
           <arrow-down-bold v-else/>
         </el-icon>
-        {{ isExpandAll ? '收起' : '展开' }}
+        {{ isExpandAll ? t('common.collapse') : t('common.expand') }}
       </el-button>
     </template>
 
     <template #operate>
-      <el-button type="primary" @click="onAdd" :icon="Plus">添加权限</el-button>
-      <el-button plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">批量删除</el-button>
+      <el-button type="primary" @click="onAdd" :icon="Plus">{{ t('permission.addPermission') }}</el-button>
+      <el-button plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">{{ t('user.batchDelete') }}</el-button>
     </template>
 
     <!-- 表格视图 -->
@@ -28,17 +28,17 @@
       <el-table v-if="isShowTable" stripe row-key="id" :data="records" v-model:default-expand-all="isExpandAll"
                 @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="80"/>
-        <el-table-column prop="menuName" width="300" label="权限名称"/>
-        <el-table-column prop="permissionCode" width="400" label="权限编号"/>
-        <el-table-column prop="sort" width="200" label="显示顺序" sortable/>
-        <el-table-column prop="createTime" width="200" label="创建时间"/>
-        <el-table-column prop="updateTime" width="200" label="更新时间"/>
+        <el-table-column prop="menuName" width="300" :label="t('permission.permissionName')"/>
+        <el-table-column prop="permissionCode" width="400" :label="t('permission.permissionCode')"/>
+        <el-table-column prop="sort" width="200" :label="t('permission.sort')" sortable/>
+        <el-table-column prop="createTime" width="200" :label="t('menu.createTime')"/>
+        <el-table-column prop="updateTime" width="200" :label="t('menu.updateTime')"/>
         <!-- 单行操作 -->
-        <el-table-column fixed="right" width="200" label="操作">
+        <el-table-column fixed="right" width="200" :label="t('dictionary.operation')">
           <template #default="scope">
-            <el-button size="small" @click="onEdit(scope.row)" :icon="Edit">编辑</el-button>
+            <el-button size="small" @click="onEdit(scope.row)" :icon="Edit">{{ t('common.edit') }}</el-button>
             <el-button size="small" plain type="danger" @click="onRemove(scope.row)" :icon="DeleteFilled">
-              删除
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -47,25 +47,25 @@
 
     <!-- 编辑对话框 -->
     <template #form>
-      <el-dialog v-model="dialogFormVisible" :title="`${editForm.id? '编辑' : '添加'}权限`">
+      <el-dialog v-model="dialogFormVisible" :title="editForm.id ? t('common.edit') + t('permission.permissionName') : t('common.add') + t('permission.permissionName')">
         <el-form ref="sttFormRef" label-width="120px" :model="editForm" :rules="rules">
-          <el-form-item prop="menuName" label="权限名称">
+          <el-form-item prop="menuName" :label="t('permission.permissionName')">
             <el-input v-model="editForm.menuName"></el-input>
           </el-form-item>
-          <el-form-item prop="permissionCode" label="权限编号">
+          <el-form-item prop="permissionCode" :label="t('permission.permissionCode')">
             <el-input v-model="editForm.permissionCode"></el-input>
           </el-form-item>
-          <el-form-item prop="menuType" label="权限类型">
+          <el-form-item prop="menuType" :label="t('permission.permissionType')">
             <el-radio-group v-model="editForm.menuType">
-              <el-radio :label="0">目录</el-radio>
-              <el-radio :label="1">权限</el-radio>
+              <el-radio :label="0">{{ t('menu.directory') }}</el-radio>
+              <el-radio :label="1">{{ t('permission.permission') }}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item prop="sort" label="显示顺序">
+          <el-form-item prop="sort" :label="t('permission.sort')">
             <el-input v-model="editForm.sort" type="number"></el-input>
           </el-form-item>
-          <el-form-item label="上级权限">
-            <el-cascader clearable v-model="editForm.parentId" placeholder="选择节点"
+          <el-form-item :label="t('permission.parentPermission')">
+            <el-cascader clearable v-model="editForm.parentId" :placeholder="t('common.selectNode')"
                          :props="defaultProps" :options="records" :show-all-levels="false"
                          @change="handleChange">
             </el-cascader>
@@ -73,8 +73,8 @@
         </el-form>
         <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="doUpdate(sttFormRef)">确认</el-button>
+          <el-button @click="dialogFormVisible = false">{{ t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="doUpdate(sttFormRef)">{{ t('common.confirm') }}</el-button>
         </span>
         </template>
       </el-dialog>
@@ -91,6 +91,9 @@ import {ElForm} from "element-plus/es";
 import {ElMessage, ElMessageBox} from "element-plus";
 import listUtil from "@/utils/list-util";
 import {DeleteFilled, Edit, Plus, Refresh, Search} from "@element-plus/icons-vue";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 type FormInstance = InstanceType<typeof ElForm>
 const sttFormRef = ref<FormInstance>();
@@ -112,8 +115,8 @@ const editForm = ref<MenuModel>({});
 const loading = ref<boolean>(true);
 // 表单校验规则
 const rules = reactive({
-  menuName: [{required: true, min: 2, max: 30, message: '长度限制2~30', trigger: 'blur'}],
-  permissionCode: [{min: 0, max: 60, message: '长度限制0~60', trigger: 'blur'}]
+  menuName: [{required: true, min: 2, max: 30, message: t('common.lengthLimit', {min: 2, max: 30}), trigger: 'blur'}],
+  permissionCode: [{min: 0, max: 60, message: t('common.lengthLimit', {min: 0, max: 60}), trigger: 'blur'}]
 });
 // 是否显示外链选择按钮
 const dialogFormVisible = ref<boolean>(false);
@@ -136,13 +139,13 @@ const onAdd = () => {
 }
 
 const onRemove = (row: MenuModel): void => {
-  ElMessageBox.confirm('确认删除该权限?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+  ElMessageBox.confirm(t('permission.confirmDelete'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning',
       }
   ).then(() => {
-    reqSuccessFeedback(deleteBatch([row.id]), '删除成功', () => {
+    reqSuccessFeedback(deleteBatch([row.id]), t('common.deleteSuccess'), () => {
       loadTableData();
     });
   });
@@ -166,12 +169,12 @@ const doUpdate = (formEl: any): void => {
   formEl.validate((valid: any) => {
     if (valid) {
       if (!editForm.value.id) {
-        reqSuccessFeedback(add(editForm.value), '新增成功', () => {
+        reqSuccessFeedback(add(editForm.value), t('common.addSuccess'), () => {
           loadTableData();
           dialogFormVisible.value = false;
         });
       } else {
-        reqSuccessFeedback(update(editForm.value), '修改成功', () => {
+        reqSuccessFeedback(update(editForm.value), t('common.updateSuccess'), () => {
           loadTableData();
           dialogFormVisible.value = false;
         });
@@ -209,14 +212,14 @@ const onDeleteBatch = () => {
   multipleSelection.value.map((item, index) => {
     ids.push(item.id);
   });
-  ElMessageBox.confirm('确认删除所选权限?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+  ElMessageBox.confirm(t('permission.confirmDeleteSelected'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning',
       }
   ).then(() => {
     reqCommonFeedback(deleteBatch(ids), () => {
-      ElMessage({type: 'success', message: '删除成功'});
+      ElMessage({type: 'success', message: t('common.deleteSuccess')});
       loadTableData();
     });
   });

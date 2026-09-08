@@ -1,5 +1,6 @@
 import {createRouter, createWebHashHistory, RouteLocationNormalized} from "vue-router";
 import {routes} from "@/router/modules/routes";
+import i18n from "@/i18n";
 
 export const router = createRouter({
     history: createWebHashHistory(),
@@ -23,7 +24,8 @@ router.afterEach(function (to: any, from: any) {
     let title = '';
     to.matched.forEach((item: any, index: any) => {
         let field = (index === to.matched.length - 1 ? '' : ' / ');
-        title += item.meta.title + field;
+        // meta.title 存的是 i18n key，翻译后用于浏览器标题
+        title += i18n.global.te(item.meta.title) ? i18n.global.t(item.meta.title) + field : item.meta.title + field;
     });
     // 动态刷新title
     if (title) {

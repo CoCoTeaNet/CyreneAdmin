@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 const unitUtil = {
     /**
      * 计算内存单位（最低单位字节），返回字符串类型
@@ -10,17 +12,18 @@ const unitUtil = {
 }
 
 function timeCalculate(num: number) {
+    const t = i18n.global.t;
     if (!num) {
         return '';
     }
     if (num > 86400) {
-        return (num / 86400) + ' 天';
+        return (num / 86400) + ' ' + t('common.unit.day');
     } else if (num > 3600) {
-        return (num / 3600) + ' 小时';
+        return (num / 3600) + ' ' + t('common.unit.hour');
     } else if (num > 60) {
-        return (num / 60) + ' 分钟';
+        return (num / 60) + ' ' + t('common.unit.minute');
     } else {
-        return num + ' 秒';
+        return num + ' ' + t('common.unit.second');
     }
 }
 

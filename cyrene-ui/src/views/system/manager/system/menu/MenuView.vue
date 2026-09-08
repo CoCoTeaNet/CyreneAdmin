@@ -3,62 +3,62 @@
     <!-- 表格操作 -->
     <template #search>
       <el-form>
-        <el-form-item label="菜单名称">
-          <el-input placeholder="菜单名称" v-model:model-value="searchObj.menuName"/>
+        <el-form-item :label="t('menu.menuName')">
+          <el-input :placeholder="t('menu.menuName')" v-model:model-value="searchObj.menuName"/>
         </el-form-item>
       </el-form>
-      <el-button type="primary" @click="loadTableData" :icon="Search">搜索</el-button>
-      <el-button @click="resetSearchForm" :icon="RefreshRight">重置</el-button>
+      <el-button type="primary" @click="loadTableData" :icon="Search">{{ t('common.search') }}</el-button>
+      <el-button @click="resetSearchForm" :icon="RefreshRight">{{ t('common.reset') }}</el-button>
       <el-button @click="onExpandAll">
         <el-icon>
           <arrow-right-bold v-if="!isExpandAll"/>
           <arrow-down-bold v-else/>
         </el-icon>
-        {{ isExpandAll ? '收起' : '展开' }}
+        {{ isExpandAll ? t('common.collapse') : t('common.expand') }}
       </el-button>
     </template>
 
     <template #operate>
-      <el-button type="primary" @click="onAdd" :icon="Plus">添加菜单</el-button>
+      <el-button type="primary" @click="onAdd" :icon="Plus">{{ t('menu.addMenu') }}</el-button>
     </template>
 
     <!-- 表格视图 -->
     <template #default>
       <el-table v-if="isShowTable" stripe row-key="id" :data="records" v-model:default-expand-all="isExpandAll">
-        <el-table-column prop="iconPath" width="100" label="图标">
+        <el-table-column prop="iconPath" width="100" :label="t('menu.icon')">
           <template #default="scope">
             <el-icon v-if="scope.row.iconPath">
               <component :is="scope.row.iconPath"></component>
             </el-icon>
           </template>
         </el-table-column>
-        <el-table-column prop="menuName" width="200" label="名称"/>
-        <el-table-column width="300" prop="routerPath" label="路由地址"/>
-        <el-table-column prop="menuType" label="菜单类型">
+        <el-table-column prop="menuName" width="200" :label="t('menu.name')"/>
+        <el-table-column width="300" prop="routerPath" :label="t('menu.routerPath')"/>
+        <el-table-column prop="menuType" :label="t('menu.menuType')">
           <template #default="scope">
             <el-tag :type="getMenuType(scope.row.menuType, 0)">{{ getMenuType(scope.row.menuType, 1) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="isExternalLink" label="是否外链">
+        <el-table-column prop="isExternalLink" :label="t('menu.isExternalLink')">
           <template #default="scope">
             <el-tag :type="getConfirm(scope.row.isExternalLink, 0)">{{ getConfirm(scope.row.isExternalLink, 1) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="menuStatus" label="菜单状态">
+        <el-table-column prop="menuStatus" :label="t('menu.menuStatus')">
           <template #default="scope">
             <el-tag :type="getMenuStatus(scope.row.menuStatus, 0)">{{ getMenuStatus(scope.row.menuStatus, 1) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="sort" width="100" label="权重"/>
-        <el-table-column prop="createTime" width="200" label="创建时间"/>
-        <el-table-column prop="updateTime" width="200" label="更新时间"/>
+        <el-table-column prop="sort" width="100" :label="t('menu.weight')"/>
+        <el-table-column prop="createTime" width="200" :label="t('menu.createTime')"/>
+        <el-table-column prop="updateTime" width="200" :label="t('menu.updateTime')"/>
         <!-- 单行操作 -->
-        <el-table-column fixed="right" width="200" label="操作">
+        <el-table-column fixed="right" width="200" :label="t('dictionary.operation')">
           <template #default="scope">
-            <el-button size="small" @click="onEdit(scope.row)" :icon="Edit">编辑</el-button>
+            <el-button size="small" @click="onEdit(scope.row)" :icon="Edit">{{ t('common.edit') }}</el-button>
             <el-button size="small" plain type="danger" @click="onRemove(scope.row)" :icon="DeleteFilled">
-              删除
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -67,50 +67,50 @@
 
     <!-- 编辑对话框 -->
     <template #form>
-      <el-dialog v-model="dialogFormVisible" :title="`${editForm.id? '编辑' : '添加'}菜单`">
+      <el-dialog v-model="dialogFormVisible" :title="editForm.id ? t('common.edit') + t('menu.menu') : t('common.add') + t('menu.menu')">
         <el-form ref="sttFormRef" label-width="120px" :model="editForm" :rules="rules">
-          <el-form-item prop="menuName" label="菜单名称">
+          <el-form-item prop="menuName" :label="t('menu.menuName')">
             <el-input v-model="editForm.menuName"></el-input>
           </el-form-item>
-          <el-form-item prop="menuType" label="菜单类型">
+          <el-form-item prop="menuType" :label="t('menu.menuType')">
             <el-radio-group v-model="editForm.menuType" @change="menuTypeChange">
-              <el-radio :label="0">目录</el-radio>
-              <el-radio :label="1">菜单</el-radio>
-              <el-radio :label="2">按钮</el-radio>
+              <el-radio :label="0">{{ t('menu.directory') }}</el-radio>
+              <el-radio :label="1">{{ t('menu.menu') }}</el-radio>
+              <el-radio :label="2">{{ t('menu.button') }}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item prop="routerPath" label="路由地址">
+          <el-form-item prop="routerPath" :label="t('menu.routerPath')">
             <el-input v-model="editForm.routerPath"></el-input>
           </el-form-item>
-          <el-form-item v-if="isShowExternalLink" prop="isExternalLink" label="是否外链">
+          <el-form-item v-if="isShowExternalLink" prop="isExternalLink" :label="t('menu.isExternalLink')">
             <el-radio-group v-model="editForm.isExternalLink">
-              <el-radio :label="0">否</el-radio>
-              <el-radio :label="1">是</el-radio>
+              <el-radio :label="0">{{ t('common.no') }}</el-radio>
+              <el-radio :label="1">{{ t('common.yes') }}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item prop="sort" label="显示顺序">
+          <el-form-item prop="sort" :label="t('menu.sort')">
             <el-input v-model="editForm.sort" type="number"></el-input>
           </el-form-item>
-          <el-form-item label="菜单图标">
+          <el-form-item :label="t('menu.menuIcon')">
             <icon-selection v-model="editForm.iconPath" value=""/>
           </el-form-item>
-          <el-form-item label="上级菜单">
-            <el-cascader clearable v-model="editForm.parentId" placeholder="选择节点"
+          <el-form-item :label="t('menu.parentMenu')">
+            <el-cascader clearable v-model="editForm.parentId" :placeholder="t('common.selectNode')"
                          :props="defaultProps" :options="records" :show-all-levels="false"
                          @change="handleChange">
             </el-cascader>
           </el-form-item>
-          <el-form-item prop="menuStatus" label="菜单状态">
+          <el-form-item prop="menuStatus" :label="t('menu.menuStatus')">
             <el-radio-group v-model="editForm.menuStatus">
-              <el-radio :label="0">显示</el-radio>
-              <el-radio :label="1">隐藏</el-radio>
+              <el-radio :label="0">{{ t('common.show') }}</el-radio>
+              <el-radio :label="1">{{ t('common.hide') }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-form>
         <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="doUpdate(sttFormRef)">确认</el-button>
+          <el-button @click="dialogFormVisible = false">{{ t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="doUpdate(sttFormRef)">{{ t('common.confirm') }}</el-button>
         </span>
         </template>
       </el-dialog>
@@ -128,6 +128,9 @@ import {ElForm} from "element-plus/es";
 import {ElMessageBox} from "element-plus";
 import listUtil from "@/utils/list-util";
 import {DeleteFilled, Edit, Plus, RefreshRight, Search} from "@element-plus/icons-vue";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 type FormInstance = InstanceType<typeof ElForm>
 const sttFormRef = ref<FormInstance>();
@@ -147,13 +150,13 @@ const getMenuType: any = (status: number, type: number) => {
   let obj = {color: '', text: ''};
   switch (status) {
     case 0:
-      obj = {color: 'success', text: '目录'};
+      obj = {color: 'success', text: t('menu.directory')};
       break;
     case 1:
-      obj = {color: 'info', text: '菜单'};
+      obj = {color: 'info', text: t('menu.menu')};
       break;
     case 2:
-      obj = {color: 'info', text: '按钮'};
+      obj = {color: 'info', text: t('menu.button')};
       break;
   }
   if (type === 0) {
@@ -166,10 +169,10 @@ const getConfirm: any = (status: number, type: number) => {
   let obj = {color: '', text: ''};
   switch (status) {
     case 0:
-      obj = {color: 'info', text: '否'};
+      obj = {color: 'info', text: t('common.no')};
       break;
     case 1:
-      obj = {color: 'success', text: '是'};
+      obj = {color: 'success', text: t('common.yes')};
       break;
   }
   if (type === 0) {
@@ -182,10 +185,10 @@ const getMenuStatus: any = (status: number, type: number) => {
   let obj = {color: '', text: ''};
   switch (status) {
     case 0:
-      obj = {color: 'success', text: '显示'};
+      obj = {color: 'success', text: t('common.show')};
       break;
     case 1:
-      obj = {color: 'warning', text: '隐藏'};
+      obj = {color: 'warning', text: t('common.hide')};
       break;
   }
   if (type === 0) {
@@ -200,11 +203,11 @@ const editForm = ref<MenuModel>({});
 const loading = ref<boolean>(true);
 // 表单校验规则
 const rules = reactive({
-  menuName: [{required: true, min: 2, max: 30, message: '长度限制2~30', trigger: 'blur'}],
-  menuType: [{required: true, message: '请选择菜单编号', trigger: 'blur'}],
-  menuStatus: [{required: true, message: '请选择菜单状态', trigger: 'blur'}],
-  routerPath: [{required: true, min: 2, max: 255, message: '长度限制2~255', trigger: 'blur'}],
-  isExternalLink: [{required: true, message: '请选择链接类型', trigger: 'blur'}],
+  menuName: [{required: true, min: 2, max: 30, message: t('common.lengthLimit', {min: 2, max: 30}), trigger: 'blur'}],
+  menuType: [{required: true, message: t('menu.errMenuType'), trigger: 'blur'}],
+  menuStatus: [{required: true, message: t('menu.errMenuStatus'), trigger: 'blur'}],
+  routerPath: [{required: true, min: 2, max: 255, message: t('common.lengthLimit', {min: 2, max: 255}), trigger: 'blur'}],
+  isExternalLink: [{required: true, message: t('menu.errLinkType'), trigger: 'blur'}],
 });
 // 是否显示外链选择按钮
 const isShowExternalLink = ref<boolean>(true);
@@ -227,13 +230,13 @@ const onAdd = () => {
 }
 
 const onRemove = (row: MenuModel): void => {
-  ElMessageBox.confirm('确认删除该菜单?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+  ElMessageBox.confirm(t('menu.confirmDelete'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning',
       }
   ).then(() => {
-    reqSuccessFeedback(deleteBatch([row.id]), '删除成功', () => {
+    reqSuccessFeedback(deleteBatch([row.id]), t('common.deleteSuccess'), () => {
       loadTableData();
     });
   });
@@ -254,12 +257,12 @@ const doUpdate = (formEl: any): void => {
   formEl.validate((valid: any) => {
     if (valid) {
       if (!editForm.value.id) {
-        reqSuccessFeedback(add(editForm.value), '新增成功', () => {
+        reqSuccessFeedback(add(editForm.value), t('common.addSuccess'), () => {
           loadTableData();
           dialogFormVisible.value = false;
         });
       } else {
-        reqSuccessFeedback(update(editForm.value), '修改成功', () => {
+        reqSuccessFeedback(update(editForm.value), t('common.updateSuccess'), () => {
           loadTableData();
           dialogFormVisible.value = false;
         });

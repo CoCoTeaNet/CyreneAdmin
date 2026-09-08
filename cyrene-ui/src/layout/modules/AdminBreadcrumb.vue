@@ -15,7 +15,7 @@
     <el-col :span="22">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item v-for="item in itemList" :to="{ path: item.href }">
-          {{ item.text }}
+          {{ translate(item.text) }}
         </el-breadcrumb-item>
       </el-breadcrumb>
     </el-col>
@@ -28,6 +28,7 @@ import {RouteLocationMatched, useRoute} from "vue-router";
 import {Expand, Fold} from '@element-plus/icons-vue';
 import {useUserStore} from "@/stores/user.ts";
 import {useMenuStore} from "@/stores/menu.ts";
+import {translate} from "@/i18n";
 
 const route = useRoute();
 const userStore = useUserStore();

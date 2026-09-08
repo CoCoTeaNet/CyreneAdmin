@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 const commonTypes = {
     getIsCn: getIsCn,
     getIsList: getIsList
@@ -6,16 +8,17 @@ const commonTypes = {
 export function getIsCn(s: number) {
     switch (s) {
         case 0:
-            return '否';
+            return i18n.global.t('common.no');
         case 1:
-            return '是';
+            return i18n.global.t('common.yes');
     }
     return s;
 }
 export function getIsList() {
     return [
-        {label: '否', value: 0},
-        {label: '是', value: 1},
+        // label 存 i18n key，渲染时由组件统一翻译
+        {label: 'common.no', value: 0},
+        {label: 'common.yes', value: 1},
     ]
 }
 

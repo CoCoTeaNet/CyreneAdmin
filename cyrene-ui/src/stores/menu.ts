@@ -79,7 +79,8 @@ export const useMenuStore = defineStore('menu', {
         },
         goHome() {
             let url: string = '/admin/home';
-            this.tabItems.push({ name: '首页', id: md5(url), isActive: true, url: url });
+            // name 存 i18n key，渲染时由组件统一翻译
+            this.tabItems.push({ name: 'route.home', id: md5(url), isActive: true, url: url });
             router.push({ path: url }).then(r => console.log(r));
         },
         /**

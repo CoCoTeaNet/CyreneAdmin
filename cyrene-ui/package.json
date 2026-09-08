@@ -22,6 +22,7 @@
     "sm-crypto": "^0.3.13",
     "vue": "^3.5.13",
     "vue-axios": "^3.4.1",
+    "vue-i18n": "^11.4.10",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
@@ -29,5 +30,6 @@
     "typescript": "^5.5.3",
     "vite": "^5.4.18",
     "vue-tsc": "^2.0.29"
-  }
+  },
+  "packageManager": "pnpm@10.30.3+sha512.c961d1e0a2d8e354ecaa5166b822516668b7f44cb5bd95122d590dd81922f606f5473b6d23ec4a5be05e7fcd18e8488d47d978bbe981872f1145d06e9a740017"
 }

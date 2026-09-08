@@ -16,17 +16,17 @@
     <el-row style="margin-top: 1em">
       <el-col>
         <el-card shadow="never">
-          <el-descriptions title="CPU使用情况" direction="vertical" :column="4" border>
-            <el-descriptions-item label="CPU核心数">
+          <el-descriptions :title="t('dashboard.cpu')" direction="vertical" :column="4" border>
+            <el-descriptions-item :label="t('dashboard.cpuCount')">
               {{ systemInfo.data.cpuCount }}
             </el-descriptions-item>
-            <el-descriptions-item label="CPU系统使用率">
+            <el-descriptions-item :label="t('dashboard.cpuSystemUsed')">
               {{ systemInfo.data.cpuSystemUsed }}%
             </el-descriptions-item>
-            <el-descriptions-item label="CPU用户使用率">
+            <el-descriptions-item :label="t('dashboard.cpuUserUsed')">
               {{ systemInfo.data.cpuUserUsed }}%
             </el-descriptions-item>
-            <el-descriptions-item label="CPU空闲率">
+            <el-descriptions-item :label="t('dashboard.cpuFree')">
               {{ systemInfo.data.cpuFree }}%
             </el-descriptions-item>
           </el-descriptions>
@@ -38,41 +38,41 @@
     <el-row style="margin-top: 1em">
       <el-col>
         <el-card shadow="never">
-          <el-descriptions title="系统信息" direction="vertical" :column="4" border>
-            <el-descriptions-item label="操作系统">{{ systemInfo.data.os }}</el-descriptions-item>
-            <el-descriptions-item label="服务器名">{{ systemInfo.data.serverName }}</el-descriptions-item>
-            <el-descriptions-item label="服务器IP">{{ systemInfo.data.serverIp }}</el-descriptions-item>
-            <el-descriptions-item label="系统架构">{{ systemInfo.data.serverArchitecture }}</el-descriptions-item>
+          <el-descriptions :title="t('dashboard.system')" direction="vertical" :column="4" border>
+            <el-descriptions-item :label="t('dashboard.os')">{{ systemInfo.data.os }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.serverName')">{{ systemInfo.data.serverName }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.serverIp')">{{ systemInfo.data.serverIp }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.serverArchitecture')">{{ systemInfo.data.serverArchitecture }}</el-descriptions-item>
 
-            <el-descriptions-item label="Java名称">{{ systemInfo.data.javaName }}</el-descriptions-item>
-            <el-descriptions-item label="Java版本">{{ systemInfo.data.javaVersion }}</el-descriptions-item>
-            <el-descriptions-item label="安装路径">{{ systemInfo.data.javaPath }}</el-descriptions-item>
-            <el-descriptions-item label="项目路径">{{ systemInfo.data.projectPath }}</el-descriptions-item>
-            <el-descriptions-item label="服务器运行时长">
+            <el-descriptions-item :label="t('dashboard.javaName')">{{ systemInfo.data.javaName }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.javaVersion')">{{ systemInfo.data.javaVersion }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.javaPath')">{{ systemInfo.data.javaPath }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.projectPath')">{{ systemInfo.data.projectPath }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.runningTime')">
               {{ unitUtil.timeCalculate(systemInfo.data.runningTime) }}
             </el-descriptions-item>
 
-            <el-descriptions-item label="总内存">
+            <el-descriptions-item :label="t('dashboard.totalMemory')">
               {{ unitUtil.memoryCalculate(systemInfo.data.memoryTotalSize) }}
             </el-descriptions-item>
-            <el-descriptions-item label="可用内存">
+            <el-descriptions-item :label="t('dashboard.availableMemory')">
               {{ unitUtil.memoryCalculate(systemInfo.data.memoryAvailableSize) }}
             </el-descriptions-item>
-            <el-descriptions-item label="已用内存">
+            <el-descriptions-item :label="t('dashboard.usedMemory')">
               {{ unitUtil.memoryCalculate(systemInfo.data.memoryTotalSize - systemInfo.data.memoryAvailableSize) }}
             </el-descriptions-item>
 
-            <el-descriptions-item label="磁盘总大小">
+            <el-descriptions-item :label="t('dashboard.totalDisk')">
               {{ unitUtil.memoryCalculate(systemInfo.data.diskTotalSize) }}
             </el-descriptions-item>
-            <el-descriptions-item label="可用空间">
+            <el-descriptions-item :label="t('dashboard.availableSpace')">
               {{ unitUtil.memoryCalculate(systemInfo.data.diskFreeSize) }}
             </el-descriptions-item>
-            <el-descriptions-item label="已用空间">
+            <el-descriptions-item :label="t('dashboard.usedSpace')">
               {{ unitUtil.memoryCalculate(systemInfo.data.diskTotalSize - systemInfo.data.diskFreeSize) }}
             </el-descriptions-item>
-            <el-descriptions-item label="盘符路径">{{ systemInfo.data.diskPath }}</el-descriptions-item>
-            <el-descriptions-item label="磁盘分隔符">{{ systemInfo.data.diskSeparator }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.diskPath')">{{ systemInfo.data.diskPath }}</el-descriptions-item>
+            <el-descriptions-item :label="t('dashboard.diskSeparator')">{{ systemInfo.data.diskSeparator }}</el-descriptions-item>
           </el-descriptions>
         </el-card>
       </el-col>
@@ -85,6 +85,9 @@ import {onMounted, reactive, ref} from "vue";
 import {getSystemInfo, getCount} from "@/api/system/sys-dashboard-api";
 import {reqCommonFeedback} from "@/api/ApiFeedback";
 import unitUtil from "@/utils/unit-util";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 // 系统信息
 const systemInfo = reactive<any>({data: {cpuCount:0, cpuSystemUsed:0, cpuUserUsed:0, cpuFree:0}});

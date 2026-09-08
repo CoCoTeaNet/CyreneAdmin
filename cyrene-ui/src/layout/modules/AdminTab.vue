@@ -9,7 +9,7 @@
           @click="onClick(item)"
         >
           <span class="tab-dot" v-if="item.isActive"></span>
-          <span class="tab-title">{{ item.name }}</span>
+          <span class="tab-title">{{ translate(item.name) }}</span>
           <el-icon 
             v-if="menuStore.tabItems.length > 1" 
             class="tab-close" 
@@ -27,8 +27,8 @@
       </div>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item @click="refresh">刷新当前</el-dropdown-item>
-          <el-dropdown-item @click="onCloseAll">关闭所有</el-dropdown-item>
+          <el-dropdown-item @click="refresh">{{ t('tab.refresh') }}</el-dropdown-item>
+          <el-dropdown-item @click="onCloseAll">{{ t('tab.closeAll') }}</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -41,6 +41,10 @@ import {router} from "@/router";
 import {useRoute} from "vue-router";
 import {onMounted} from "vue";
 import {useMenuStore} from "@/stores/menu.ts";
+import {useI18n} from "vue-i18n";
+import {translate} from "@/i18n";
+
+const {t} = useI18n();
 
 const menuStore = useMenuStore();
 const route = useRoute();

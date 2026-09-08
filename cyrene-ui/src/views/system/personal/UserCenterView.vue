@@ -1,14 +1,14 @@
 <template>
   <el-space style="width: 100%" direction="vertical" alignment="stretch">
     <el-card shadow="never">
-      <el-descriptions title="个人信息" :column="3" border>
+      <el-descriptions :title="t('userCenter.personalInfo')" :column="3" border>
         <el-descriptions-item>
           <template #label>
             <div>
               <el-icon>
                 <user/>
               </el-icon>
-              账号名
+              {{ t('userCenter.accountName') }}
             </div>
           </template>
           {{ detailUser.username }}
@@ -19,7 +19,7 @@
               <el-icon>
                 <user/>
               </el-icon>
-              账号角色
+              {{ t('userCenter.accountRole') }}
             </div>
           </template>
 
@@ -36,7 +36,7 @@
               <el-icon>
                 <tickets/>
               </el-icon>
-              用户昵称
+              {{ t('userCenter.nickname') }}
             </div>
           </template>
           {{ detailUser.nickname }}
@@ -47,7 +47,7 @@
               <el-icon>
                 <tickets/>
               </el-icon>
-              性别
+              {{ t('userCenter.sexLabel') }}
             </div>
           </template>
           {{ getSex(detailUser.sex) }}
@@ -58,7 +58,7 @@
               <el-icon>
                 <iphone/>
               </el-icon>
-              手机号
+              {{ t('userCenter.mobile') }}
             </div>
           </template>
           {{ detailUser.mobilePhone ? detailUser.mobilePhone : '...' }}
@@ -69,7 +69,7 @@
               <el-icon>
                 <location/>
               </el-icon>
-              邮箱
+              {{ t('userCenter.email') }}
             </div>
           </template>
           {{ detailUser.email ? detailUser.email : '...' }}
@@ -80,7 +80,7 @@
               <el-icon>
                 <office-building/>
               </el-icon>
-              最后登录IP
+              {{ t('userCenter.lastLoginIp') }}
             </div>
           </template>
           {{ detailUser.lastLoginIp }}
@@ -91,7 +91,7 @@
               <el-icon>
                 <office-building/>
               </el-icon>
-              最后登录时间
+              {{ t('userCenter.lastLoginTime') }}
             </div>
           </template>
           {{ detailUser.lastLoginTime }}
@@ -103,14 +103,14 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <span>更新资料</span>
+          <span>{{ t('userCenter.updateProfile') }}</span>
         </div>
       </template>
 
       <!--基本信息-->
-      <el-divider>基本信息</el-divider>
+      <el-divider>{{ t('userCenter.basicInfo') }}</el-divider>
       <el-form ref="ucvFormRef" label-width="120px" label-position="right" :rules="rules" :model="editForm">
-        <el-form-item prop="avatar" label="修改头像" :auto-upload="false" list-type="picture-card">
+        <el-form-item prop="avatar" :label="t('userCenter.changeAvatar')" :auto-upload="false" list-type="picture-card">
           <el-upload ref="upload"
                      :action="uploadUrl"
                      list-type="picture-card"
@@ -127,47 +127,47 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item prop="nickname" label="用户昵称">
+        <el-form-item prop="nickname" :label="t('userCenter.nickname')">
           <el-input v-model="editForm.nickname"></el-input>
         </el-form-item>
-        <el-form-item prop="email" label="电子邮箱">
+        <el-form-item prop="email" :label="t('userCenter.emailLabel')">
           <el-input v-model="editForm.email"></el-input>
         </el-form-item>
-        <el-form-item prop="mobilePhone" label="手机号">
+        <el-form-item prop="mobilePhone" :label="t('userCenter.mobile')">
           <el-input v-model="editForm.mobilePhone"></el-input>
         </el-form-item>
-        <el-form-item label="性别">
+        <el-form-item :label="t('userCenter.sexLabel')">
           <el-radio-group v-model="editForm.sex">
-            <el-radio :label="0">不公开</el-radio>
-            <el-radio :label="1">男</el-radio>
-            <el-radio :label="2">女</el-radio>
+            <el-radio :label="0">{{ t('user.sexSecret') }}</el-radio>
+            <el-radio :label="1">{{ t('user.sexMale') }}</el-radio>
+            <el-radio :label="2">{{ t('user.sexFemale') }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item>
-          <el-button @click="handleUploadAvatar">上传头像</el-button>
-          <el-button type="primary" @click="submitForm(ucvFormRef)">更新信息</el-button>
+          <el-button @click="handleUploadAvatar">{{ t('userCenter.uploadAvatar') }}</el-button>
+          <el-button type="primary" @click="submitForm(ucvFormRef)">{{ t('userCenter.updateInfo') }}</el-button>
         </el-form-item>
       </el-form>
 
       <!--修改密码-->
-      <el-divider>修改密码</el-divider>
+      <el-divider>{{ t('userCenter.modifyPassword') }}</el-divider>
       <el-form
         style="width: 50%;"
         ref="mpFormRef" label-width="120px" label-position="right" :rules="mpRules" :model="mpFormObj">
-        <el-form-item prop="oldPassword" label="原密码">
+        <el-form-item prop="oldPassword" :label="t('userCenter.oldPassword')">
           <el-input :prefix-icon="Lock" v-model="mpFormObj.oldPassword" type="password"
                     autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="newPassword" label="新密码">
+        <el-form-item prop="newPassword" :label="t('userCenter.newPassword')">
           <el-input :prefix-icon="Lock" v-model="mpFormObj.newPassword" type="password"
                     autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="newPasswordSecond" label="重复新密码">
+        <el-form-item prop="newPasswordSecond" :label="t('userCenter.repeatNewPassword')">
           <el-input :prefix-icon="Lock" v-model="mpFormObj.newPasswordSecond" type="password"
                     autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onModifyPassword(mpFormRef)">修改密码</el-button>
+          <el-button type="primary" @click="onModifyPassword(mpFormRef)">{{ t('userCenter.modifyPasswordBtn') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -186,7 +186,9 @@ import {RULE_MOBILE, RULE_EMAIL} from "@/utils/rules-util";
 import {ElMessage} from "element-plus";
 import {logout} from "@/api/system/sys-login-api";
 import {useUserStore} from "@/stores/user.ts";
+import {useI18n} from "vue-i18n";
 
+const {t} = useI18n();
 const userStore = useUserStore();
 const upload = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
@@ -194,7 +196,7 @@ const uploadUrl = `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/avatar/u
 
 const validatePhone = (rule: any, value: any, callback: any) => {
   if (!RULE_MOBILE.test(value)) {
-    callback(new Error('非法手机号'));
+    callback(new Error(t('userCenter.errPhone')));
   } else {
     callback();
   }
@@ -202,7 +204,7 @@ const validatePhone = (rule: any, value: any, callback: any) => {
 
 const validateEmail = (rule: any, value: any, callback: any) => {
   if (!RULE_EMAIL.test(value)) {
-    callback(new Error('邮箱格式错误'));
+    callback(new Error(t('userCenter.errEmail')));
   } else {
     callback();
   }
@@ -215,25 +217,25 @@ const mpFormObj = ref<any>({});
 const detailUser = ref<any>({});
 // 表单校验规则
 const rules = reactive({
-  username: [{min: 2, max: 30, message: '长度限制2~30', trigger: 'blur'}],
+  username: [{min: 2, max: 30, message: t('common.lengthLimit', {min: 2, max: 30}), trigger: 'blur'}],
   mobilePhone: [{validator: validatePhone, trigger: 'blur'}],
   email: [{validator: validateEmail, trigger: 'blur'}],
-  nickname: [{min: 2, max: 30, message: '长度限制2~30', trigger: 'blur'}]
+  nickname: [{min: 2, max: 30, message: t('common.lengthLimit', {min: 2, max: 30}), trigger: 'blur'}]
 });
 // 密码修改校验规则
 const mpRules = reactive({
-  oldPassword: [{min: 6, max: 32, message: '长度限制6~32', trigger: 'blur'}],
-  newPassword: [{min: 6, max: 32, message: '长度限制6~32', trigger: 'blur'}],
-  newPasswordSecond: [{min: 6, max: 32, message: '长度限制6~32', trigger: 'blur'}]
+  oldPassword: [{min: 6, max: 32, message: t('common.lengthLimit', {min: 6, max: 32}), trigger: 'blur'}],
+  newPassword: [{min: 6, max: 32, message: t('common.lengthLimit', {min: 6, max: 32}), trigger: 'blur'}],
+  newPasswordSecond: [{min: 6, max: 32, message: t('common.lengthLimit', {min: 6, max: 32}), trigger: 'blur'}]
 });
 const getSex = (sex: number) => {
   switch (sex) {
     case 0:
-      return '不公开';
+      return t('user.sexSecret');
     case 1:
-      return '男';
+      return t('user.sexMale');
     case 2:
-      return '女';
+      return t('user.sexFemale');
   }
 }
 
@@ -266,7 +268,7 @@ const initUserDetail = () => {
 const submitForm = (ucvFormRef: any) => {
   ucvFormRef.validate((valid: any) => {
     if (valid) {
-      reqSuccessFeedback(updateByUser(editForm.value), '修改成功', () => {
+      reqSuccessFeedback(updateByUser(editForm.value), t('common.updateSuccess'), () => {
         initUserDetail();
       });
     }
@@ -281,14 +283,14 @@ const onModifyPassword = (mpFormRef: any) => {
   mpFormRef.validate((valid: any) => {
     if (valid) {
       if (mpFormObj.value.newPassword !== mpFormObj.value.newPasswordSecond) {
-        ElMessage.warning("两次密码不一致");
+        ElMessage.warning(t('userCenter.pwdNotMatch'));
         return;
       }
       let param = {
         oldPassword: mpFormObj.value.oldPassword,
         newPassword: mpFormObj.value.newPassword
       };
-      reqSuccessFeedback(doModifyPassword(param), '更新成功，即将重新登录', () => {
+      reqSuccessFeedback(doModifyPassword(param), t('userCenter.updateAndRelogin'), () => {
         logout().then(res => {
           setTimeout(() => {
             window.location.reload();
@@ -313,7 +315,7 @@ const beforeAvatarUpload = (rawFile: UploadRawFile) => {
   if (rawFile.type === 'image/jpeg' || rawFile.type === 'image/png' || rawFile.type === 'image/jpg') {
     return true;
   } else {
-    ElMessage.error('不支持的图片类型');
+    ElMessage.error(t('userCenter.unsupportedImage'));
     return false;
   }
 }

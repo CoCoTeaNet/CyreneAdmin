@@ -2,41 +2,41 @@
   <el-row class="a-login">
     <div class="a-login-inner">
       <div class="a-login-left">
-        <h1 class="welcome-title">Welcome to Cyrene Admin</h1>
-        <p class="welcome-sub">轻量 · 高效 · 可定制的后台管理模板，欢迎使用管理平台</p>
+        <h1 class="welcome-title">{{ t('login.welcomeTitle') }}</h1>
+        <p class="welcome-sub">{{ t('login.welcomeSub') }}</p>
       </div>
 
       <el-card class="a-login-right a-login-card" shadow="never">
         <div>
-          <div class="login-title">欢 迎 登 录</div>
-          <div class="login-subtitle">请输入账号、密码与验证码以继续</div>
+          <div class="login-title">{{ t('login.title') }}</div>
+          <div class="login-subtitle">{{ t('login.subtitle') }}</div>
         </div>
 
         <el-form ref="loginFormRef" :model="loginForm" status-icon :rules="rules" size="large">
           <el-form-item prop="username">
-            <el-input placeholder="账号" :prefix-icon="UserFilled" v-model="loginForm.username" autocomplete="off" />
+            <el-input :placeholder="t('login.username')" :prefix-icon="UserFilled" v-model="loginForm.username" autocomplete="off" />
           </el-form-item>
 
           <el-form-item prop="password">
-            <el-input placeholder="密码" :prefix-icon="Lock" v-model="loginForm.password"
+            <el-input :placeholder="t('login.password')" :prefix-icon="Lock" v-model="loginForm.password"
                       @keypress.enter="submitForm(loginFormRef)" type="password" autocomplete="off" />
           </el-form-item>
 
           <el-form-item prop="captcha">
             <div class="captcha-row">
-              <el-input placeholder="验证码" :prefix-icon="Connection" @keydown.enter="submitForm(loginFormRef)"
+              <el-input :placeholder="t('login.captcha')" :prefix-icon="Connection" @keydown.enter="submitForm(loginFormRef)"
                         v-model="loginForm.captcha" />
               <el-image class="captcha-img" @click="getVerifyCodeImage" :src="captcha" fit="cover" />
             </div>
           </el-form-item>
 
           <el-form-item>
-            <el-checkbox v-model="loginForm.rememberMe">记住我</el-checkbox>
+            <el-checkbox v-model="loginForm.rememberMe">{{ t('login.rememberMe') }}</el-checkbox>
           </el-form-item>
 
           <el-form-item>
             <el-button style="width: 100%" type="primary" @click="submitForm(loginFormRef)" :loading="loading">
-              登录
+              {{ t('login.login') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -55,6 +55,9 @@ import {useRoute, useRouter} from "vue-router";
 import 'element-plus/theme-chalk/display.css';
 import {ApiResultEnum} from "@/api/ApiResultEnum";
 import {getSm2} from '@/utils/smUtil';
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 const sm2 = getSm2();
 const router = useRouter();
@@ -81,9 +84,9 @@ const loginForm = reactive({
 
 // 表单校验规则
 const rules = reactive({
-  username: [{required: true, min: 2, max: 16, message: '长度限制2~16', trigger: 'blur'}],
-  password: [{required: true, min: 6, max: 30, message: '长度限制6~30', trigger: 'blur'}],
-  captcha: [{required: true, message: '请输入验证码', trigger: 'blur'}],
+  username: [{required: true, min: 2, max: 16, message: t('common.lengthLimit', {min: 2, max: 16}), trigger: 'blur'}],
+  password: [{required: true, min: 6, max: 30, message: t('common.lengthLimit', {min: 6, max: 30}), trigger: 'blur'}],
+  captcha: [{required: true, message: t('login.captchaRequired'), trigger: 'blur'}],
 });
 
 onMounted(() => {

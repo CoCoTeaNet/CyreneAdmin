@@ -1,5 +1,5 @@
 <template>
-  <el-select :model-value="value" filterable reserve-keyword placeholder="请输入关键词" :loading="loading">
+  <el-select :model-value="value" filterable reserve-keyword :placeholder="t('common.inputKeyword')" :loading="loading">
     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
       <div style="display: flex;align-items: center;">
         <el-space>
@@ -15,6 +15,9 @@
 <script lang="ts" setup>
 import {onMounted, ref} from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
+import {useI18n} from 'vue-i18n'
+
+const {t} = useI18n()
 
 interface ListItem {
   value: string

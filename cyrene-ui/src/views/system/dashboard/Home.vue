@@ -4,13 +4,13 @@
     <el-card class="welcome-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="title">欢迎来到 Cyrene Admin</span>
+          <span class="title">{{ t('home.welcome') }}</span>
         </div>
       </template>
       <div class="welcome-content">
-        <p class="subtitle">一个现代化的管理后台系统</p>
+        <p class="subtitle">{{ t('home.subtitle') }}</p>
         <p class="description">
-          Cyrene Admin 是一个基于 Solon 和 Vue 3 的现代化管理后台系统。
+          {{ t('home.description') }}
         </p>
           <div class="features">
           <el-row :gutter="20">
@@ -21,8 +21,8 @@
                     <component :is="feature.icon"></component>
                   </el-icon>
                 </div>
-                <h4>{{ feature.title }}</h4>
-                <p>{{ feature.desc }}</p>
+                <h4>{{ t(feature.titleKey) }}</h4>
+                <p>{{ t(feature.descKey) }}</p>
               </div>
             </el-col>
           </el-row>
@@ -34,14 +34,14 @@
     <el-card class="guide-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="title">快速开始指南</span>
+          <span class="title">{{ t('home.guide') }}</span>
         </div>
       </template>
       <el-steps :active="3" finish-status="success" align-center simple class="guide-steps">
-        <el-step title="注册账户" description="创建您的管理员账户" />
-        <el-step title="配置权限" description="设置角色和权限" />
-        <el-step title="管理内容" description="开始管理您的业务数据" />
-        <el-step title="监控系统" description="查看系统日志和状态" />
+        <el-step :title="t('home.step1Title')" :description="t('home.step1Desc')" />
+        <el-step :title="t('home.step2Title')" :description="t('home.step2Desc')" />
+        <el-step :title="t('home.step3Title')" :description="t('home.step3Desc')" />
+        <el-step :title="t('home.step4Title')" :description="t('home.step4Desc')" />
       </el-steps>
     </el-card>
 
@@ -49,35 +49,35 @@
     <el-card class="info-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="title">项目信息</span>
+          <span class="title">{{ t('home.projectInfo') }}</span>
         </div>
       </template>
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="项目名称">
+        <el-descriptions-item :label="t('home.projectName')">
           <el-tag type="info">Cyrene Admin</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="当前版本">
+        <el-descriptions-item :label="t('home.currentVersion')">
           <el-tag type="success">v2.0.0</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="技术栈">
+        <el-descriptions-item :label="t('home.techStack')">
           <el-tag type="warning">Vue 3 + TypeScript</el-tag>
           <el-tag type="warning">Element Plus</el-tag>
           <el-tag type="warning">Solon</el-tag>
           <el-tag type="warning">SQLtoy</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="开发状态">
-          <el-tag type="danger">开发中</el-tag>
+        <el-descriptions-item :label="t('home.devStatus')">
+          <el-tag type="danger">{{ t('home.inDevelopment') }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="项目特点">
+        <el-descriptions-item :label="t('home.features')">
           <div class="features-tags">
-            <el-tag type="info">前后端分离</el-tag>
-            <el-tag type="info">响应式设计</el-tag>
-            <el-tag type="info">权限管理</el-tag>
-            <el-tag type="info">国际化支持</el-tag>
+            <el-tag type="info">{{ t('home.frontBackSep') }}</el-tag>
+            <el-tag type="info">{{ t('home.responsive') }}</el-tag>
+            <el-tag type="info">{{ t('home.permission') }}</el-tag>
+            <el-tag type="info">{{ t('home.i18n') }}</el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="项目目标">
-          提供一个高效、安全、易用的管理后台解决方案，帮助开发者快速构建企业级应用
+        <el-descriptions-item :label="t('home.goal')">
+          {{ t('home.goalDesc') }}
         </el-descriptions-item>
       </el-descriptions>
     </el-card>
@@ -91,36 +91,39 @@ import {
   Grid, 
   Document
 } from '@element-plus/icons-vue';
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n();
 
 interface Feature {
-  title: string;
-  desc: string;
+  titleKey: string;
+  descKey: string;
   icon: string;
   color: string;
 }
 
 const features: Feature[] = [
   {
-    title: '用户管理',
-    desc: '管理用户账户',
+    titleKey: 'home.fUser',
+    descKey: 'home.fUserDesc',
     icon: 'User',
     color: '#409EFF'
   },
   {
-    title: '角色权限',
-    desc: '配置角色权限',
+    titleKey: 'home.fRole',
+    descKey: 'home.fRoleDesc',
     icon: 'Avatar',
     color: '#67C23A'
   },
   {
-    title: '菜单管理',
-    desc: '配置系统菜单',
+    titleKey: 'home.fMenu',
+    descKey: 'home.fMenuDesc',
     icon: 'Grid',
     color: '#E6A23C'
   },
   {
-    title: '系统日志',
-    desc: '查看操作日志',
+    titleKey: 'home.fLog',
+    descKey: 'home.fLogDesc',
     icon: 'Document',
     color: '#F56C6C'
   }

@@ -12,13 +12,26 @@
 
     <el-col :span="8" class="header-right">
       <div class="action-items">
-        <el-tooltip content="全屏" placement="bottom">
+        <!-- 语言切换 -->
+        <el-dropdown trigger="click" class="lang-dropdown">
+          <div class="action-icon lang-btn" :title="t('header.language')">
+            {{ locale === 'zh-CN' ? '中' : 'EN' }}
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu class="modern-dropdown">
+              <el-dropdown-item :disabled="locale === 'zh-CN'" @click="handleLocaleChange('zh-CN')">中文</el-dropdown-item>
+              <el-dropdown-item :disabled="locale === 'en-US'" @click="handleLocaleChange('en-US')">English</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
+        <el-tooltip :content="t('header.fullscreen')" placement="bottom">
           <div class="action-icon" @click="doFullScreen">
             <el-icon :size="18"><full-screen/></el-icon>
           </div>
         </el-tooltip>
-        
-        <el-tooltip content="首页" placement="bottom">
+
+        <el-tooltip :content="t('header.home')" placement="bottom">
           <div class="action-icon" @click="clickToGo('Home')">
             <el-icon :size="18"><house/></el-icon>
           </div>
@@ -31,15 +44,15 @@
               :src="avatar" 
               class="user-avatar"
             />
-            <span class="user-name">{{ userStore.userinfo.nickname || '管理员' }}</span>
+            <span class="user-name">{{ userStore.userinfo.nickname || t('header.admin') }}</span>
           </div>
           <template #dropdown>
             <el-dropdown-menu class="modern-dropdown">
               <el-dropdown-item @click="clickToGo('UserCenterView')">
-                <el-icon><user /></el-icon>个人中心
+                <el-icon><user /></el-icon>{{ t('header.profile') }}
               </el-dropdown-item>
               <el-dropdown-item divided @click="doLogout" class="logout-item">
-                <el-icon><switch-button /></el-icon>退出登录
+                <el-icon><switch-button /></el-icon>{{ t('header.logout') }}
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -57,10 +70,13 @@ import {loginInfo, logout, userMenu} from "@/api/system/sys-login-api";
 import AdminTab from "@/layout/modules/AdminTab.vue";
 import {Expand, Fold, FullScreen, House} from "@element-plus/icons-vue";
 import {onMounted, ref, watch} from 'vue';
+import {useI18n} from 'vue-i18n';
 import default_avatar from "@/assets/svg-source/default-avatar.svg";
 import {useUserStore} from "@/stores/user.ts";
 import {useMenuStore} from "@/stores/menu.ts";
+import {setLocale, translate} from "@/i18n";
 
+const {t, locale} = useI18n();
 const userStore = useUserStore();
 const menuStore = useMenuStore();
 const route = useRoute();
@@ -78,6 +94,19 @@ onMounted(() => {
  */
 const clickToGo = (name: string) => {
   router.push({name: name});
+}
+
+/**
+ * 切换语言并同步浏览器标题
+ */
+const handleLocaleChange = (lang: string) => {
+  setLocale(lang);
+  let title = '';
+  route.matched.forEach((item: any, index: any) => {
+    let field = (index === route.matched.length - 1 ? '' : ' / ');
+    title += translate(item.meta.title) + field;
+  });
+  document.title = title;
 }
 
 /**
