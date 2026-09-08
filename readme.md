@@ -13,6 +13,11 @@
 </p>
 
 <p align="center">
+  <a href="readme.md">简体中文</a> •
+  <a href="README.en.md">English</a>
+</p>
+
+<p align="center">
   <a href="#简介">简介</a> •
   <a href="#特性">特性</a> •
   <a href="#技术架构">技术架构</a> •
