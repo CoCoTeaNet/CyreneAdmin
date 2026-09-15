@@ -1,0 +1,65 @@
+server:
+  port: 9000
+  contextPath: /api
+
+
+solon.app:
+  name: 'cyrene-admin-web'
+#添加静态目录映射
+solon.staticfiles.mappings:
+  - path: "/download/"
+    repository: "/tmp/cyrene-files/"
+
+solon.serialization.json:
+  dateAsFormat: 'yyyy-MM-dd HH:mm:ss'
+  dateAsTimeZone: 'GMT+8'
+  dateAsTicks: false
+  longAsString: true
+  boolAsInt: false
+  nullStringAsEmpty: false
+  nullBoolAsFalse: false
+  nullNumberAsZero: false
+  nullArrayAsEmpty: false
+  nullAsWriteable: false
+  enumAsName: false
+
+
+sqltoy:
+  sqlResourcesDir: classpath:sqltoy
+  unify-fields-handler: net.cocotea.cyreneadmin.handler.SqlToyUnifyFieldsHandler
+  debug: true
+
+
+myapp:
+  password: 'Cyr3ne@2024!T3st'
+  password-salt: Admin@salt
+  permission-cache: false
+  save-log: true
+  strong-password: 'Cyr3ne@2024!T3st'
+  excludes: /system/dashboard/index,/system/login,/system/captcha,/
+  file:
+    default-path: /tmp/cyrene-files/default/
+    avatar: /tmp/cyrene-files/avatar/
+    support-filetype: pdf,doc,docx,ppt,txt,md,xlsx,xlx,jpg,png
+    media-filetype: mp4,avi,mpg,mpeg,wmv,flv,swf,mov,mkv
+  db1:
+    schema: cyrene_admin
+    jdbcUrl: jdbc:mysql://127.0.0.1:13306/cyrene_admin?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&tinyInt1isBit=false
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: root
+    password: test123456
+  rd1:
+    server: 127.0.0.1:16379
+    db: 1
+    password:
+
+
+# Sa-Token 配置
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: true
+  is-share: true
+  token-style: random-64
+  is-log: false
