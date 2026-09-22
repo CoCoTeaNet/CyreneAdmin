@@ -35,7 +35,6 @@ myapp:
   password-salt: Admin@salt
   permission-cache: false
   save-log: true
-  strong-password: 'Cyr3ne@2024!T3st'
   excludes: /system/dashboard/index,/system/login,/system/captcha,/
   file:
     default-path: /tmp/cyrene-files/default/

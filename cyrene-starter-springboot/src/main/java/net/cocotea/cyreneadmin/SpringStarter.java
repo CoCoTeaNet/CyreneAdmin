@@ -16,7 +16,7 @@ public class SpringStarter {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(SpringStarter.class, args);
         AppSystemProp appSystemProp = (AppSystemProp) context.getBean("appSystemProp");
-        logger.info("强密码：{}, 权限缓存状态：{}", appSystemProp.getStrongPassword(), appSystemProp.getPermissionCache());
+        logger.info("权限缓存状态：{}", appSystemProp.getPermissionCache());
         GlobalConst.START_TIME = System.currentTimeMillis();
     }
 

@@ -34,11 +34,6 @@ public class AppSystemProp {
     private Boolean saveLog;
 
     /**
-     * 强密码：启用后会关闭图片验证码验证
-     */
-    private String strongPassword;
-
-    /**
      * 路由放行地址
      */
     private String excludes;

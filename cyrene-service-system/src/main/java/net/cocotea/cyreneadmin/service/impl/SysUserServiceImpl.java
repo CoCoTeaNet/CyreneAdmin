@@ -5,9 +5,7 @@ import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import net.cocotea.cyreneadmin.model.dto.*;
 import net.cocotea.cyreneadmin.model.po.SysUser;
@@ -120,32 +118,17 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public String login(SysLoginDTO loginDTO, String realIp) throws BusinessException {
-        SysUser sysUser;
-
-        // 强密码为空或者为none表示“不启用”
-        boolean isStrongPwd = !(StrUtil.isBlank(appSystemProp.getStrongPassword()) || "none".equals(appSystemProp.getStrongPassword()));
-        if (isStrongPwd) {
-            boolean pwdValid = Objects.equals(appSystemProp.getStrongPassword(), loginDTO.getPassword());
-            Assert.isTrue(pwdValid, () -> new BusinessException("密码不正确"));
+        // 校验验证码
+        String key = String.format(RedisKeyConst.VERIFY_CODE_LOGIN, loginDTO.getCaptchaId());
+        String code = redisService.get(key);
+        if (!loginDTO.getCaptcha().equals(code)) {
+            throw new BusinessException("验证码错误");
         }
-
-        // 验证码缓存键
-        String key = null;
-        if (!isStrongPwd) {
-            // 校验验证码
-            key = String.format(RedisKeyConst.VERIFY_CODE_LOGIN, loginDTO.getCaptchaId());
-            String code = redisService.get(key);
-            if (!loginDTO.getCaptcha().equals(code)) {
-                throw new BusinessException("验证码错误");
-            }
-            // 校验密码
-            String pwd = securityUtils.getPwd(loginDTO.getPassword());
-            sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setUsername(loginDTO.getUsername()).setPassword(pwd), SysUser.class);
-            if (sysUser == null) {
-                throw new BusinessException("登录失败，用户名或密码错误");
-            }
-        } else {
-            sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setUsername(loginDTO.getUsername()), SysUser.class);
+        // 校验密码
+        String pwd = securityUtils.getPwd(loginDTO.getPassword());
+        SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setUsername(loginDTO.getUsername()).setPassword(pwd), SysUser.class);
+        if (sysUser == null) {
+            throw new BusinessException("登录失败，用户名或密码错误");
         }
         // 记住我模式
         if (loginDTO.getRememberMe()) {
@@ -159,10 +142,8 @@ public class SysUserServiceImpl implements SysUserService {
         loginSysUser.setLastLoginIp(realIp);
         loginSysUser.setLastLoginTime(LocalDateTime.now());
         lightDao.update(loginSysUser);
-        // 删除缓存
-        if (StrUtil.isNotBlank(key)) {
-            redisService.delete(key);
-        }
+        // 删除验证码缓存
+        redisService.delete(key);
         return StpUtil.getTokenValue();
     }
 

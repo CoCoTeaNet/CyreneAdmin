@@ -14,9 +14,6 @@ public class AppConfig {
     @Value("${myapp.excludes}")
     private String excludes;
 
-    @Value("${myapp.strong-password}")
-    private String strongPassword;
-
     @Value("${myapp.password}")
     private String password;
 
@@ -48,7 +45,6 @@ public class AppConfig {
     public AppSystemProp appSystemProp() {
         return new AppSystemProp()
                 .setExcludes(excludes)
-                .setStrongPassword(strongPassword)
                 .setPassword(password)
                 .setPasswordSalt(passwordSalt)
                 .setPermissionCache(permissionCache)

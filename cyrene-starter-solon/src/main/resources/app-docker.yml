@@ -26,8 +26,6 @@ myapp:
   permission-cache: false
   # 是否开启系统日志保存功能
   save-log: true
-  # 强密码，为空或者为none表示关闭
-  strong-password: 123456
   # 路由放行（用逗号分割）
   excludes: /system/dashboard/index,/system/login,/system/captcha,/
   # 文件存放配置

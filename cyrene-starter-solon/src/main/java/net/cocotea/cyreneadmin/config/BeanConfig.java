@@ -23,7 +23,6 @@ public class BeanConfig {
 
     @Bean
     public AppSystemProp buildDefaultProp(@Inject("${myapp.excludes}") String excludes,
-                                          @Inject("${myapp.strong-password}") String strongPassword,
                                           @Inject("${myapp.password}") String password,
                                           @Inject("${myapp.password-salt}") String passwordSalt,
                                           @Inject("${myapp.permission-cache}") Boolean permissionCache,
@@ -31,7 +30,6 @@ public class BeanConfig {
                                           @Inject("${myapp.file.avatar}") String avatarPath,
                                           @Inject("${myapp.file.support-filetype}") String supportFiletype) {
         return new AppSystemProp().setExcludes(excludes)
-                .setStrongPassword(strongPassword)
                 .setPassword(password)
                 .setPasswordSalt(passwordSalt)
                 .setPermissionCache(permissionCache)

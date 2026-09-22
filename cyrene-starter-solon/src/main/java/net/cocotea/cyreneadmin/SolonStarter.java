@@ -24,7 +24,7 @@ public class SolonStarter {
         AppContext context = app.context();
 
         AppSystemProp appSystemProp = context.getBean(AppSystemProp.class);
-        logger.warn("强密码：{}, 权限缓存状态：{}", appSystemProp.getStrongPassword(), appSystemProp.getPermissionCache());
+        logger.warn("权限缓存状态：{}", appSystemProp.getPermissionCache());
 
         GlobalConst.START_TIME = System.currentTimeMillis();
     }
