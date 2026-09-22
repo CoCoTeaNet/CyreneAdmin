@@ -2,85 +2,161 @@
  * 认证工具 - 处理登录鉴权
  *
  * 生产环境前端流程：请求验证码 -> SM2加密密码 -> 提交登录
- * E2E 测试通过 API 获取公钥并加密密码，模拟完整前端登录流程
+ * E2E 通过 API 获取验证码与公钥，从 Redis 读取验证码文本后走完整登录链路。
+ * 注意：登录链路强制校验 验证码 + 验证码ID + SM2公钥 三件套（移除 strong-password 后的契约）。
  */
-import { type BrowserContext } from '@playwright/test';
-import { TEST_BASE_URL, TEST_PASSWORD } from './config';
+import { type BrowserContext, type Page } from '@playwright/test';
+import { API_URL, TEST_PASSWORD } from './config';
 import { sm2Encrypt } from './sm2';
+import { getVerifyCode } from './redis';
+
+export interface LoginCredential {
+  username: string;
+  password: string;
+}
 
 /**
- * 通过 API 快速登录并注入 token 到浏览器上下文
- * 流程：获取验证码（含SM2公钥） -> SM2加密密码 -> 提交登录 -> 注入satoken cookie
+ * 监听页面内的 /system/captcha 响应，并返回 Promise<验证码文本>。
+ * 必须在 page.goto 之前调用（登录页 onMounted 时已发起验证码请求）。
+ */
+export function watchCaptcha(page: Page): { code: Promise<string> } {
+  let resolveCode: (v: string) => void;
+  const code = new Promise<string>((res) => {
+    resolveCode = res;
+  });
+
+  page.on('response', (resp) => {
+    if (resp.url().includes('/system/captcha')) {
+      resp
+        .json()
+        .then((j) => {
+          const captchaId = j?.data?.captchaId;
+          if (captchaId) {
+            getVerifyCode(captchaId).then(resolveCode).catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
+  });
+
+  return { code };
+}
+
+/**
+ * 通过 API 完成完整登录（验证码 -> SM2加密 -> 提交登录），返回 token
+ */
+export async function apiLoginRequest(
+  request: any,
+  username: string = 'admin',
+  password: string = TEST_PASSWORD,
+): Promise<string> {
+  // 1. 获取验证码（含 SM2 公钥与验证码ID）
+  const captchaRes = await request.get(`${API_URL}/system/captcha?timestamp=${Date.now()}`);
+  const captchaBody = await captchaRes.json();
+  const { captchaId, publicKey } = captchaBody?.data ?? {};
+  if (!captchaId || !publicKey) {
+    throw new Error(`验证码接口响应异常: ${JSON.stringify(captchaBody)}`);
+  }
+
+  // 2. 从 Redis 读取验证码文本（与真实用户看图输入等价）
+  const captchaText = await getVerifyCode(captchaId);
+
+  // 3. SM2 加密密码
+  const encryptedPassword = sm2Encrypt(publicKey, password);
+
+  // 4. 提交登录（携带完整三件套）
+  const loginRes = await request.post(`${API_URL}/system/login`, {
+    data: {
+      username,
+      password: encryptedPassword,
+      captcha: captchaText,
+      captchaId,
+      publicKey,
+      rememberMe: false,
+    },
+  });
+  const loginBody = await loginRes.json();
+
+  if (loginBody.code !== 200 || !loginBody.data) {
+    console.error('API login failed:', JSON.stringify(loginBody));
+    throw new Error(`API 登录失败: ${loginBody.msg || loginBody.message || 'unknown error'}`);
+  }
+
+  return loginBody.data;
+}
+
+/**
+ * API 登录并注入 token 到浏览器上下文（供 UI 页面测试使用）
  */
 export async function apiLogin(
   context: BrowserContext,
   username: string = 'admin',
   password: string = TEST_PASSWORD,
 ): Promise<void> {
-  const apiContext = await context.request.newContext({
-    baseURL: TEST_BASE_URL,
-    ignoreHTTPSErrors: true,
-  });
-
-  try {
-    // 1. 获取验证码（同时获取 SM2 公钥，私钥由 run-tests.sh 预置到 Redis）
-    const captchaRes = await apiContext.get('/system/captcha', {
-      params: { timestamp: Date.now().toString() },
-    });
-    const captchaBody = await captchaRes.json();
-    const publicKey = captchaBody.data?.publicKey;
-
-    if (!publicKey) {
-      throw new Error('Failed to get SM2 public key from captcha endpoint');
-    }
-
-    // 2. SM2 加密密码（模拟前端行为）
-    const encryptedPassword = sm2Encrypt(publicKey, password);
-
-    // 3. 提交登录
-    const loginRes = await apiContext.post('/api/login', {
-      data: { username, password: encryptedPassword, publicKey },
-    });
-    const loginBody = await loginRes.json();
-
-    if (loginBody.code !== 200 || !loginBody.data) {
-      console.error('API login failed:', JSON.stringify(loginBody));
-      throw new Error(`API login failed: ${loginBody.msg || 'unknown error'}`);
-    }
-
-    // 4. 注入 token 到浏览器上下文
-    await context.addCookies([
-      {
-        name: 'satoken',
-        value: loginBody.data,
-        domain: new URL(TEST_BASE_URL).hostname,
-        path: '/',
-        httpOnly: false,
-        secure: false,
-        sameSite: 'Lax',
-      },
-    ]);
-  } finally {
-    await apiContext.dispose();
-  }
+  const token = await apiLoginRequest(context.request, username, password);
+  await context.addCookies([
+    {
+      name: 'Authorization',
+      value: token,
+      domain: new URL(API_URL).hostname,
+      path: '/',
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax',
+    },
+  ]);
 }
 
 /**
- * 通过 UI 表单登录（用于测试登录功能本身）
+ * 通过 UI 表单登录（用于测试登录页本身）
+ * 流程：进入登录页 -> 监听验证码响应 -> 从 Redis 读取验证码 -> 填写表单提交
  */
 export async function uiLogin(
-  context: BrowserContext,
-  username: string = 'admin',
-  password: string = TEST_PASSWORD,
+  page: Page,
+  user: Partial<LoginCredential> = {},
 ): Promise<void> {
-  const page = await context.newPage();
-  await page.goto(`${TEST_BASE_URL}/`);
-  await page.waitForLoadState('networkidle');
-  await page.waitForSelector('.login-container', { timeout: 10000 });
-  await page.fill('.el-form-item:nth-child(1) .el-input__inner', username);
-  await page.fill('.el-form-item:nth-child(2) .el-input__inner', password);
-  await page.waitForTimeout(500);
-  await page.click('.el-button--primary');
-  await page.waitForURL('**/dashboard', { timeout: 15000 });
-  await page.close();
+  const username = user.username || 'admin';
+  const password = user.password || TEST_PASSWORD;
+
+  const watcher = watchCaptcha(page);
+  await page.goto('/#/login');
+  await page.waitForSelector('.a-login-card', { timeout: 10000 });
+
+  const captchaText = await watcher.code;
+
+  await page
+    .locator('input[placeholder*="账号"], input[placeholder*="Account"], input[placeholder*="用户名"]')
+    .first()
+    .fill(username);
+  await page
+    .locator('input[placeholder*="密码"], input[placeholder*="Password"]')
+    .first()
+    .fill(password);
+  await page
+    .locator('input[placeholder*="验证码"], input[placeholder*="Captcha"]')
+    .first()
+    .fill(captchaText);
+
+  const loginBtn = page.locator('button').filter({ hasText: /登录|Login/i }).last();
+  await loginBtn.click();
+
+  await page.waitForURL(/#\/admin/, { timeout: 15000 });
+}
+
+/** 兼容历史命名 */
+export const loginViaAPI = apiLogin;
+export const loginViaUI = uiLogin;
+
+/**
+ * 导航到指定前端页面（hash 路由）
+ * 先访问 home 初始化 tab 状态（App.vue onMounted 会调用 loadTabItems，
+ * 若无缓存 tab 会 router.push('/admin/home') 覆盖目标路由），再跳转到目标页。
+ */
+export async function navigateTo(page: Page, path: string): Promise<void> {
+  await page.goto('/#/admin/home');
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1000);
+  await page.goto(`/#${path}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1500);
 }

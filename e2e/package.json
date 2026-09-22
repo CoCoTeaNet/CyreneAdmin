@@ -11,6 +11,7 @@
     "report": "playwright show-report"
   },
   "dependencies": {
+    "mysql2": "^3.24.4",
     "sm-crypto": "^0.3.13"
   },
   "devDependencies": {

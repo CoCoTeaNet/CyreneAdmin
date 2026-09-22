@@ -1,8 +1,8 @@
 import { type Page, type Locator, expect } from '@playwright/test';
-import { TEST_PASSWORD } from './config';
+import { API_URL, TEST_PASSWORD } from './config';
 
-/** 后端 API 基础路径 */
-export const API_URL = process.env.API_URL || 'http://localhost:9000/api';
+export { API_URL } from './config';
+
 
 /** 默认测试账号 */
 export const TEST_USER = {
@@ -23,6 +23,7 @@ export async function waitForMessage(page: Page, text: string, timeout = 5000): 
  */
 export async function waitForTableLoad(page: Page, timeout = 10000): Promise<void> {
   await page.locator('.el-loading-mask').waitFor({ state: 'hidden', timeout }).catch(() => {});
+  await page.locator('.el-table__body .el-table__row').first().waitFor({ state: 'visible', timeout }).catch(() => {});
   await page.waitForTimeout(300);
 }
 
