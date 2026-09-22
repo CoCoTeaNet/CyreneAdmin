@@ -59,7 +59,7 @@ export async function request(url: string, data: any, method: any): Promise<any>
     }
 
     if (userStore.userinfo.token) {
-        config.headers["sa-token"] = userStore.userinfo.token;
+        config.headers["Authorization"] = userStore.userinfo.token;
     }
 
     let res: any = await axios.request(config);
@@ -81,7 +81,7 @@ export async function requestFile(url: string, data: any, method: any): Promise<
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
                 "Content-Type": 'application/json;charset=utf-8',
-                "sa-token": userStore.userinfo.token ? userStore.userinfo.token : 'sa-token'
+                "Authorization": userStore.userinfo.token ? userStore.userinfo.token : 'Authorization'
             },
             // `params` 是即将与请求一起发送的 URL 参数
             params: method === 'GET' ? data : '',
