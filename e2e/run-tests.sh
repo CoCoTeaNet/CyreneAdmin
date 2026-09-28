@@ -59,6 +59,11 @@ SKIP_BUILD=false
 HEADED_FLAG=""
 API_ONLY=false
 STEP_FAILED=""
+# 统一使用 e2e/docker-compose.test.yml（与 run-tests.ps1 一致）。
+# compose 项目名 = compose 文件所在目录名，两脚本必须一致，
+# 否则固定容器名 e2e-mysql/e2e-redis 会跨项目冲突（Conflict）。
+COMPOSE_FILE="$E2E_DIR/docker-compose.test.yml"
+COMPOSE_PROJECT="e2e"
 
 # ---------- ERR trap：捕获任何意外失败 ----------
 err_handler() {
@@ -107,7 +112,7 @@ cleanup() {
   if [[ "$INFRA_STARTED" == true ]]; then
     info "停止 Docker 容器..."
     cd "$ROOT_DIR"
-    docker compose -f docker-compose.test.yml stop mysql redis 2>/dev/null || true
+    docker compose -f "$COMPOSE_FILE" stop mysql redis 2>/dev/null || true
     ok "Docker 容器已停止"
   fi
 
@@ -169,9 +174,30 @@ check_prerequisites() {
   echo "---" >> "$RUN_LOG"
 }
 
+# ---------- 容器冲突自愈 ----------
+# 固定容器名（e2e-mysql/e2e-redis）属于 compose 项目名不变量：
+# 若同名容器由其它项目创建（如仓库根目录下旧版 docker-compose.test.yml，
+# project=cyreneadmin），compose 无法接管，up 时会报
+# "Conflict. The container name ... is already in use"。
+# 这里在 up 前检查并移除异项目同名容器。
+cleanup_conflicting_containers() {
+  local name proj
+  for name in e2e-mysql e2e-redis; do
+    docker inspect "$name" >/dev/null 2>&1 || continue
+    proj=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$name" 2>/dev/null)
+    if [[ "$proj" != "$COMPOSE_PROJECT" ]]; then
+      warn "容器 $name 属于 compose 项目 '${proj:-无}'（期望 '$COMPOSE_PROJECT'），移除以避免名称冲突"
+      docker rm -f "$name" >/dev/null 2>&1 || true
+    fi
+  done
+}
+
 # ---------- 启动基础设施 (MySQL + Redis) ----------
 start_infrastructure() {
   info "启动 MySQL + Redis..."
+
+  # 先做容器冲突自愈（异项目同名容器可能占用端口并阻塞 up）
+  cleanup_conflicting_containers
 
   # 检查是否已有外部服务运行
   if nc -z 127.0.0.1 "$MYSQL_PORT" 2>/dev/null && nc -z 127.0.0.1 "$REDIS_PORT" 2>/dev/null; then
@@ -179,46 +205,13 @@ start_infrastructure() {
     return 0
   fi
 
-  # 创建临时的 docker-compose 测试配置
-  cat > "$ROOT_DIR/docker-compose.test.yml" <<'YAML'
-services:
-  mysql:
-    image: mysql:8.0.45
-    ports:
-      - "13306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: test123456
-      MYSQL_DATABASE: cyrene_admin
-      TZ: Asia/Shanghai
-    volumes:
-      - ./scripts/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql
-      - ./scripts/init-data-test.sql:/docker-entrypoint-initdb.d/02-init-data.sql
-      - ./scripts/init-menu-zh.sql:/docker-entrypoint-initdb.d/03-init-menu.sql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ptest123456"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-    command: --default-authentication-plugin=mysql_native_password
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "16379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 3s
-      timeout: 3s
-      retries: 10
-YAML
-
   cd "$ROOT_DIR"
   info "拉取镜像并启动容器..."
-  docker compose -f docker-compose.test.yml up -d mysql redis >> "$RUN_LOG" 2>&1
+  docker compose -f "$COMPOSE_FILE" up -d mysql redis >> "$RUN_LOG" 2>&1
   local rc=$?
   if [[ $rc -ne 0 ]]; then
     fail "docker compose up 失败 (exit=$rc)"
-    docker compose -f docker-compose.test.yml logs >> "$RUN_LOG" 2>&1 || true
+    docker compose -f "$COMPOSE_FILE" logs >> "$RUN_LOG" 2>&1 || true
     exit 1
   fi
   INFRA_STARTED=true
@@ -226,11 +219,11 @@ YAML
   # 等待服务就绪
   info "等待 MySQL 就绪..."
   local retries=30
-  while ! docker compose -f docker-compose.test.yml exec -T mysql mysqladmin ping -h localhost -uroot -ptest123456 --silent 2>/dev/null; do
+  while ! docker compose -f "$COMPOSE_FILE" exec -T mysql mysqladmin ping -h localhost -uroot -ptest123456 --silent 2>/dev/null; do
     retries=$((retries - 1))
     if [[ $retries -le 0 ]]; then
       fail "MySQL 启动超时，容器日志:"
-      docker compose -f docker-compose.test.yml logs mysql 2>&1 | tail -30 | tee -a "$RUN_LOG"
+      docker compose -f "$COMPOSE_FILE" logs mysql 2>&1 | tail -30 | tee -a "$RUN_LOG"
       exit 1
     fi
     echo -n "." | tee -a "$RUN_LOG"
@@ -241,17 +234,17 @@ YAML
 
   # 验证 SQL 初始化是否成功
   info "验证数据库表..."
-  docker compose -f docker-compose.test.yml exec -T mysql mysql -uroot -ptest123456 cyrene_admin -e "SHOW TABLES;" >> "$RUN_LOG" 2>&1
+  docker compose -f "$COMPOSE_FILE" exec -T mysql mysql -uroot -ptest123456 cyrene_admin -e "SHOW TABLES;" >> "$RUN_LOG" 2>&1
   if [[ $? -ne 0 ]]; then
     fail "数据库表验证失败"
-    docker compose -f docker-compose.test.yml exec -T mysql mysql -uroot -ptest123456 cyrene_admin -e "SHOW TABLES;" 2>&1 | tee -a "$RUN_LOG"
+    docker compose -f "$COMPOSE_FILE" exec -T mysql mysql -uroot -ptest123456 cyrene_admin -e "SHOW TABLES;" 2>&1 | tee -a "$RUN_LOG"
     exit 1
   fi
   ok "数据库表已就绪"
 
   info "等待 Redis 就绪..."
   retries=15
-  while ! docker compose -f docker-compose.test.yml exec -T redis redis-cli ping 2>/dev/null | grep -q PONG; do
+  while ! docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli ping 2>/dev/null | grep -q PONG; do
     retries=$((retries - 1))
     if [[ $retries -le 0 ]]; then
       fail "Redis 启动超时"
@@ -375,7 +368,7 @@ start_backend() {
   fi
 
   # 预置测试验证码到 Redis
-  docker compose -f docker-compose.test.yml exec -T redis redis-cli SET "captcha:e2e-test-captcha" "1" EX 3600 >> "$RUN_LOG" 2>&1 \
+  docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli SET "captcha:e2e-test-captcha" "1" EX 3600 >> "$RUN_LOG" 2>&1 \
     && ok "Redis 预置验证码完成" || warn "Redis 预置验证码跳过"
 
   ok "后端服务已就绪 (http://127.0.0.1:${BACKEND_PORT})"

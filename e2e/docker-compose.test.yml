@@ -9,9 +9,9 @@ services:
       MYSQL_DATABASE: cyrene_admin
       TZ: Asia/Shanghai
     volumes:
-      - ./scripts/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql
-      - ./scripts/init-data-test.sql:/docker-entrypoint-initdb.d/02-init-data.sql
-      - ./scripts/init-menu-zh.sql:/docker-entrypoint-initdb.d/03-init-menu.sql
+      - ../scripts/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql
+      - ../scripts/init-data-test.sql:/docker-entrypoint-initdb.d/02-init-data.sql
+      - ../scripts/init-menu-zh.sql:/docker-entrypoint-initdb.d/03-init-menu.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ptest123456"]
       interval: 5s

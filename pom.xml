@@ -22,19 +22,19 @@
         <maven.compiler.target>17</maven.compiler.target>
         <utf-8>UTF-8</utf-8>
         <!-- 插件版本 -->
-        <lombok.version>1.18.32</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
         <!-- 外部框架版本 -->
-        <sqltoy.version>5.6.56</sqltoy.version>
-        <sa-token.version>1.44.0</sa-token.version>
-        <mysql-connector.version>8.4.0</mysql-connector.version>
-        <fastjson2.version>2.0.59</fastjson2.version>
-        <hutool.version>5.8.41</hutool.version>
-        <oshi.version>6.8.2</oshi.version>
-        <bcprov.version>1.81</bcprov.version>
-        <redisx.version>1.4.7</redisx.version>
-        <logback-classic.version>1.5.18</logback-classic.version>
-        <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
-        <hikaricp.version>4.0.3</hikaricp.version>
+        <sqltoy.version>6.0.2</sqltoy.version>
+        <sa-token.version>1.46.0</sa-token.version>
+        <mysql-connector.version>9.7.0</mysql-connector.version>
+        <fastjson2.version>2.0.65</fastjson2.version>
+        <hutool.version>5.8.47</hutool.version>
+        <oshi.version>7.6.1</oshi.version>
+        <bcprov.version>1.86</bcprov.version>
+        <redisx.version>1.8.6</redisx.version>
+        <logback-classic.version>1.6.4</logback-classic.version>
+        <hibernate-validator.version>9.1.4.Final</hibernate-validator.version>
+        <hikaricp.version>7.1.0</hikaricp.version>
     </properties>
 
     <dependencyManagement>

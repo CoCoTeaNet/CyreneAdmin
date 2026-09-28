@@ -9,8 +9,16 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$RootDir = (Get-Location).Path
+# Base all paths on the script's own directory (e2e/) so the script behaves
+# the same no matter which working directory it is launched from.
+# The old version used Get-Location: launched from the repo root, the compose
+# file and project name would mismatch, and the fixed container names
+# e2e-mysql/e2e-redis were already owned by another project -> Conflict.
+$RootDir = $PSScriptRoot
+if (-not $RootDir) { $RootDir = (Get-Location).Path }
 $ProjectRoot = Split-Path $RootDir -Parent
+# Default compose project name = directory name of the compose file; must match.
+$ComposeProject = Split-Path -Leaf $RootDir
 $LogDir = Join-Path $RootDir "logs"
 $BackendLog = Join-Path $LogDir "backend.log"
 $FrontendLog = Join-Path $LogDir "frontend.log"
@@ -97,6 +105,28 @@ function IsProcessAlive {
     }
 }
 
+# Remove same-named test containers that belong to a *different* compose project.
+# Containers with fixed container_name (e2e-mysql/e2e-redis) created by another
+# project/directory cannot be adopted by compose, so `up` fails with
+# "Conflict: The container name ... is already in use".
+function Remove-ConflictingContainers {
+    foreach ($name in @("e2e-mysql", "e2e-redis")) {
+        $raw = cmd /c "docker inspect $name 2>nul"
+        if (-not $raw) { continue }  # container missing (or docker not running)
+        $proj = $null
+        try {
+            $info = ($raw | Out-String) | ConvertFrom-Json
+            if ($info -is [System.Array]) { $info = $info[0] }
+            $labels = $info.Config.Labels
+            if ($labels) { $proj = @($labels.'com.docker.compose.project')[0] }
+        } catch { $proj = $null }
+        if ($proj -ne $ComposeProject) {
+            LogWarn "Removing conflicting container '$name' (compose project: '$proj', expected: '$ComposeProject')"
+            cmd /c "docker rm -f $name >nul 2>&1"
+        }
+    }
+}
+
 function Init {
     LogStep "Initialize"
     New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
@@ -114,7 +144,14 @@ function StartInfra {
     Push-Location $RootDir
     try {
         LogInfo "Starting containers..."
-        cmd /c "docker compose -f docker-compose.test.yml up -d mysql redis 2>&1"
+        Remove-ConflictingContainers
+        $upOutput = cmd /c "docker compose -f docker-compose.test.yml up -d mysql redis 2>&1"
+        foreach ($line in $upOutput) { if ($line) { Log "DOCKER" $line } }
+        if ($LASTEXITCODE -ne 0) {
+            LogFail "docker compose up failed (exit=$LASTEXITCODE)"
+            Pop-Location
+            exit 1
+        }
         $retries = 0
         while ($retries -lt 30) {
             $status = cmd /c "docker inspect --format={{.State.Health.Status}} e2e-mysql 2>nul"

@@ -59,8 +59,8 @@ e2e/
 ## 手动运行
 
 ```bash
-# 1. 启动 MySQL 和 Redis (使用 docker-compose.test.yml)
-docker compose -f docker-compose.test.yml up -d
+# 1. 启动 MySQL 和 Redis (使用 e2e/docker-compose.test.yml，项目名固定为 e2e)
+docker compose -f e2e/docker-compose.test.yml up -d
 
 # 2. 构建并启动后端
 mvn clean package -pl cyrene-starter-solon -am -DskipTests
@@ -81,6 +81,33 @@ BASE_URL=http://localhost:8080 API_URL=http://localhost:9000/api npx playwright 
 
 ```bash
 cd e2e && npx playwright show-report
+```
+
+## 故障排查
+
+### `Conflict. The container name "/e2e-redis" is already in use`
+
+**原因**：固定容器名（`e2e-mysql`/`e2e-redis`）属于 compose 项目名不变量。若同名容器由其它项目创建（如曾在仓库根目录用旧版 compose 文件 `up` 过，其 `com.docker.compose.project` 为 `cyreneadmin` 而非 `e2e`），compose 无法接管，`up` 即报 Conflict。
+
+**处理**（两个脚本已内置自愈，正常重跑即可）：
+
+```bash
+# 查看容器归属
+docker inspect e2e-redis --format '{{index .Config.Labels "com.docker.compose.project"}}'
+# 若输出不是 e2e，移除残留容器后重跑
+docker rm -f e2e-mysql e2e-redis
+docker compose -f e2e/docker-compose.test.yml up -d
+```
+
+### MySQL 初始化后表为空
+
+**原因**：`e2e/docker-compose.test.yml` 挂载的是 `../scripts/*.sql`（仓库根 `scripts/`）。若误将 `e2e/scripts/` 下的 `.sql` 创建成目录（而非文件），容器内 `/docker-entrypoint-initdb.d/` 会挂到空目录，init 脚本不执行。
+
+**处理**：确认 `scripts/ddl.sql` 等为真实文件，删除重建容器重新初始化：
+
+```bash
+docker rm -f e2e-mysql
+docker compose -f e2e/docker-compose.test.yml up -d mysql
 ```
 
 ## 测试覆盖范围
