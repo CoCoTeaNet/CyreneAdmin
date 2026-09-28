@@ -110,6 +110,22 @@ docker rm -f e2e-mysql
 docker compose -f e2e/docker-compose.test.yml up -d mysql
 ```
 
+### `[FAIL] frontend did not start on port 5173 within 60s`（但 `frontend.log` 显示 Vite ready）
+
+**原因**：Windows 上 `localhost` 默认先解析为 IPv6 `::1`（dns verbatim 顺序）。旧脚本 `-Headed` 分支启动 Vite 时未传 `--host 127.0.0.1`，dev server 只监听 `[::1]:5173`，而就绪探测只连 `127.0.0.1`，必然超时——Vite 其实已启动成功。
+
+**处理**（脚本已修复，正常重跑即可）：
+
+- 启动 Vite 固定 `--host 127.0.0.1`；`WaitForPort` 双栈探测 `127.0.0.1` 与 `::1`；
+- 等待期间若进程提前退出会快速失败，并自动输出 `frontend.log` / `frontend-err.log` 末尾日志；
+- 启动前自动清理上次残留的 pid 文件与占端口进程，避免干扰就绪判断。
+
+手动验证监听地址：
+
+```powershell
+netstat -ano | findstr 5173   # 应看到 127.0.0.1:5173
+```
+
 ## 测试覆盖范围
 
 | 模块 | 测试文件 | 用例数 | 说明 |

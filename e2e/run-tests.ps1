@@ -42,6 +42,22 @@ function LogInfo { Log "INFO" $args[0] }
 function LogWarn { Log "WARN" $args[0] }
 function LogFail { Log "FAIL" $args[0] }
 
+# Free our service ports: a run that failed before Cleanup could execute leaves
+# backend/vite holding 9000/5173, which would silently break the next run.
+function Stop-PortOwners {
+    foreach ($port in @($BackendPort, $FrontendPort)) {
+        try {
+            $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
+            foreach ($c in $conns) {
+                if ($c.OwningProcess -gt 4) {
+                    LogWarn "Stopping process PID=$($c.OwningProcess) that still holds port $port"
+                    cmd /c "taskkill /PID $($c.OwningProcess) /T /F >nul 2>&1"
+                }
+            }
+        } catch {}
+    }
+}
+
 function Cleanup {
     LogInfo "=== Cleanup ==="
     if (Test-Path $BackendPidFile) {
@@ -56,16 +72,7 @@ function Cleanup {
         cmd /c "taskkill /PID $stopId /T /F >nul 2>&1"
         Remove-Item $FrontendPidFile -ErrorAction SilentlyContinue
     }
-    foreach ($port in @($BackendPort, $FrontendPort)) {
-        try {
-            $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
-            foreach ($c in $conns) {
-                if ($c.OwningProcess -gt 4) {
-                    cmd /c "taskkill /PID $($c.OwningProcess) /T /F >nul 2>&1"
-                }
-            }
-        } catch {}
-    }
+    Stop-PortOwners
     if (-not $SkipInfra) {
         LogInfo "Stopping infrastructure containers"
         Push-Location $RootDir
@@ -75,20 +82,45 @@ function Cleanup {
     LogInfo "Cleanup done"
 }
 
+# Probe a single loopback address. An explicit IPAddress + family-specific socket
+# is used so that both IPv4 (127.0.0.1) and IPv6 (::1) listeners are detected.
+function Test-TcpPort {
+    param([string]$Address, [int]$Port)
+    try {
+        $ip = [System.Net.IPAddress]::Parse($Address)
+        $tcp = New-Object -TypeName System.Net.Sockets.TcpClient -ArgumentList @($ip.AddressFamily)
+        $tcp.Connect($ip, $Port)
+        $tcp.Close()
+        return $true
+    } catch {
+        return $false
+    }
+}
+
 function WaitForPort {
-    param([int]$Port, [int]$TimeoutSec = 120, [string]$Label = "port")
+    param([int]$Port, [int]$TimeoutSec = 120, [string]$Label = "port", [string]$PidFile = "")
     LogInfo "Waiting for $Label on port $Port (timeout ${TimeoutSec}s)"
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     while ($sw.Elapsed.TotalSeconds -lt $TimeoutSec) {
-        try {
-            $tcp = New-Object System.Net.Sockets.TcpClient
-            $tcp.Connect("127.0.0.1", $Port)
-            $tcp.Close()
-            LogInfo "$Label is ready (${([int]$sw.Elapsed.TotalSeconds)}s)"
-            return $true
-        } catch {
-            Start-Sleep -Seconds 2
+        # Probe BOTH loopback families: on Windows `localhost` resolves to ::1 first
+        # (dns verbatim order), so a dev server started without --host may listen
+        # on [::1] only while a 127.0.0.1-only probe never connects.
+        foreach ($address in @("127.0.0.1", "::1")) {
+            if (Test-TcpPort -Address $address -Port $Port) {
+                LogInfo "$Label is ready on $address ($([int]$sw.Elapsed.TotalSeconds)s)"
+                return $true
+            }
         }
+        # Fail fast when the process we are waiting for has already exited.
+        if ($PidFile -ne "" -and (Test-Path $PidFile)) {
+            $watchId = 0
+            try { $watchId = [int]((Get-Content $PidFile -Raw).Trim()) } catch { $watchId = 0 }
+            if ($watchId -gt 0 -and -not (IsProcessAlive $watchId)) {
+                LogFail "$Label process (PID=$watchId) exited while waiting"
+                return $false
+            }
+        }
+        Start-Sleep -Seconds 2
     }
     LogFail "$Label did not start on port $Port within ${TimeoutSec}s"
     return $false
@@ -133,6 +165,15 @@ function Init {
     Set-Content -Path $RunLog -Value ""
     LogInfo "Log directory: $LogDir"
     LogInfo "Root directory: $RootDir"
+    # Drop stale pid files and any process still holding our ports, so leftovers
+    # from a previously interrupted run cannot fake or block readiness.
+    foreach ($pidFile in @($BackendPidFile, $FrontendPidFile)) {
+        if (Test-Path $pidFile) {
+            LogWarn "Removing stale pid file from previous run: $pidFile"
+            Remove-Item $pidFile -ErrorAction SilentlyContinue
+        }
+    }
+    Stop-PortOwners
 }
 
 function StartInfra {
@@ -223,6 +264,7 @@ function StartBackend {
     $jar = Join-Path $ProjectRoot "cyrene-starter-solon\target\launcher.jar"
     if (-not (Test-Path $jar)) {
         LogFail "Backend JAR not found at $jar. Run build first."
+        Cleanup
         exit 1
     }
     $wrapperLines = @(
@@ -247,6 +289,7 @@ function StartBackend {
         if (Test-Path $BackendLog) {
             Get-Content $BackendLog -Tail 30 | ForEach-Object { LogFail "  $_" }
         }
+        Cleanup
         exit 1
     }
     LogInfo "Backend process is alive"
@@ -262,7 +305,10 @@ function StartFrontend {
         }
         $env:VITE_API_BASE = "http://localhost:$BackendPort"
         $env:VITE_CAPTCHA_BYPASS = "e2e-test-captcha"
-        $devCmd = if ($Headed) { "npx vite --port $FrontendPort" } else { "npx vite --host 127.0.0.1 --port $FrontendPort" }
+        # Always pin IPv4 loopback: on Windows `localhost` resolves to ::1 first,
+        # so without --host Vite binds [::1] only and every 127.0.0.1 health check
+        # (WaitForPort, Playwright) times out - that was the -Headed startup failure.
+        $devCmd = "npx vite --host 127.0.0.1 --port $FrontendPort"
         $proc = Start-Process -FilePath "cmd.exe" `
             -ArgumentList "/c", "cd /d `"$ProjectRoot\cyrene-ui`" && set VITE_API_BASE=http://localhost:$BackendPort && set VITE_CAPTCHA_BYPASS=e2e-test-captcha && $devCmd" `
             -WindowStyle Minimized `
@@ -274,6 +320,12 @@ function StartFrontend {
         Start-Sleep -Seconds 3
         if (-not (IsProcessAlive $proc.Id)) {
             LogFail "Frontend process died immediately"
+            foreach ($logFile in @($FrontendLog, (Join-Path $LogDir "frontend-err.log"))) {
+                if (Test-Path $logFile) {
+                    Get-Content $logFile -Tail 30 | ForEach-Object { LogFail "  $_" }
+                }
+            }
+            Cleanup
             exit 1
         }
         LogInfo "Frontend process is alive"
@@ -283,11 +335,12 @@ function StartFrontend {
 }
 
 function WaitForBackend {
-    if (-not (WaitForPort -Port $BackendPort -TimeoutSec 120 -Label "backend")) {
+    if (-not (WaitForPort -Port $BackendPort -TimeoutSec 120 -Label "backend" -PidFile $BackendPidFile)) {
         LogFail "Backend failed to start"
         if (Test-Path $BackendLog) {
             Get-Content $BackendLog -Tail 60 | ForEach-Object { LogFail "  $_" }
         }
+        Cleanup
         exit 1
     }
     Start-Sleep -Seconds 3
@@ -295,8 +348,16 @@ function WaitForBackend {
 }
 
 function WaitForFrontend {
-    if (-not (WaitForPort -Port $FrontendPort -TimeoutSec 60 -Label "frontend")) {
+    if (-not (WaitForPort -Port $FrontendPort -TimeoutSec 60 -Label "frontend" -PidFile $FrontendPidFile)) {
         LogFail "Frontend failed to start"
+        # Dump both vite logs: the readiness failure often happens while vite itself
+        # reports "ready" (e.g. bound to ::1), and the clue lives in these files.
+        foreach ($logFile in @($FrontendLog, (Join-Path $LogDir "frontend-err.log"))) {
+            if (Test-Path $logFile) {
+                Get-Content $logFile -Tail 30 | ForEach-Object { LogFail "  $_" }
+            }
+        }
+        Cleanup
         exit 1
     }
     LogInfo "Frontend dev server is reachable"
@@ -315,7 +376,7 @@ function RunTests {
             LogInfo "Installing e2e dependencies"
             cmd /c "cd /d `"$RootDir`" && npm install 2>&1"
         }
-        $env:BASE_URL = "http://localhost:$FrontendPort"
+        $env:BASE_URL = "http://127.0.0.1:$FrontendPort"
         $env:API_BASE = "http://localhost:$BackendPort"
         $headlessArg = if ($Headed) { "--headed" } else { "" }
         $filterArg = if ($ApiOnly) { "tests/api/" } else { "tests/" }
