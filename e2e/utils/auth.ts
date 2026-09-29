@@ -6,7 +6,7 @@
  * 注意：登录链路强制校验 验证码 + 验证码ID + SM2公钥 三件套（移除 strong-password 后的契约）。
  */
 import { type BrowserContext, type Page } from '@playwright/test';
-import { API_URL, TEST_PASSWORD } from './config';
+import { API_URL, PAGE_BASE_URL, TEST_PASSWORD } from './config';
 import { sm2Encrypt } from './sm2';
 import { getVerifyCode } from './redis';
 
@@ -94,17 +94,23 @@ export async function apiLogin(
   password: string = TEST_PASSWORD,
 ): Promise<void> {
   const token = await apiLoginRequest(context.request, username, password);
-  await context.addCookies([
-    {
-      name: 'Authorization',
-      value: token,
-      domain: new URL(API_URL).hostname,
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
-  ]);
+  // Cookie 按 host 匹配（与端口无关）：页面源与 API 源可能不同 host
+  // （ps1: BASE_URL=127.0.0.1 而 API_URL=localhost；sh: 同为 127.0.0.1）。
+  // 只注入 API host 时，页面同源请求不携带 Authorization → 后端 4001
+  // “未能读取到有效 token” → 前端跳回登录页（表现为“无法登录”）。
+  // 因此按 hostname 去重后，为页面 host 与 API host 各注入一份 host-only cookie。
+  const hosts = [...new Set([
+    new URL(PAGE_BASE_URL).hostname,
+    new URL(API_URL).hostname,
+  ])];
+  await context.addCookies(hosts.map((host) => ({
+    name: 'Authorization',
+    value: token,
+    url: `http://${host}`,
+    httpOnly: false,
+    secure: false,
+    sameSite: 'Lax' as const,
+  })));
 }
 
 /**

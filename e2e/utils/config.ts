@@ -8,6 +8,9 @@ export const TEST_BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:9000
 /** 后端 API 根路径（contextPath=/api） */
 export const API_URL = process.env.API_URL || `${TEST_BASE_URL}/api`;
 
+/** 前端页面地址（与 playwright.config.ts 的 baseURL 同源读取） */
+export const PAGE_BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
+
 /** 测试用户密码（与运行中的后端 app.yml 中 myapp.password 一致） */
 export const TEST_PASSWORD = process.env.TEST_PASSWORD || 'admin#123456';
 

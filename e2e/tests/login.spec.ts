@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginViaUI, loginViaAPI, watchCaptcha } from '../utils/auth';
-import { TEST_USER, waitForMessage } from '../utils/helpers';
+import { TEST_USER, waitForMessage, API_URL } from '../utils/helpers';
 
 test.describe('登录模块', () => {
 
@@ -90,7 +90,7 @@ test.describe('登录后状态', () => {
   });
 
   test('1.8 登录后访问 loginInfo 应返回用户信息', async ({ page }) => {
-    const response = await page.request.get('http://localhost:9000/api/system/loginInfo');
+    const response = await page.request.get(`${API_URL}/system/loginInfo`);
     const body = await response.json();
     expect(body.code).toBe(200);
     expect(body.data).toBeTruthy();
@@ -98,7 +98,7 @@ test.describe('登录后状态', () => {
   });
 
   test('1.9 登录后访问用户菜单应返回菜单列表', async ({ page }) => {
-    const response = await page.request.get('http://localhost:9000/api/system/user/menus');
+    const response = await page.request.get(`${API_URL}/system/user/menus`);
     const body = await response.json();
     expect(body.code).toBe(200);
     expect(Array.isArray(body.data)).toBeTruthy();

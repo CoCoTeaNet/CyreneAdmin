@@ -110,6 +110,17 @@ docker rm -f e2e-mysql
 docker compose -f e2e/docker-compose.test.yml up -d mysql
 ```
 
+### 登录成功但页面仍提示 `未能读取到有效 token`（4001，跳回登录页）
+
+**原因**：`apiLogin` 注入的 `Authorization` cookie 按 host 匹配（与端口无关）。ps1 中页面源是 `127.0.0.1:5173`，而旧代码只按 `API_URL` 的 host（`localhost`）注入 cookie，页面同源请求不携带 Authorization → 后端 4001 → 前端跳回登录页。
+
+**处理**（脚本已修复，正常重跑即可）：`e2e/utils/auth.ts` 现按「页面 host + API host」去重后各注入一份 host-only cookie；`run-tests.ps1` 同时导出 `API_URL`（原 `API_BASE` 是无效变量，`utils/config.ts` 读的是 `API_URL`）。确认两端环境变量一致：
+
+```powershell
+# ps1: BASE_URL=http://127.0.0.1:5173, API_URL=http://localhost:9000/api
+# sh : BASE_URL=http://127.0.0.1:5173, API_URL=http://127.0.0.1:9000/api
+```
+
 ### `[FAIL] frontend did not start on port 5173 within 60s`（但 `frontend.log` 显示 Vite ready）
 
 **原因**：Windows 上 `localhost` 默认先解析为 IPv6 `::1`（dns verbatim 顺序）。旧脚本 `-Headed` 分支启动 Vite 时未传 `--host 127.0.0.1`，dev server 只监听 `[::1]:5173`，而就绪探测只连 `127.0.0.1`，必然超时——Vite 其实已启动成功。

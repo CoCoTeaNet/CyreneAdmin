@@ -377,7 +377,8 @@ function RunTests {
             cmd /c "cd /d `"$RootDir`" && npm install 2>&1"
         }
         $env:BASE_URL = "http://127.0.0.1:$FrontendPort"
-        $env:API_BASE = "http://localhost:$BackendPort"
+        # utils/config.ts reads API_URL (not API_BASE); keep it in sync with run-tests.sh
+        $env:API_URL = "http://localhost:$BackendPort/api"
         $headlessArg = if ($Headed) { "--headed" } else { "" }
         $filterArg = if ($ApiOnly) { "tests/api/" } else { "tests/" }
         $cmd = "npx --yes playwright test $filterArg --workers=1 $headlessArg"
