@@ -18,6 +18,7 @@ import net.cocotea.cyreneadmin.service.SysDictionaryService;
 import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import org.sagacity.sqltoy.dao.LightDao;
+import org.sagacity.sqltoy.lambda.LambdaQuery;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -71,7 +72,14 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
     }
 
     private List<TreeNode<BigInteger>> findNodeList(SysDictionaryVO sysDictionaryVO) {
-        List<SysDictionary> dictionaryList = lightDao.find("sys_dictionary_findList", BeanUtil.toBean(sysDictionaryVO, SysDictionary.class), SysDictionary.class);
+        List<SysDictionary> dictionaryList = LambdaQuery.create(SysDictionary.class).bind(lightDao)
+                .eq(true, SysDictionary::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysDictionary::getEnableStatus, sysDictionaryVO.getEnableStatus())
+                .like(true, SysDictionary::getDictionaryName, sysDictionaryVO.getDictionaryName())
+                .eq(true, SysDictionary::getParentId, sysDictionaryVO.getParentId())
+                .orderBy(true, false, SysDictionary::getSort)
+                .orderBy(true, false, SysDictionary::getId)
+                .find();
         // 查询关联的用户名称
         List<BigInteger> userIds = dictionaryList.stream().map(SysDictionary::getCreateBy).collect(Collectors.toList());
         List<SysUser> sysUsers = lightDao.loadByIds(SysUser.class, userIds);
@@ -101,7 +109,12 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
             return false;
         }
         // 获取子节点
-        List<SysDictionary> list = lightDao.find("sys_dictionary_findList", new SysDictionary().setParentId(id), SysDictionary.class);
+        List<SysDictionary> list = LambdaQuery.create(SysDictionary.class).bind(lightDao)
+                .eq(true, SysDictionary::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysDictionary::getParentId, id)
+                .orderBy(true, false, SysDictionary::getSort)
+                .orderBy(true, false, SysDictionary::getId)
+                .find();
         if (!list.isEmpty()) {
             // 存在子节点，删除子节点
             list.forEach(item -> delete(item.getId()));

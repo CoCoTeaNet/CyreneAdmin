@@ -25,6 +25,7 @@ import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.service.RedisService;
 import net.cocotea.cyreneadmin.util.LoginUtils;
 import org.sagacity.sqltoy.dao.LightDao;
+import org.sagacity.sqltoy.lambda.LambdaQuery;
 import org.sagacity.sqltoy.model.Page;
 import org.sagacity.sqltoy.utils.StringUtil;
 import org.slf4j.Logger;
@@ -70,18 +71,22 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     @Override
     public ApiPage<SysMenuVO> listByPage(SysMenuPageDTO pageDTO) {
-        Map<String, Object> map = BeanUtil.beanToMap(pageDTO.getSysMenu());
-        Page<Object> fastPage = ApiPage.create(pageDTO);
-        Page<SysMenu> page = lightDao.findPage(fastPage, "sys_menu_findList", map, SysMenu.class);
+        SysMenuPageDTO.Query query = pageDTO.getSysMenu();
+        Page<SysMenu> page = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysMenu::getIsMenu, query.getIsMenu())
+                .eq(true, SysMenu::getPermissionCode, query.getPermissionCode())
+                .like(true, SysMenu::getMenuName, query.getMenuName())
+                .eq(true, SysMenu::getMenuStatus, query.getMenuStatus())
+                .orderBy(true, true, SysMenu::getSort)
+                .orderBy(true, false, SysMenu::getId)
+                .findPage(ApiPage.create(pageDTO));
         return ApiPage.rest(page, SysMenuVO.class);
     }
 
     @Override
     public List<Tree<BigInteger>> listByTree(SysMenuTreeDTO treeDTO) {
-        Map<String, Object> map = BeanUtil.beanToMap(treeDTO);
-        List<SysMenuVO> list = lightDao.find("sys_menu_findList", map, SysMenuVO.class);
-
-        List<TreeNode<BigInteger>> nodeList = list.stream()
+        List<TreeNode<BigInteger>> nodeList = findMenuVOList(treeDTO).stream()
                 .map(menuVO -> {
                     TreeNode<BigInteger> node = new TreeNode<>(menuVO.getId(), menuVO.getParentId(), menuVO.getMenuName(), menuVO.getSort());
                     node.setExtra(BeanUtil.beanToMap(menuVO));
@@ -89,6 +94,19 @@ public class SysMenuServiceImpl implements SysMenuService {
                 }).toList();
 
         return TreeUtil.build(nodeList, BigInteger.ZERO);
+    }
+
+    private List<SysMenuVO> findMenuVOList(SysMenuTreeDTO treeDTO) {
+        List<SysMenu> list = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysMenu::getIsMenu, treeDTO.getIsMenu())
+                .eq(true, SysMenu::getPermissionCode, treeDTO.getPermissionCode())
+                .like(true, SysMenu::getMenuName, treeDTO.getMenuName())
+                .eq(true, SysMenu::getMenuStatus, treeDTO.getMenuStatus())
+                .orderBy(true, true, SysMenu::getSort)
+                .orderBy(true, false, SysMenu::getId)
+                .find();
+        return Convert.toList(SysMenuVO.class, list);
     }
 
     @Override
@@ -103,16 +121,21 @@ public class SysMenuServiceImpl implements SysMenuService {
         // 1、获取登录用户ID
         BigInteger loginId = LoginUtils.loginId();
         // 2、查询用户的角色
-        List<BigInteger> roleIds = lightDao.find("sys_user_role_findList", new SysUserRole().setUserId(loginId), SysUserRole.class).stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
+        List<BigInteger> roleIds = LambdaQuery.create(SysUserRole.class).bind(lightDao)
+                .eq(true, SysUserRole::getUserId, loginId)
+                .find().stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
         // 3、查询角色含有的菜单
-        Map<String, Object> sysRoleMenuMap = new HashMap<>(1);
-        sysRoleMenuMap.put("roleIds", roleIds);
-        List<BigInteger> menuIds = lightDao.find("sys_role_menu_findList", sysRoleMenuMap, SysRoleMenu.class).stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList());
+        List<BigInteger> menuIds = LambdaQuery.create(SysRoleMenu.class).bind(lightDao)
+                .in(true, SysRoleMenu::getRoleId, roleIds)
+                .find().stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList());
         // 4、根据菜单ID查询菜单信息
-        Map<String, Object> sysMenuMap = new HashMap<>(2);
-        sysMenuMap.put("menuIds", menuIds);
-        sysMenuMap.put("isMenu", isMenu);
-        List<SysMenu> list = lightDao.find("sys_menu_findList", sysMenuMap, SysMenu.class);
+        List<SysMenu> list = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .in(true, SysMenu::getId, menuIds)
+                .eq(true, SysMenu::getIsMenu, isMenu)
+                .orderBy(true, true, SysMenu::getSort)
+                .orderBy(true, false, SysMenu::getId)
+                .find();
         return Convert.toList(SysMenuVO.class, list);
     }
 
@@ -124,9 +147,12 @@ public class SysMenuServiceImpl implements SysMenuService {
             return false;
         }
         // 获取子节点
-        Map<String, Object> map = MapUtil.newHashMap(1);
-        map.put("parentId", id);
-        List<SysMenu> sysMenuList = lightDao.find("sys_menu_findList", map, SysMenu.class);
+        List<SysMenu> sysMenuList = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysMenu::getParentId, id)
+                .orderBy(true, true, SysMenu::getSort)
+                .orderBy(true, false, SysMenu::getId)
+                .find();
         if (!sysMenuList.isEmpty()) {
             // 存在子节点，删除子节点
             sysMenuList.forEach(item -> delete(item.getId()));
@@ -136,9 +162,12 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     @Override
     public List<SysMenuVO> listByRoleId(BigInteger roleId) {
-        Map<String, Object> sysMenuMap = MapUtil.newHashMap(1);
-        sysMenuMap.put("roleId", roleId);
-        List<SysMenu> list = lightDao.find("sys_menu_IN_findList", sysMenuMap, SysMenu.class);
+        List<SysMenu> list = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .inSql(roleId != null, SysMenu::getId, "select menu_id from sys_role_menu where role_id = :roleId", MapUtil.of("roleId", roleId))
+                .orderBy(true, true, SysMenu::getSort)
+                .orderBy(true, false, SysMenu::getId)
+                .find();
         return Convert.toList(SysMenuVO.class, list);
     }
 
@@ -159,8 +188,7 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     @Override
     public List<Tree<BigInteger>> listByTreeAsRoleSelection(SysMenuTreeDTO treeDTO) {
-        Map<String, Object> map = BeanUtil.beanToMap(treeDTO);
-        List<TreeNode<BigInteger>> nodeList = lightDao.find("sys_menu_findList", map, SysMenuVO.class)
+        List<TreeNode<BigInteger>> nodeList = findMenuVOList(treeDTO)
                 .stream()
                 .map(menuVO -> {
                     TreeNode<BigInteger> node = new TreeNode<>(menuVO.getId(), menuVO.getParentId(), menuVO.getMenuName(), menuVO.getSort());

@@ -21,7 +21,8 @@ import net.cocotea.cyreneadmin.service.RedisService;
 import net.cocotea.cyreneadmin.util.LoginUtils;
 import net.cocotea.cyreneadmin.util.SecurityUtils;
 import org.sagacity.sqltoy.dao.LightDao;
-import org.sagacity.sqltoy.model.EntityQuery;
+import org.sagacity.sqltoy.lambda.LambdaDelete;
+import org.sagacity.sqltoy.lambda.LambdaQuery;
 import org.sagacity.sqltoy.model.Page;
 import org.sagacity.sqltoy.utils.StringUtil;
 
@@ -79,8 +80,9 @@ public class SysUserServiceImpl implements SysUserService {
         SysUser sysUser = Convert.convert(SysUser.class, updateDTO);
         if (!(updateDTO.getRoleIds() == null || updateDTO.getRoleIds().isEmpty())) {
             // 删除用户角色关联
-            EntityQuery sysUserRoleQuery = EntityQuery.create().where("#[user_id = :userId]").names("userId").values(updateDTO.getId());
-            lightDao.deleteByQuery(SysUserRole.class, sysUserRoleQuery);
+            LambdaDelete.create(SysUserRole.class).bind(lightDao)
+                    .eq(true, SysUserRole::getUserId, updateDTO.getId())
+                    .delete();
             // 添加用户角色关联
             for (BigInteger roleId : updateDTO.getRoleIds()) {
                 SysUserRole sysUserRole = new SysUserRole().setUserId(updateDTO.getId()).setRoleId(roleId);
@@ -105,15 +107,24 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public ApiPage<SysUserVO> listByPage(SysUserPageDTO pageDTO) {
-        Map<String, Object> params = BeanUtil.beanToMap(pageDTO.getSysUser());
+        SysUserPageDTO.Query query = pageDTO.getSysUser();
+        Page<SysUser> page = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .like(true, SysUser::getUsername, query.getUsername())
+                .like(true, SysUser::getNickname, query.getNickname())
+                .like(true, SysUser::getEmail, query.getEmail())
+                .eq(true, SysUser::getSex, query.getSex())
+                .eq(true, SysUser::getMobilePhone, query.getMobilePhone())
+                .eq(true, SysUser::getAccountStatus, query.getAccountStatus())
+                .orderBy(true, false, SysUser::getId)
+                .findPage(ApiPage.create(pageDTO));
 
-        Page<SysUserVO> page = lightDao.findPage(ApiPage.create(pageDTO), "sys_user_findList", params, SysUserVO.class);
-
-        List<BigInteger> userIds = page.getRows().stream().map(SysUserVO::getId).toList();
+        List<SysUserVO> rows = BeanUtil.copyToList(page.getRows(), SysUserVO.class);
+        List<BigInteger> userIds = rows.stream().map(SysUserVO::getId).toList();
         Map<BigInteger, List<SysUserRoleVO>> roleMap = userRoleMap(userIds);
 
-        page.getRows().forEach(row -> row.setRoleList(roleMap.get(row.getId())));
-        return ApiPage.rest(page);
+        rows.forEach(row -> row.setRoleList(roleMap.get(row.getId())));
+        return ApiPage.rest(page, rows);
     }
 
     @Override
@@ -126,7 +137,12 @@ public class SysUserServiceImpl implements SysUserService {
         }
         // 校验密码
         String pwd = securityUtils.getPwd(loginDTO.getPassword());
-        SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setUsername(loginDTO.getUsername()).setPassword(pwd), SysUser.class);
+        SysUser sysUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysUser::getUsername, loginDTO.getUsername())
+                .eq(true, SysUser::getPassword, pwd)
+                .orderBy(true, false, SysUser::getId)
+                .getOne();
         if (sysUser == null) {
             throw new BusinessException("登录失败，用户名或密码错误");
         }
@@ -151,7 +167,10 @@ public class SysUserServiceImpl implements SysUserService {
     public SysUserVO getDetail() {
         BigInteger loginId = LoginUtils.loginId();
         // 用户信息
-        SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setId(loginId), SysUser.class);
+        SysUser sysUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysUser::getId, loginId)
+                .getOne();
         SysUserVO sysUserVO = Convert.convert(SysUserVO.class, sysUser);
         // 用户角色
         Map<BigInteger, List<SysUserRoleVO>> roleMap = userRoleMap(Collections.singletonList(loginId));
@@ -161,7 +180,10 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public SysLoginUserVO loginUser() {
         BigInteger loginId = LoginUtils.loginIdEx();
-        SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setId(loginId), SysUser.class);
+        SysUser sysUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysUser::getId, loginId)
+                .getOne();
         // 强制退出登录
         if (sysUser == null) {
             StpUtil.logout();
@@ -191,7 +213,10 @@ public class SysUserServiceImpl implements SysUserService {
             throw new BusinessException("新密码为空");
         }
         BigInteger loginId = LoginUtils.loginId();
-        SysUser sysUser = lightDao.findOne("sys_user_getOne", new SysUser().setId(loginId), SysUser.class);
+        SysUser sysUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysUser::getId, loginId)
+                .getOne();
         String pwdOld = securityUtils.getPwd(oldPassword);
         if (!sysUser.getPassword().equals(pwdOld)) {
             throw new BusinessException("旧密码不正确");
@@ -203,9 +228,11 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public Map<BigInteger, SysUser> getMap(List<BigInteger> ids) {
-        Map<String, Object> map = MapUtil.newHashMap(1);
-        map.put("ids", ids);
-        List<SysUser> list = lightDao.find("sys_user_findList", map, SysUser.class);
+        List<SysUser> list = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .in(true, SysUser::getId, ids)
+                .orderBy(true, false, SysUser::getId)
+                .find();
         return list.stream().collect(Collectors.toMap(SysUser::getId, i -> i));
     }
 

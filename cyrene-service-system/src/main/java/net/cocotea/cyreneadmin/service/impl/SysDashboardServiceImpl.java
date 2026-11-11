@@ -1,13 +1,15 @@
 package net.cocotea.cyreneadmin.service.impl;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.system.HostInfo;
 import cn.hutool.system.OsInfo;
 import cn.hutool.system.SystemUtil;
 import cn.hutool.system.oshi.CpuInfo;
 import cn.hutool.system.oshi.OshiUtil;
 import lombok.RequiredArgsConstructor;
+import net.cocotea.cyreneadmin.model.po.SysMenu;
+import net.cocotea.cyreneadmin.model.po.SysRole;
+import net.cocotea.cyreneadmin.model.po.SysUser;
 import net.cocotea.cyreneadmin.model.vo.SysOverviewVO;
 import net.cocotea.cyreneadmin.model.vo.SystemInfoVO;
 import net.cocotea.cyreneadmin.service.SysDashboardService;
@@ -17,12 +19,12 @@ import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.enums.MenuTypeEnum;
 import net.cocotea.cyreneadmin.service.RedisService;
 import org.sagacity.sqltoy.dao.LightDao;
+import org.sagacity.sqltoy.lambda.LambdaQuery;
 import oshi.hardware.GlobalMemory;
 
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -38,21 +40,21 @@ public class SysDashboardServiceImpl implements SysDashboardService {
     public List<SysOverviewVO> getCount() {
         List<SysOverviewVO> sysOverviewList = new ArrayList<>(4);
 
-        HashMap<String, Object> paramsMap = MapUtil.newHashMap();
-        paramsMap.put("isDeleted", IsEnum.N.getCode());
-        long countUser = lightDao.getCount("select count(1) from sys_user where is_deleted=:isDeleted", paramsMap);
+        long countUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
+                .count();
         sysOverviewList.add(new SysOverviewVO().setTitle("用户数量").setCount(countUser));
 
-        paramsMap = MapUtil.newHashMap();
-        paramsMap.put("isDeleted", IsEnum.N.getCode());
-        paramsMap.put("isMenu", IsEnum.Y.getCode());
-        paramsMap.put("menuType", MenuTypeEnum.MENU.getCode());
-        long countMenu = lightDao.getCount("select count(1) from sys_menu where is_deleted=:isDeleted and is_menu = :isMenu and menu_type = :menuType", paramsMap);
+        long countMenu = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysMenu::getIsMenu, IsEnum.Y.getCode())
+                .eq(true, SysMenu::getMenuType, MenuTypeEnum.MENU.getCode())
+                .count();
         sysOverviewList.add(new SysOverviewVO().setTitle("菜单数量").setCount(countMenu));
 
-        paramsMap = MapUtil.newHashMap();
-        paramsMap.put("isDeleted", IsEnum.N.getCode());
-        long countRole = lightDao.getCount("select count(1) from sys_role where is_deleted=:isDeleted", paramsMap);
+        long countRole = LambdaQuery.create(SysRole.class).bind(lightDao)
+                .eq(true, SysRole::getIsDeleted, IsEnum.N.getCode())
+                .count();
         sysOverviewList.add(new SysOverviewVO().setTitle("角色数量").setCount(countRole));
 
         long countOnline = redisService.keys(
