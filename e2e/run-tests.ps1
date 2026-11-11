@@ -5,7 +5,8 @@ param(
     [switch]$ApiOnly,
     [switch]$Headed,
     [switch]$CleanOnly,
-    [int]$BuildParallel = 4
+    [int]$BuildParallel = 4,
+    [int]$BackendPort = 9000
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,7 +27,6 @@ $RunLog = Join-Path $LogDir "run.log"
 $BackendPidFile = Join-Path $LogDir "backend.pid"
 $FrontendPidFile = Join-Path $LogDir "frontend.pid"
 $StartScript = Join-Path $LogDir "start-backend.bat"
-$BackendPort = 9000
 $FrontendPort = 5173
 
 function Log {
@@ -271,7 +271,7 @@ function StartBackend {
         "@echo off",
         "cd /d $RootDir",
         "set JAVA_OPTS=-Xmx512m -Dsolon.profiles.active=test --myapp.db1.password=test123456",
-        "`"$javaCmd`" -jar `"$jar`"",
+        "`"$javaCmd`" -jar `"$jar`" --server.port=$BackendPort",
         "exit /b %ERRORLEVEL%"
     )
     Set-Content -Path $StartScript -Value ($wrapperLines -join "`r`n") -Encoding ASCII
