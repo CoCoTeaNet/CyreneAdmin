@@ -26,6 +26,11 @@ myapp:
   permission-cache: false
   # 是否开启系统日志保存功能
   save-log: true
+  # 启动时自动建表并写入初始化数据（脚本幂等，可重复执行）
+  auto-ddl:
+    enabled: true
+    # 多个脚本用逗号分割，支持 classpath: 与 file: 前缀
+    scripts: classpath:db/ddl.sql,classpath:db/init-data.sql,classpath:db/init-menu-zh.sql
   # 路由放行（用逗号分割）
   excludes: /system/dashboard/index,/system/login,/system/captcha,/
   # 文件存放配置

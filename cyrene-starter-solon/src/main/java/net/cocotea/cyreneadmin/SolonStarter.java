@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin;
 
+import net.cocotea.cyreneadmin.config.AutoDdlBootstrap;
 import net.cocotea.cyreneadmin.constant.GlobalConst;
 import net.cocotea.cyreneadmin.properties.AppSystemProp;
 import org.noear.solon.Solon;
@@ -22,6 +23,8 @@ public class SolonStarter {
     public static void main(String[] args) {
         SolonApp app = Solon.start(SolonStarter.class, args);
         AppContext context = app.context();
+
+        AutoDdlBootstrap.run(context);
 
         AppSystemProp appSystemProp = context.getBean(AppSystemProp.class);
         logger.warn("权限缓存状态：{}", appSystemProp.getPermissionCache());

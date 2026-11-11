@@ -101,9 +101,9 @@ docker compose -f e2e/docker-compose.test.yml up -d
 
 ### MySQL 初始化后表为空
 
-**原因**：`e2e/docker-compose.test.yml` 挂载的是 `../scripts/*.sql`（仓库根 `scripts/`）。若误将 `e2e/scripts/` 下的 `.sql` 创建成目录（而非文件），容器内 `/docker-entrypoint-initdb.d/` 会挂到空目录，init 脚本不执行。
+**原因**：`e2e/docker-compose.test.yml` 挂载的是 `../cyrene-service-system/src/main/resources/db/*.sql`（应用 classpath 下的初始化脚本）。若挂载源文件不存在或为目录，容器内 `/docker-entrypoint-initdb.d/` 会挂到空目录，init 脚本不执行。
 
-**处理**：确认 `scripts/ddl.sql` 等为真实文件，删除重建容器重新初始化：
+**处理**：确认 `cyrene-service-system/src/main/resources/db/ddl.sql` 等为真实文件，删除重建容器重新初始化：
 
 ```bash
 docker rm -f e2e-mysql

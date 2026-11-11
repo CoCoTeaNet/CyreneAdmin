@@ -6,7 +6,7 @@ USE cyrene_admin;
 
 -- cyrene_admin.sys_dictionary definition
 
-CREATE TABLE `sys_dictionary` (
+CREATE TABLE IF NOT EXISTS `sys_dictionary` (
   `id` bigint(20) NOT NULL COMMENT '字典id',
   `parent_id` bigint(20) DEFAULT NULL COMMENT '父级id',
   `dictionary_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典名称',
@@ -25,7 +25,7 @@ CREATE TABLE `sys_dictionary` (
 
 -- cyrene_admin.sys_log definition
 
-CREATE TABLE `sys_log` (
+CREATE TABLE IF NOT EXISTS `sys_log` (
   `id` bigint(20) NOT NULL COMMENT '日志编号',
   `ip_address` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求ip地址',
   `operator` bigint(20) DEFAULT NULL COMMENT '操作人员',
@@ -41,7 +41,7 @@ CREATE TABLE `sys_log` (
 
 -- cyrene_admin.sys_menu definition
 
-CREATE TABLE `sys_menu` (
+CREATE TABLE IF NOT EXISTS `sys_menu` (
   `id` bigint(20) NOT NULL COMMENT '菜单id',
   `menu_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单名称',
   `permission_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '权限编号',
@@ -66,7 +66,7 @@ CREATE TABLE `sys_menu` (
 
 -- cyrene_admin.sys_role definition
 
-CREATE TABLE `sys_role` (
+CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` bigint(20) NOT NULL COMMENT '角色id',
   `role_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色名称',
   `role_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色标识',
@@ -84,7 +84,7 @@ CREATE TABLE `sys_role` (
 
 -- cyrene_admin.sys_role_menu definition
 
-CREATE TABLE `sys_role_menu` (
+CREATE TABLE IF NOT EXISTS `sys_role_menu` (
   `id` bigint(20) NOT NULL COMMENT '角色菜单关联id',
   `role_id` bigint(20) NOT NULL COMMENT '角色id',
   `menu_id` bigint(20) NOT NULL COMMENT '菜单id',
@@ -94,7 +94,7 @@ CREATE TABLE `sys_role_menu` (
 
 -- cyrene_admin.sys_user definition
 
-CREATE TABLE `sys_user` (
+CREATE TABLE IF NOT EXISTS `sys_user` (
   `id` bigint(20) NOT NULL COMMENT '用户id',
   `username` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录账号',
   `nickname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户昵称',
@@ -118,7 +118,7 @@ CREATE TABLE `sys_user` (
 
 -- cyrene_admin.sys_user_role definition
 
-CREATE TABLE `sys_user_role` (
+CREATE TABLE IF NOT EXISTS `sys_user_role` (
   `id` bigint(20) NOT NULL COMMENT '用户角色关联id',
   `user_id` bigint(20) NOT NULL COMMENT '用户id',
   `role_id` bigint(20) NOT NULL COMMENT '角色id',

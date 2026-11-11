@@ -123,11 +123,12 @@ CyreneAdmin/
 ├── cyrene-service-system/      # 系统服务模块
 │   ├── model/                  # 系统模型（dto/po/vo）
 │   ├── service/                # 系统服务接口及实现
-│   └── resources/sqltoy/       # SQL文件
+│   └── resources/
+│       ├── db/                 # 建表与初始化数据脚本（auto-ddl）
+│       └── sqltoy/             # SQL文件
 ├── cyrene-starter-solon/       # Solon启动模块
 ├── cyrene-starter-springboot/  # Spring Boot启动模块
-├── cyrene-ui/                  # 前端UI模块
-└── scripts/                    # 脚本文件
+└── cyrene-ui/                  # 前端UI模块
 ```
 
 ## 许可证

@@ -30,8 +30,9 @@ services:
       MYSQL_PASSWORD: tester
     volumes:
       - D:/AppData/docker/mysql_data:/var/lib/mysql
-      - ./scripts/ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql
-      - ./scripts/init-data.sql:/docker-entrypoint-initdb.d/02_init-data.sql
+      - ./cyrene-service-system/src/main/resources/db/ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql
+      - ./cyrene-service-system/src/main/resources/db/init-data.sql:/docker-entrypoint-initdb.d/02_init-data.sql
+      - ./cyrene-service-system/src/main/resources/db/init-menu-zh.sql:/docker-entrypoint-initdb.d/03_init-menu.sql
     networks:
       - cyrene-network
     command: >

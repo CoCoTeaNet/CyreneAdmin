@@ -1,9 +1,10 @@
+-- E2E 测试专用初始化数据（密码使用 SM3+salt 加密，明文: Cyr3ne@2024!T3st）
 -- Menu data removed: see init-menu-en.sql / init-menu-zh.sql
-INSERT INTO sys_role (id,role_name,role_key,remark,sort,create_by,create_time,update_by,update_time,is_deleted,revision) VALUES
+INSERT IGNORE INTO sys_role (id,role_name,role_key,remark,sort,create_by,create_time,update_by,update_time,is_deleted,revision) VALUES
                                                                                                                                           (1699771910151151616,'Super Administrator','role:super:admin',NULL,NULL,1699771308310499328,'2023-09-07 21:10:17',NULL,NULL,0,NULL),
                                                                                                                                           (1150175648716701696,'Regular User','simple:user',NULL,1,1699771308310499328,'2023-09-09 21:07:24',1699771308310499328,'2023-09-09 21:07:24',0,NULL),
                                                                                                                                           (1255197419386601472,'Tester','role:tester',NULL,3,1699771308310499328,'2024-06-25 16:26:25',1699771308310499328,'2024-06-25 16:26:25',0,NULL);
-INSERT INTO sys_role_menu (id,role_id,menu_id) VALUES
+INSERT IGNORE INTO sys_role_menu (id,role_id,menu_id) VALUES
                                                                 (1393007717457690632,1699771910151151616,1150555102374805504),
                                                                 (1393007717457690631,1699771910151151616,1150484898768764928),
                                                                 (1393007717457690630,1699771910151151616,1150500181449392128),
@@ -14,17 +15,17 @@ INSERT INTO sys_role_menu (id,role_id,menu_id) VALUES
                                                                 (1393007717457690626,1699771910151151616,1699771910151151618),
                                                                 (1393007717457690625,1699771910151151616,1150191026649972736),
                                                                 (1152708680044527619,1150175648716701696,1150500181449392128);
-INSERT INTO sys_role_menu (id,role_id,menu_id) VALUES
+INSERT IGNORE INTO sys_role_menu (id,role_id,menu_id) VALUES
                                                                 (1152708680044527618,1150175648716701696,1150129636463624192),
                                                                 (1152708680044527617,1150175648716701696,1150563411119063040),
                                                                 (1393007717457690624,1699771910151151616,1150560507641479168),
                                                                 (1255223135469731840,1255197419386601472,1255211293510893568),
                                                                 (1255223135465537536,1255197419386601472,1150560507641479168),
                                                                 (1393007717457690633,1699771910151151616,1393000177613242368);
-INSERT INTO sys_user (id,username,nickname,password,sex,email,mobile_phone,account_status,avatar,last_login_ip,last_login_time,create_by,create_time,update_by,update_time,is_deleted,revision) VALUES
-                                                                                                                                                                                                                 (1699771308310499328,'admin','admin@cocotea','9F74B5BCA39041E879A094636202FDBB30B219EB739F0FFB58F8A46E9CBA69D2',0,'caadmin@qq.com','13899998888',1,'650c74c32088821487c0b4d8_微信图片_20230921232652.png','0:0:0:0:0:0:0:1','2025-12-14 14:52:33',1699771308310499328,'2023-09-07 21:07:55',1699771308310499328,'2025-12-14 15:18:11',0,NULL),
-                                                                                                                                                                                                                 (1449777875075072000,'tester','tester','admin#123456',2,'tester@qq.com',NULL,1,NULL,NULL,NULL,1699771308310499328,'2025-12-14 14:59:41',1699771308310499328,'2025-12-14 14:59:41',0,NULL);
-INSERT INTO sys_user_role (id,user_id,role_id) VALUES
+INSERT IGNORE INTO sys_user (id,username,nickname,password,sex,email,mobile_phone,account_status,avatar,last_login_ip,last_login_time,create_by,create_time,update_by,update_time,is_deleted,revision) VALUES
+                                                                                                                                                                                                                  (1699771308310499328,'admin','admin@cocotea','74924812149205B8F070C2D87E2AB5C8283729F8047BCAD75D1C3CDD762626DE',0,'caadmin@qq.com','13899998888',1,NULL,'0:0:0:0:0:0:0:1','2025-12-14 14:52:33',1699771308310499328,'2023-09-07 21:07:55',1699771308310499328,'2025-12-14 15:18:11',0,NULL),
+                                                                                                                                                                                                                  (1449777875075072000,'tester','tester','74924812149205B8F070C2D87E2AB5C8283729F8047BCAD75D1C3CDD762626DE',2,'tester@qq.com',NULL,1,NULL,NULL,NULL,1699771308310499328,'2025-12-14 14:59:41',1699771308310499328,'2025-12-14 14:59:41',0,NULL);
+INSERT IGNORE INTO sys_user_role (id,user_id,role_id) VALUES
                                                                 (1449781848104370176,1699771308310499328,1255197419386601472),
                                                                 (1449781848016289792,1699771308310499328,1699771910151151616),
                                                                 (1262416640579371008,1262416640516456448,1150175648716701696),

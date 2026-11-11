@@ -123,11 +123,12 @@ CyreneAdmin/
 ├── cyrene-service-system/      # System service module
 │   ├── model/                  # System models (dto/po/vo)
 │   ├── service/                # System service interfaces and implementations
-│   └── resources/sqltoy/       # SQL files
+│   └── resources/
+│       ├── db/                 # DDL and seed data scripts (auto-ddl)
+│       └── sqltoy/             # SQL files
 ├── cyrene-starter-solon/       # Solon starter module
 ├── cyrene-starter-springboot/  # Spring Boot starter module
-├── cyrene-ui/                  # Front-end UI module
-└── scripts/                    # Script files
+└── cyrene-ui/                  # Front-end UI module
 ```
 
 ## License

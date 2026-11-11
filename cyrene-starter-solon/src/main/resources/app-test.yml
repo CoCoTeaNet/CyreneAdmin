@@ -35,6 +35,10 @@ myapp:
   password-salt: Admin@salt
   permission-cache: false
   save-log: true
+  # 测试库由 docker entrypoint 初始化，关闭 auto-ddl 避免干扰
+  auto-ddl:
+    enabled: false
+    scripts: classpath:db/ddl.sql,classpath:db/init-data-test.sql,classpath:db/init-menu-zh.sql
   excludes: /system/dashboard/index,/system/login,/system/captcha,/
   file:
     default-path: /tmp/cyrene-files/default/
