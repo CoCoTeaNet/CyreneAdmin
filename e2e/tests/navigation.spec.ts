@@ -55,7 +55,8 @@ test.describe('导航与布局', () => {
   test('2.8 应能导航到字典管理页面', async ({ page }) => {
     await navigateTo(page, '/admin/sys-dictionary-manager');
     await page.waitForTimeout(1000);
-    await expect(page.locator('.el-table').first()).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('.dm-tree-panel')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('.dm-detail-panel')).toBeVisible();
   });
 
   test('2.9 应能导航到日志管理页面', async ({ page }) => {

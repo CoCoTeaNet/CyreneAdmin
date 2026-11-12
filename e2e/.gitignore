@@ -27,4 +27,4 @@ components.d.ts
 yarn.lock
 
 /report
-/est-results
+/test-results
