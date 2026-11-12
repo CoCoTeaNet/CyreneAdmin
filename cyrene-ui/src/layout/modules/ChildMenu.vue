@@ -7,7 +7,7 @@
           <el-icon>
             <component :is="item.iconPath"></component>
           </el-icon>
-          <span>{{ item.menuName }}</span>
+          <span :title="item.menuName">{{ item.menuName }}</span>
         </template>
         <!-- 递归渲染子菜单 -->
         <child-menu :menu-list="item.children ? item.children : []"/>
@@ -18,7 +18,7 @@
           <component :is="item.iconPath"></component>
         </el-icon>
         <template #title>
-          <span>{{ item.menuName }}</span>
+          <span :title="item.menuName">{{ item.menuName }}</span>
         </template>
       </el-menu-item>
     </template>

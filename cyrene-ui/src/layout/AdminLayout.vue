@@ -1,6 +1,6 @@
 <template>
   <el-container style="height: 100vh;">
-    <el-aside width="300">
+    <el-aside :class="['admin-aside', { 'is-collapsed': menuStore.isCollapseMenu }]">
       <NavMenu style="height: 100%;overflow: auto" />
     </el-aside>
 
@@ -24,9 +24,23 @@
 <script setup lang="ts">
 import NavMenu from "./modules/NavMenu.vue";
 import AdminHeader from "./modules/AdminHeader.vue";
+import {useMenuStore} from "@/stores/menu.ts";
+
+const menuStore = useMenuStore();
 </script>
 
 <style scoped>
+/* 侧边栏宽度随折叠状态平滑过渡，与菜单宽度动画同曲线同步 */
+.admin-aside {
+  width: 220px;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-aside.is-collapsed {
+  width: 64px;
+}
+
 /* 核心动画设置 */
 .fade-slide-enter-active,
 .fade-slide-leave-active {

@@ -3,9 +3,13 @@ import { router } from "@/router";
 // @ts-ignore
 import md5 from 'js-md5';
 
+// 折叠前先淡出菜单文字：EP 折叠会重建菜单 DOM，文字节点瞬间移除，需提前淡出
+let fadeTimer: number | undefined;
+
 export const useMenuStore = defineStore('menu', {
     state: () => ({
         isCollapseMenu: false,
+        isLabelFading: false,
         tabItems: [],
         menus: []
     }),
@@ -87,10 +91,39 @@ export const useMenuStore = defineStore('menu', {
          * 设置是否折叠菜单
          */
         setCollapseMenu() {
-            this.isCollapseMenu = !this.isCollapseMenu;
+            if (this.isLabelFading) {
+                this.cancelLabelFade();
+                return;
+            }
+            if (this.isCollapseMenu) {
+                this.isCollapseMenu = false;
+            } else {
+                this.fadeThenCollapse();
+            }
         },
         updateCollapseMenu(flag: boolean) {
-            this.isCollapseMenu = flag;
+            if (flag) {
+                this.fadeThenCollapse();
+            } else {
+                this.cancelLabelFade();
+                this.isCollapseMenu = false;
+            }
+        },
+        fadeThenCollapse() {
+            if (this.isCollapseMenu || this.isLabelFading) return;
+            this.isLabelFading = true;
+            fadeTimer = window.setTimeout(() => {
+                fadeTimer = undefined;
+                this.isLabelFading = false;
+                this.isCollapseMenu = true;
+            }, 160);
+        },
+        cancelLabelFade() {
+            if (fadeTimer !== undefined) {
+                window.clearTimeout(fadeTimer);
+                fadeTimer = undefined;
+            }
+            this.isLabelFading = false;
         }
     }
 
