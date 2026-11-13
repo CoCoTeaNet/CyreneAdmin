@@ -56,12 +56,14 @@ import 'element-plus/theme-chalk/display.css';
 import {ApiResultEnum} from "@/api/ApiResultEnum";
 import {getSm2} from '@/utils/smUtil';
 import {useI18n} from "vue-i18n";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
 
 const sm2 = getSm2();
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 
 type FormInstance = InstanceType<typeof ElForm>
 const loginFormRef = ref<FormInstance>();
@@ -126,6 +128,8 @@ const submitForm = (formEl: FormInstance | undefined) => {
       nextTick(() => {
         login(loginParams).then((res: any) => {
           if (res.code === ApiResultEnum.SUCCESS) {
+            // 立即落新 token 覆盖残留旧 token，否则后续请求带旧 token 被 4001 弹回登录页
+            userStore.setUserInfo({...userStore.userinfo, token: res.data, loginStatus: true});
             if (route.query.redirect) {
               router.push({name: route.query.redirect + ''});
             } else {

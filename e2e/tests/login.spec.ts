@@ -81,6 +81,33 @@ test.describe('登录模块', () => {
       expect(srcAfter).toBeTruthy();
     }
   });
+
+  test('1.10 UI 登录后应停留后台并持久化 token', async ({ page }) => {
+    await loginViaUI(page, TEST_USER);
+    // 越过 4001 回跳窗口后再断言，避免在回跳前的瞬间误判为登录成功
+    await page.waitForTimeout(3000);
+    expect(page.url()).toContain('/admin');
+    expect(page.url()).not.toContain('/login');
+    const stored = await page.evaluate(() => localStorage.getItem('userInfo'));
+    expect(stored).toBeTruthy();
+    expect(JSON.parse(stored as string).token).toBeTruthy();
+    await expect(page.locator('.el-card').first()).toBeVisible({ timeout: 8000 });
+  });
+
+  test('1.11 残留旧 token 时重新登录应刷新 token 并停留后台', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('userInfo', JSON.stringify({
+        id: '1', username: 'admin', nickname: 'admin',
+        token: 'stale-invalid-token', loginStatus: true, avatar: '',
+      }));
+    });
+    await loginViaUI(page, TEST_USER);
+    await page.waitForTimeout(3000);
+    expect(page.url()).toContain('/admin');
+    expect(page.url()).not.toContain('/login');
+    const stored = await page.evaluate(() => localStorage.getItem('userInfo'));
+    expect(JSON.parse(stored as string).token).not.toBe('stale-invalid-token');
+  });
 });
 
 test.describe('登录后状态', () => {
