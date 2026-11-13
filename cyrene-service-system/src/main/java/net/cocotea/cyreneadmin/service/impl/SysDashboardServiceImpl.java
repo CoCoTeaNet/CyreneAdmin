@@ -36,6 +36,10 @@ public class SysDashboardServiceImpl implements SysDashboardService {
     private final LightDao lightDao;
     private final RedisService redisService;
 
+    private static final long CPU_CACHE_MILLIS = 3000L;
+    private CpuInfo cachedCpuInfo;
+    private long cpuCacheTime;
+
     @Override
     public List<SysOverviewVO> getCount() {
         List<SysOverviewVO> sysOverviewList = new ArrayList<>(4);
@@ -43,24 +47,24 @@ public class SysDashboardServiceImpl implements SysDashboardService {
         long countUser = LambdaQuery.create(SysUser.class).bind(lightDao)
                 .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
                 .count();
-        sysOverviewList.add(new SysOverviewVO().setTitle("用户数量").setCount(countUser));
+        sysOverviewList.add(new SysOverviewVO().setTitle("userCount").setCount(countUser));
 
         long countMenu = LambdaQuery.create(SysMenu.class).bind(lightDao)
                 .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
                 .eq(true, SysMenu::getIsMenu, IsEnum.Y.getCode())
                 .eq(true, SysMenu::getMenuType, MenuTypeEnum.MENU.getCode())
                 .count();
-        sysOverviewList.add(new SysOverviewVO().setTitle("菜单数量").setCount(countMenu));
+        sysOverviewList.add(new SysOverviewVO().setTitle("menuCount").setCount(countMenu));
 
         long countRole = LambdaQuery.create(SysRole.class).bind(lightDao)
                 .eq(true, SysRole::getIsDeleted, IsEnum.N.getCode())
                 .count();
-        sysOverviewList.add(new SysOverviewVO().setTitle("角色数量").setCount(countRole));
+        sysOverviewList.add(new SysOverviewVO().setTitle("roleCount").setCount(countRole));
 
-        long countOnline = redisService.keys(
+        long countOnline = redisService.countKeys(
                 String.format(RedisKeyConst.ONLINE_USER, "*")
-        ).size();
-        sysOverviewList.add(new SysOverviewVO().setTitle("在线用户").setCount(countOnline));
+        );
+        sysOverviewList.add(new SysOverviewVO().setTitle("onlineCount").setCount(countOnline));
         return sysOverviewList;
     }
 
@@ -86,7 +90,7 @@ public class SysDashboardServiceImpl implements SysDashboardService {
         );
         systemInfoVO.setRunningTime(between.getSeconds());
         // CPU信息
-        CpuInfo cpuInfo = OshiUtil.getCpuInfo();
+        CpuInfo cpuInfo = getCpuInfoCached();
         systemInfoVO.setCpuSystemUsed(cpuInfo.getSys());
         systemInfoVO.setCpuUserUsed(cpuInfo.getUsed());
         systemInfoVO.setCpuCount(cpuInfo.getCpuNum());
@@ -99,8 +103,19 @@ public class SysDashboardServiceImpl implements SysDashboardService {
         File file = new File(SystemUtil.get(SystemUtil.FILE_SEPARATOR));
         systemInfoVO.setDiskTotalSize(file.getTotalSpace());
         systemInfoVO.setDiskFreeSize(file.getFreeSpace());
-        systemInfoVO.setDiskPath(SystemUtil.get(SystemUtil.FILE_SEPARATOR));
-        systemInfoVO.setDiskSeparator(SystemUtil.get(SystemUtil.FILE_SEPARATOR));
+        systemInfoVO.setDiskPath(file.getAbsolutePath());
         return systemInfoVO;
+    }
+
+    /**
+     * CPU 采样需等待一个采样周期（约 1s），短时缓存避免每次请求都阻塞
+     */
+    private synchronized CpuInfo getCpuInfoCached() {
+        long now = System.currentTimeMillis();
+        if (cachedCpuInfo == null || now - cpuCacheTime >= CPU_CACHE_MILLIS) {
+            cachedCpuInfo = OshiUtil.getCpuInfo();
+            cpuCacheTime = now;
+        }
+        return cachedCpuInfo;
     }
 }

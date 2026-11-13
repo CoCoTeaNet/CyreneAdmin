@@ -13,32 +13,34 @@ const unitUtil = {
 
 function timeCalculate(num: number) {
     const t = i18n.global.t;
-    if (!num) {
+    if (num == null || isNaN(num)) {
         return '';
     }
-    if (num > 86400) {
-        return (num / 86400) + ' ' + t('common.unit.day');
-    } else if (num > 3600) {
-        return (num / 3600) + ' ' + t('common.unit.hour');
-    } else if (num > 60) {
-        return (num / 60) + ' ' + t('common.unit.minute');
+    if (num >= 86400) {
+        return (num / 86400).toFixed(1) + ' ' + t('common.unit.day');
+    } else if (num >= 3600) {
+        return (num / 3600).toFixed(1) + ' ' + t('common.unit.hour');
+    } else if (num >= 60) {
+        return (num / 60).toFixed(1) + ' ' + t('common.unit.minute');
     } else {
         return num + ' ' + t('common.unit.second');
     }
 }
 
 function memoryCalculate(num: number) {
-    if (!num) {
+    if (num == null || isNaN(num)) {
         return '';
     }
-    if (num > 1099511627776) {
-        return (num / 1099511627776).toFixed(2) + " T";
-    } else if (num > 1073741824) {
+    if (num >= 1099511627776) {
+        return (num / 1099511627776).toFixed(2) + " TB";
+    } else if (num >= 1073741824) {
         return (num / 1073741824).toFixed(2) + " GB";
-    } else if (num > 1048576) {
+    } else if (num >= 1048576) {
         return (num / 1048576).toFixed(2) + ' MB';
-    } else {
+    } else if (num >= 1024) {
         return (num / 1024).toFixed(2) + ' KB';
+    } else {
+        return num + ' B';
     }
 }
 

@@ -37,7 +37,5 @@ interface SystemModel {
 
     diskFreeSize: number,
 
-    diskPath: string,
-
-    diskSeparator: string
+    diskPath: string
 }

@@ -107,9 +107,4 @@ public class SystemInfoVO implements Serializable {
      */
     private String diskPath;
 
-    /**
-     * 磁盘分隔符
-     */
-    private String diskSeparator;
-
 }

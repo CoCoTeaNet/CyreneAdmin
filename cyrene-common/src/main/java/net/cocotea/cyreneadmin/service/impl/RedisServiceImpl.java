@@ -5,10 +5,11 @@ import net.cocotea.cyreneadmin.service.RedisService;
 import org.noear.redisx.RedisClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author CoCoTea
@@ -77,8 +78,18 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public Set<String> keys(String pattern) {
-        return redisClient.openAndGet(session -> session.keys(pattern));
+    public long countKeys(String pattern) {
+        return redisClient.openAndGet(session -> {
+            ScanParams params = new ScanParams().match(pattern).count(200);
+            String cursor = ScanParams.SCAN_POINTER_START;
+            long count = 0;
+            do {
+                ScanResult<String> result = session.jedis().scan(cursor, params);
+                count += result.getResult().size();
+                cursor = result.getCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+            return count;
+        });
     }
 
     @Override

@@ -19,7 +19,7 @@ public class SysOverviewVO implements Serializable {
     private static final long serialVersionUID = 5798937800323621804L;
 
     /**
-     * 标题
+     * 标题 i18n key，由前端翻译
      */
     private String title;
 

@@ -134,7 +134,17 @@ export default {
         availableSpace: 'Available Space',
         usedSpace: 'Used Space',
         diskPath: 'Disk Path',
-        diskSeparator: 'Disk Separator',
+        refresh: 'Refresh',
+        autoRefresh: 'Auto Refresh',
+        lastUpdated: 'Updated at',
+        loadFailed: 'Failed to load',
+        retry: 'Retry',
+        overview: {
+            userCount: 'Users',
+            menuCount: 'Menus',
+            roleCount: 'Roles',
+            onlineCount: 'Online Users',
+        },
     },
     dictionary: {
         name: 'Dictionary Name',

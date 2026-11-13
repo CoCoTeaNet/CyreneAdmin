@@ -32,7 +32,7 @@ public class SysDashboardController {
      */
     @Mapping(value = "index", method = MethodType.GET)
     public ApiResult<String> index() {
-        return ApiResult.ok("Hello world");
+        return ApiResult.ok("Hello CyreneAdmin.");
     }
 
     /**

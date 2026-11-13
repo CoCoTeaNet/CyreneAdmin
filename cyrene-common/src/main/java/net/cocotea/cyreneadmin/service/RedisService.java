@@ -1,7 +1,6 @@
 package net.cocotea.cyreneadmin.service;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * redis包装服务
@@ -105,12 +104,12 @@ public interface RedisService {
     void hashRemove(String key, Object... hashKeys);
 
     /**
-     * 匹配键
+     * 统计匹配键的数量，使用 SCAN 增量遍历，避免 KEYS 阻塞 Redis
      *
-     * @param pattern 正则表达式
-     * @return 键集合
+     * @param pattern 匹配表达式
+     * @return 键数量
      */
-    Set<String> keys(String pattern);
+    long countKeys(String pattern);
 
     void set(String redisKey, String s);
 

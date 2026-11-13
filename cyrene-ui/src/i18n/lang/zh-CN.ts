@@ -134,7 +134,17 @@ export default {
         availableSpace: '可用空间',
         usedSpace: '已用空间',
         diskPath: '盘符路径',
-        diskSeparator: '磁盘分隔符',
+        refresh: '刷新',
+        autoRefresh: '自动刷新',
+        lastUpdated: '更新于',
+        loadFailed: '加载失败',
+        retry: '重试',
+        overview: {
+            userCount: '用户数量',
+            menuCount: '菜单数量',
+            roleCount: '角色数量',
+            onlineCount: '在线用户',
+        },
     },
     dictionary: {
         name: '字典名称',

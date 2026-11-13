@@ -30,7 +30,7 @@ public class SysDashboardController {
      */
     @GetMapping("index")
     public ApiResult<String> index() {
-        return ApiResult.ok("Hello SRA-ADMIN.");
+        return ApiResult.ok("Hello CyreneAdmin.");
     }
 
     /**
