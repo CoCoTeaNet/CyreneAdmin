@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统字典管理接口
@@ -85,5 +86,15 @@ public class SysDictionaryController {
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     public ApiResult<List<Tree<BigInteger>>> listByTree(@Valid @RequestBody SysDictionaryTreeDTO sysDictionaryTreeDTO) {
         return ApiResult.ok(sysDictionaryService.listByTree(sysDictionaryTreeDTO));
+    }
+
+    /**
+     * 获取启用字典缓存，按分类查找键分组，供前端展示列表显示值
+     *
+     * @return key=分类查找键，value=子项列表
+     */
+    @PostMapping("/cache")
+    public ApiResult<Map<String, List<SysDictionaryVO>>> cache() {
+        return ApiResult.ok(sysDictionaryService.listForCache());
     }
 }

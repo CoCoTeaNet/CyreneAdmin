@@ -59,7 +59,7 @@ public class SysMenuUpdateDTO implements Serializable {
 	private String isMenu;
 
 	/**
-	 * 菜单状态：{@link net.cocotea.cyreneadmin.enums.MenuStatusEnum}
+	 * 菜单状态;字典 menu_status
 	 */
 	private String menuStatus;
 

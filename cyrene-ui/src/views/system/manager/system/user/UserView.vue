@@ -12,12 +12,12 @@
       </el-form-item>
       <el-form-item :label="t('user.sex')">
         <el-select :placeholder="t('user.placeholderSex')" style="width: 200px" v-model="pageParam.searchObject.sex">
-          <el-option v-for="i in sexList" :label="t(i.label)" :value="i.value"/>
+          <el-option v-for="i in sexOptions" :key="i.value" :label="i.label" :value="i.value"/>
         </el-select>
       </el-form-item>
       <el-form-item :label="t('user.accountStatus')">
         <el-select :placeholder="t('user.placeholderStatus')" style="width: 200px" v-model="pageParam.searchObject.accountStatus">
-          <el-option v-for="i in accountStatusList" :label="t(i.label)" :value="i.value"/>
+          <el-option v-for="i in accountStatusOptions" :key="i.value" :label="i.label" :value="i.value"/>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -47,15 +47,15 @@
         </el-table-column>
         <el-table-column prop="sex" :label="t('user.sex')">
           <template #default="scope">
-            <el-tag :type="getSex(scope.row.sex, 0)">
-              {{ getSex(scope.row.sex, 1) }}
+            <el-tag :type="dictionaryStore.getTagType('sex', scope.row.sex)">
+              {{ dictionaryStore.getLabel('sex', scope.row.sex) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="accountStatus" :label="t('user.accountStatus')">
           <template #default="scope">
-            <el-tag :type="getAccountStatus(scope.row.accountStatus, 0)">
-              {{ getAccountStatus(scope.row.accountStatus, 1) }}
+            <el-tag :type="dictionaryStore.getTagType('account_status', scope.row.accountStatus)">
+              {{ dictionaryStore.getLabel('account_status', scope.row.accountStatus) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import {nextTick, onMounted, ref} from "vue";
+import {computed, nextTick, onMounted, ref} from "vue";
 import {reqCommonFeedback} from "@/api/ApiFeedback";
 import {listByPage, deleteBatch} from "@/api/system/sys-user-api";
 import TableManage from "@/components/container/TableManage.vue";
@@ -94,8 +94,10 @@ import AddUser from "@/views/system/manager/system/user/module/AddUser.vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {DeleteFilled, Plus, Search, RefreshRight, Edit} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
+import {useDictionaryStore} from "@/stores/dictionary";
 
 const {t} = useI18n();
+const dictionaryStore = useDictionaryStore();
 
 const formShow = ref<boolean>(false);
 const editType = ref<string>("create");
@@ -107,57 +109,14 @@ const pageParam = ref<PageParam>({pageNo: 1, pageSize: 15, searchObject: {}});
 const pageVo = ref<PageVO>({pageNo: 1, pageSize: 15, total: 0, records: []});
 // 加载进度
 const loading = ref<boolean>(true);
-const accountStatusList = ref<any>([
-  {label: 'user.statusDisabled', value: 0},
-  {label: 'user.statusNormal', value: 1},
-  {label: 'user.statusFrozen', value: 2},
-  {label: 'user.statusBanned', value: 3}
-]);
-const sexList = ref<any>([
-  {label: 'user.sexSecret', value: 0},
-  {label: 'user.sexMale', value: 1},
-  {label: 'user.sexFemale', value: 2}
-]);
+const accountStatusOptions = computed(() => dictionaryStore.getOptions('account_status'));
+const sexOptions = computed(() => dictionaryStore.getOptions('sex'));
 
 // 初始化数据
 onMounted(() => {
+  dictionaryStore.loadCache();
   loadTableData();
 });
-
-const getAccountStatus: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 0:
-      obj = {color: 'warning', text: t('user.statusDisabled')};
-      break;
-    case 1:
-      obj = {color: 'success', text: t('user.statusNormal')};
-      break;
-    case 2:
-      obj = {color: 'info', text: t('user.statusFrozen')};
-      break;
-    case 3:
-      obj = {color: 'danger', text: t('user.statusBanned')};
-      break;
-  }
-  return type === 0 ? obj.color : obj.text;
-}
-
-const getSex: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 0:
-      obj = {color: 'info', text: t('user.sexSecret')};
-      break;
-    case 1:
-      obj = {color: 'primary', text: t('user.sexMale')};
-      break;
-    case 2:
-      obj = {color: 'success', text: t('user.sexFemale')};
-      break;
-  }
-  return type === 0 ? obj.color : obj.text;
-}
 
 const onEdit = (row: UserModel): void => {
   formShow.value = true;

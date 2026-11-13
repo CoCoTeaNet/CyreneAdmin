@@ -30,8 +30,7 @@ public class SysMenuTreeDTO implements Serializable {
     private String menuName;
 
     /**
-     * 菜单状态
-     * {@link net.cocotea.cyreneadmin.enums.MenuStatusEnum}
+     * 菜单状态;字典 menu_status
      */
     private Integer menuStatus;
 

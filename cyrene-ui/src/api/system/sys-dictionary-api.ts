@@ -38,3 +38,10 @@ export function listByPage(data: any) {
 export function listByTree(data: any) {
     return request('system/dictionary/listByTree', data, post);
 }
+
+/**
+ * 启用字典缓存（按分类查找键分组）
+ */
+export function cache() {
+    return request('system/dictionary/cache', {}, post);
+}

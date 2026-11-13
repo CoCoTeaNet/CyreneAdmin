@@ -10,6 +10,7 @@ import net.cocotea.cyreneadmin.model.ApiPage;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 字典 接口服务类
@@ -24,4 +25,10 @@ public interface SysDictionaryService extends BaseService<ApiPage<SysDictionaryV
      * @return 分页对象
      */
     List<Tree<BigInteger>> listByTree(SysDictionaryTreeDTO param);
+
+    /**
+     * 获取启用字典缓存，按分类查找键分组，供前端展示列表显示值
+     * @return key=分类 dictionary_value，value=子项列表
+     */
+    Map<String, List<SysDictionaryVO>> listForCache();
 }

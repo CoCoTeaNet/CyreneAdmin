@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS `sys_dictionary` (
   `id` bigint(20) NOT NULL COMMENT '字典id',
   `parent_id` bigint(20) DEFAULT NULL COMMENT '父级id',
   `dictionary_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字典名称',
+  `dictionary_value` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典值;分类行为查找键,子项为枚举码',
+  `name_en` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '英文名称',
+  `tag_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '标签颜色;success/warning/danger/info/primary',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
   `sort` int(11) NOT NULL COMMENT '排序号',
   `enable_status` tinyint(4) DEFAULT '1' COMMENT '启用状态;0关闭 1启用',
@@ -21,6 +24,25 @@ CREATE TABLE IF NOT EXISTS `sys_dictionary` (
   `revision` int(11) DEFAULT NULL COMMENT '乐观锁',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统字典表';
+
+-- 存量库幂等加列（MySQL 8 不支持 ADD COLUMN IF NOT EXISTS，用 information_schema 判定 + 预处理语句）
+SET @dict_value_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sys_dictionary' AND COLUMN_NAME = 'dictionary_value');
+SET @dict_value_sql := IF(@dict_value_exists = 0, 'ALTER TABLE `sys_dictionary` ADD COLUMN `dictionary_value` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT ''字典值;分类行为查找键,子项为枚举码'' AFTER `dictionary_name`', 'SELECT 1');
+PREPARE dict_value_stmt FROM @dict_value_sql;
+EXECUTE dict_value_stmt;
+DEALLOCATE PREPARE dict_value_stmt;
+
+SET @dict_name_en_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sys_dictionary' AND COLUMN_NAME = 'name_en');
+SET @dict_name_en_sql := IF(@dict_name_en_exists = 0, 'ALTER TABLE `sys_dictionary` ADD COLUMN `name_en` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT ''英文名称'' AFTER `dictionary_value`', 'SELECT 1');
+PREPARE dict_name_en_stmt FROM @dict_name_en_sql;
+EXECUTE dict_name_en_stmt;
+DEALLOCATE PREPARE dict_name_en_stmt;
+
+SET @dict_tag_type_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sys_dictionary' AND COLUMN_NAME = 'tag_type');
+SET @dict_tag_type_sql := IF(@dict_tag_type_exists = 0, 'ALTER TABLE `sys_dictionary` ADD COLUMN `tag_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT ''标签颜色;success/warning/danger/info/primary'' AFTER `name_en`', 'SELECT 1');
+PREPARE dict_tag_type_stmt FROM @dict_tag_type_sql;
+EXECUTE dict_tag_type_stmt;
+DEALLOCATE PREPARE dict_tag_type_stmt;
 
 
 -- cyrene_admin.sys_log definition

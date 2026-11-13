@@ -22,6 +22,7 @@ import org.sagacity.sqltoy.lambda.LambdaQuery;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -69,6 +70,43 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
                 .setEnableStatus(dictionaryTreeDTO.getEnableStatus());
         List<TreeNode<BigInteger>> nodeList = findNodeList(dictionaryVO);
         return TreeUtil.build(nodeList, BigInteger.ZERO);
+    }
+
+    @Override
+    public Map<String, List<SysDictionaryVO>> listForCache() {
+        List<SysDictionary> all = LambdaQuery.create(SysDictionary.class).bind(lightDao)
+                .eq(true, SysDictionary::getIsDeleted, IsEnum.N.getCode())
+                .eq(true, SysDictionary::getEnableStatus, IsEnum.Y.getCode())
+                .orderBy(true, false, SysDictionary::getSort)
+                .orderBy(true, false, SysDictionary::getId)
+                .find();
+        Map<BigInteger, List<SysDictionary>> childrenMap = all.stream()
+                .filter(d -> d.getParentId() != null && !BigInteger.ZERO.equals(d.getParentId()))
+                .collect(Collectors.groupingBy(SysDictionary::getParentId));
+        Map<String, List<SysDictionaryVO>> result = new LinkedHashMap<>();
+        for (SysDictionary category : all) {
+            if (!BigInteger.ZERO.equals(category.getParentId())) {
+                continue;
+            }
+            String key = category.getDictionaryValue();
+            if (key == null || key.isBlank()) {
+                continue;
+            }
+            List<SysDictionaryVO> items = childrenMap.getOrDefault(category.getId(), List.of())
+                    .stream()
+                    .map(d -> new SysDictionaryVO()
+                            .setId(d.getId())
+                            .setParentId(d.getParentId())
+                            .setDictionaryName(d.getDictionaryName())
+                            .setDictionaryValue(d.getDictionaryValue())
+                            .setNameEn(d.getNameEn())
+                            .setTagType(d.getTagType())
+                            .setSort(d.getSort())
+                            .setEnableStatus(d.getEnableStatus()))
+                    .collect(Collectors.toList());
+            result.put(key, items);
+        }
+        return result;
     }
 
     private List<TreeNode<BigInteger>> findNodeList(SysDictionaryVO sysDictionaryVO) {

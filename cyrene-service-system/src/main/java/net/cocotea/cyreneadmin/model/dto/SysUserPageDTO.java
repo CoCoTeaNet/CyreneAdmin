@@ -40,7 +40,7 @@ public class SysUserPageDTO extends ApiPageDTO implements Serializable{
 		private String username;
 
 		/**
-		 * 用户性别：{@link net.cocotea.cyreneadmin.enums.SexEnum}
+		 * 用户性别;字典 sex
 		 */
 		private Integer sex;
 
@@ -55,7 +55,7 @@ public class SysUserPageDTO extends ApiPageDTO implements Serializable{
 		private String email;
 
 		/**
-		 * 账号状态：{@link net.cocotea.cyreneadmin.enums.AccountStatusEnum}
+		 * 账号状态;字典 account_status
 		 */
 		private Integer accountStatus;
 

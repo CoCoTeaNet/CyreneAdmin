@@ -24,17 +24,12 @@
       </el-form-item>
       <el-form-item prop="sort" :label="t('addUser.sex')">
         <el-radio-group v-model="dataForm.sex">
-          <el-radio :label="0">{{ t('user.sexSecret') }}</el-radio>
-          <el-radio :label="1">{{ t('user.sexMale') }}</el-radio>
-          <el-radio :label="2">{{ t('user.sexFemale') }}</el-radio>
+          <el-radio v-for="opt in sexOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item prop="sort" :label="t('addUser.status')">
         <el-radio-group v-model="dataForm.accountStatus">
-          <el-radio :label="0">{{ t('user.statusDisabled') }}</el-radio>
-          <el-radio :label="1">{{ t('user.statusNormal') }}</el-radio>
-          <el-radio :label="2">{{ t('user.statusFrozen') }}</el-radio>
-          <el-radio :label="3">{{ t('user.statusBanned') }}</el-radio>
+          <el-radio v-for="opt in accountStatusOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>
@@ -49,15 +44,23 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, reactive, ref, watch} from 'vue';
 import {ElInput, FormInstance} from 'element-plus';
 import {Lock} from "@element-plus/icons-vue";
 import {add, update} from '@/api/system/sys-user-api';
 import {reqCommonFeedback, reqSuccessFeedback} from "@/api/ApiFeedback";
 import roleApi from "@/api/system/sys-role-api";
 import {useI18n} from "vue-i18n";
+import {useDictionaryStore} from "@/stores/dictionary";
 
 const {t} = useI18n();
+const dictionaryStore = useDictionaryStore();
+const sexOptions = computed(() => dictionaryStore.getOptions('sex'));
+const accountStatusOptions = computed(() => dictionaryStore.getOptions('account_status'));
+
+onMounted(() => {
+  dictionaryStore.loadCache();
+});
 
 const props = withDefaults(defineProps<{
   show?: boolean,

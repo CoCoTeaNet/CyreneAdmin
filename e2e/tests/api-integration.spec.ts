@@ -220,4 +220,26 @@ test.describe('API 接口测试', () => {
     const body = await response.json();
     expect(body.code).toBe(4001);
   });
+
+  test('10.18 字典缓存接口应返回分类子项（含码值/英文标签/颜色）', async ({ request }) => {
+    const token = await apiLoginRequest(request, TEST_USER.username, TEST_USER.password);
+
+    const response = await request.post(`${API_URL}/system/dictionary/cache`, {
+      headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+      data: {},
+    });
+    const body = await response.json();
+    expect(body.code).toBe(200);
+    expect(body.data).toBeTruthy();
+    // 种子分类 sex 应存在且含子项
+    const sex = body.data.sex;
+    expect(Array.isArray(sex)).toBeTruthy();
+    expect(sex.length).toBeGreaterThan(0);
+    // 子项携带字典码值、英文标签与标签颜色
+    const male = sex.find((i: any) => String(i.dictionaryValue) === '1');
+    expect(male).toBeTruthy();
+    expect(male.dictionaryName).toBeTruthy();
+    expect(male.nameEn).toBeTruthy();
+    expect(male.tagType).toBeTruthy();
+  });
 });

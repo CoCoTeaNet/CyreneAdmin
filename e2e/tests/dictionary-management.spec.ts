@@ -61,13 +61,15 @@ function tableRow(page: any, name: string) {
 test.describe('字典管理', () => {
   test.beforeAll(async ({ request }) => {
     token = await apiLoginRequest(request);
-    await apiAdd(request, { dictionaryName: SEED_ROOT, enableStatus: 0, sort: 900, parentId: '0' });
+    // enableStatus 遵循系统约定：1=启用，0=关闭
+    await apiAdd(request, { dictionaryName: SEED_ROOT, enableStatus: 1, sort: 900, parentId: '0' });
     const root = await findByName(request, SEED_ROOT);
     rootId = String(root.id);
-    await apiAdd(request, { dictionaryName: SEED_CHILD_A, enableStatus: 0, sort: 10, parentId: rootId });
+    await apiAdd(request, { dictionaryName: SEED_CHILD_A, enableStatus: 1, sort: 10, parentId: rootId });
     const childA = await findByName(request, SEED_CHILD_A);
-    await apiAdd(request, { dictionaryName: SEED_GRANDCHILD, enableStatus: 0, sort: 1, parentId: String(childA.id) });
-    await apiAdd(request, { dictionaryName: SEED_CHILD_B, enableStatus: 1, sort: 20, parentId: rootId });
+    await apiAdd(request, { dictionaryName: SEED_GRANDCHILD, enableStatus: 1, sort: 1, parentId: String(childA.id) });
+    // 关闭状态子项，供“启用状态”筛选断言
+    await apiAdd(request, { dictionaryName: SEED_CHILD_B, enableStatus: 0, sort: 20, parentId: rootId });
   });
 
   test.afterAll(async ({ request }) => {

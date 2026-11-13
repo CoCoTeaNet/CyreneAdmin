@@ -35,6 +35,21 @@ public class SysDictionaryUpdateDTO implements Serializable {
 	private String dictionaryName;
 
 	/**
+	 * 字典值;分类行为查找键,子项为枚举码
+	 */
+	private String dictionaryValue;
+
+	/**
+	 * 英文名称
+	 */
+	private String nameEn;
+
+	/**
+	 * 标签颜色;success/warning/danger/info/primary
+	 */
+	private String tagType;
+
+	/**
 	 * 备注
 	 */
 	private String remark;

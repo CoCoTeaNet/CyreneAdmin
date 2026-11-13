@@ -18,6 +18,7 @@ import org.noear.solon.validation.annotation.Validated;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统字典管理接口
@@ -88,5 +89,16 @@ public class SysDictionaryController {
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     public ApiResult<List<Tree<BigInteger>>> listByTree(@Validated @Body SysDictionaryTreeDTO dictionaryPageDTO) {
         return ApiResult.ok(sysDictionaryService.listByTree(dictionaryPageDTO));
+    }
+
+    /**
+     * 获取启用字典缓存，按分类查找键分组，供前端展示列表显示值
+     *
+     * @return key=分类查找键，value=子项列表
+     */
+    @Mapping("/cache")
+    @Post
+    public ApiResult<Map<String, List<SysDictionaryVO>>> cache() {
+        return ApiResult.ok(sysDictionaryService.listForCache());
     }
 }

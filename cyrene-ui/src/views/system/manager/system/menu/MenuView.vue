@@ -36,18 +36,18 @@
         <el-table-column width="300" prop="routerPath" :label="t('menu.routerPath')"/>
         <el-table-column prop="menuType" :label="t('menu.menuType')">
           <template #default="scope">
-            <el-tag :type="getMenuType(scope.row.menuType, 0)">{{ getMenuType(scope.row.menuType, 1) }}</el-tag>
+            <el-tag :type="dictionaryStore.getTagType('menu_type', scope.row.menuType)">{{ dictionaryStore.getLabel('menu_type', scope.row.menuType) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="isExternalLink" :label="t('menu.isExternalLink')">
           <template #default="scope">
-            <el-tag :type="getConfirm(scope.row.isExternalLink, 0)">{{ getConfirm(scope.row.isExternalLink, 1) }}
+            <el-tag :type="dictionaryStore.getTagType('yes_no', scope.row.isExternalLink)">{{ dictionaryStore.getLabel('yes_no', scope.row.isExternalLink) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="menuStatus" :label="t('menu.menuStatus')">
           <template #default="scope">
-            <el-tag :type="getMenuStatus(scope.row.menuStatus, 0)">{{ getMenuStatus(scope.row.menuStatus, 1) }}</el-tag>
+            <el-tag :type="dictionaryStore.getTagType('menu_status', scope.row.menuStatus)">{{ dictionaryStore.getLabel('menu_status', scope.row.menuStatus) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="sort" width="100" :label="t('menu.weight')"/>
@@ -74,9 +74,7 @@
           </el-form-item>
           <el-form-item prop="menuType" :label="t('menu.menuType')">
             <el-radio-group v-model="editForm.menuType" @change="menuTypeChange">
-              <el-radio :label="0">{{ t('menu.directory') }}</el-radio>
-              <el-radio :label="1">{{ t('menu.menu') }}</el-radio>
-              <el-radio :label="2">{{ t('menu.button') }}</el-radio>
+              <el-radio v-for="opt in menuTypeOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item prop="routerPath" :label="t('menu.routerPath')">
@@ -84,8 +82,7 @@
           </el-form-item>
           <el-form-item v-if="isShowExternalLink" prop="isExternalLink" :label="t('menu.isExternalLink')">
             <el-radio-group v-model="editForm.isExternalLink">
-              <el-radio :label="0">{{ t('common.no') }}</el-radio>
-              <el-radio :label="1">{{ t('common.yes') }}</el-radio>
+              <el-radio v-for="opt in yesNoOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item prop="sort" :label="t('menu.sort')">
@@ -102,8 +99,7 @@
           </el-form-item>
           <el-form-item prop="menuStatus" :label="t('menu.menuStatus')">
             <el-radio-group v-model="editForm.menuStatus">
-              <el-radio :label="0">{{ t('common.show') }}</el-radio>
-              <el-radio :label="1">{{ t('common.hide') }}</el-radio>
+              <el-radio v-for="opt in menuStatusOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-form>
@@ -119,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import {nextTick, onMounted, reactive, ref} from "vue";
+import {computed, nextTick, onMounted, reactive, ref} from "vue";
 import IconSelection from "@/components/selection/IconSelection.vue";
 import {listByTree, add, deleteBatch, update} from "@/api/system/sys-menu-api";
 import {reqCommonFeedback, reqSuccessFeedback} from "@/api/ApiFeedback";
@@ -129,8 +125,13 @@ import {ElMessageBox} from "element-plus";
 import listUtil from "@/utils/list-util";
 import {DeleteFilled, Edit, Plus, RefreshRight, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
+import {useDictionaryStore} from "@/stores/dictionary";
 
 const {t} = useI18n();
+const dictionaryStore = useDictionaryStore();
+const menuTypeOptions = computed(() => dictionaryStore.getOptions('menu_type'));
+const yesNoOptions = computed(() => dictionaryStore.getOptions('yes_no'));
+const menuStatusOptions = computed(() => dictionaryStore.getOptions('menu_status'));
 
 type FormInstance = InstanceType<typeof ElForm>
 const sttFormRef = ref<FormInstance>();
@@ -146,57 +147,6 @@ const defaultProps = {
 const records = ref<any>();
 const searchObj = ref<MenuModel>({});
 const isExpandAll = ref<boolean>(true);
-const getMenuType: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 0:
-      obj = {color: 'success', text: t('menu.directory')};
-      break;
-    case 1:
-      obj = {color: 'info', text: t('menu.menu')};
-      break;
-    case 2:
-      obj = {color: 'info', text: t('menu.button')};
-      break;
-  }
-  if (type === 0) {
-    return obj.color;
-  } else {
-    return obj.text;
-  }
-}
-const getConfirm: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 0:
-      obj = {color: 'info', text: t('common.no')};
-      break;
-    case 1:
-      obj = {color: 'success', text: t('common.yes')};
-      break;
-  }
-  if (type === 0) {
-    return obj.color;
-  } else {
-    return obj.text;
-  }
-}
-const getMenuStatus: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 0:
-      obj = {color: 'success', text: t('common.show')};
-      break;
-    case 1:
-      obj = {color: 'warning', text: t('common.hide')};
-      break;
-  }
-  if (type === 0) {
-    return obj.color;
-  } else {
-    return obj.text;
-  }
-}
 // 表单参数
 const editForm = ref<MenuModel>({});
 // 加载进度
@@ -216,6 +166,7 @@ const isShowTable = ref<boolean>(true);
 
 // 初始化数据
 onMounted(() => {
+  dictionaryStore.loadCache();
   loadTableData();
 });
 

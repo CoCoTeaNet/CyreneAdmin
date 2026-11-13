@@ -39,6 +39,15 @@ public class SysDictionary implements Serializable {
 	@Column(name="dictionary_name",comment="字典名称",length=30L,type=java.sql.Types.VARCHAR,nullable=false)
 	private String dictionaryName;
 
+	@Column(name="dictionary_value",comment="字典值;分类行为查找键,子项为枚举码",length=64L,type=java.sql.Types.VARCHAR,nullable=true)
+	private String dictionaryValue;
+
+	@Column(name="name_en",comment="英文名称",length=64L,type=java.sql.Types.VARCHAR,nullable=true)
+	private String nameEn;
+
+	@Column(name="tag_type",comment="标签颜色;success/warning/danger/info/primary",length=20L,type=java.sql.Types.VARCHAR,nullable=true)
+	private String tagType;
+
 	@Column(name="remark",comment="备注",length=255L,type=java.sql.Types.VARCHAR,nullable=true)
 	private String remark;
 

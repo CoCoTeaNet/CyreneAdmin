@@ -31,14 +31,14 @@
         <el-table-column prop="requestWay" :label="t('sysLog.requestWay')"/>
         <el-table-column prop="logStatus" :label="t('sysLog.operationStatus')">
           <template #default="scope">
-            <el-tag :type="getOperationStatus(scope.row.logStatus, 0)">
-              {{getOperationStatus(scope.row.logStatus, 1)}}
+            <el-tag :type="dictionaryStore.getTagType('log_status', scope.row.logStatus)">
+              {{dictionaryStore.getLabel('log_status', scope.row.logStatus)}}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="logType" :label="t('sysLog.logType')">
           <template #default="scope">
-            <el-tag :type="getLogType(scope.row.logType, 0)">{{getLogType(scope.row.logType, 1)}}</el-tag>
+            <el-tag :type="dictionaryStore.getTagType('log_type', scope.row.logType)">{{dictionaryStore.getLabel('log_type', scope.row.logType)}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" :label="t('sysLog.operationTime')" width="200"/>
@@ -69,8 +69,10 @@ import TableManage from "@/components/container/TableManage.vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {DeleteFilled, Refresh, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
+import {useDictionaryStore} from "@/stores/dictionary";
 
 const {t} = useI18n();
+const dictionaryStore = useDictionaryStore();
 
 // 分页参数
 const pageParam = ref<PageParam>({pageNo: 1, pageSize: 20, searchObject: {}});
@@ -78,42 +80,11 @@ const pageParam = ref<PageParam>({pageNo: 1, pageSize: 20, searchObject: {}});
 const pageVo = ref<PageVO>({pageNo: 1, pageSize: 20, total: 0, records: []});
 // 加载进度
 const loading = ref<boolean>(true);
-const getLogType: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 1:
-      obj = {color: 'success', text: t('sysLog.loginLog')};
-      break;
-    case 2:
-      obj = {color: 'warning', text: t('sysLog.operationLog')};
-      break;
-  }
-  if (type === 0) {
-    return obj.color;
-  } else {
-    return obj.text;
-  }
-}
-const getOperationStatus: any = (status: number, type: number) => {
-  let obj = {color: '', text: ''};
-  switch (status) {
-    case 0:
-      obj = {color: 'danger', text: t('sysLog.abnormal')};
-      break;
-    case 1:
-      obj = {color: 'success', text: t('sysLog.success')};
-      break;
-  }
-  if (type === 0) {
-    return obj.color;
-  } else {
-    return obj.text;
-  }
-}
 const multipleSelection = ref<any[]>([]);
 
 // 初始化数据
 onMounted(() => {
+  dictionaryStore.loadCache();
   loadTableData();
 });
 

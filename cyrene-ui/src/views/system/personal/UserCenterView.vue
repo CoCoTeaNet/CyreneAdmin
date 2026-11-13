@@ -50,7 +50,7 @@
               {{ t('userCenter.sexLabel') }}
             </div>
           </template>
-          {{ getSex(detailUser.sex) }}
+          {{ dictionaryStore.getLabel('sex', detailUser.sex) }}
         </el-descriptions-item>
         <el-descriptions-item>
           <template #label>
@@ -138,9 +138,7 @@
         </el-form-item>
         <el-form-item :label="t('userCenter.sexLabel')">
           <el-radio-group v-model="editForm.sex">
-            <el-radio :label="0">{{ t('user.sexSecret') }}</el-radio>
-            <el-radio :label="1">{{ t('user.sexMale') }}</el-radio>
-            <el-radio :label="2">{{ t('user.sexFemale') }}</el-radio>
+            <el-radio v-for="opt in sexOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item>
@@ -176,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, reactive, ref} from "vue";
+import {computed, onMounted, reactive, ref} from "vue";
 import type {FormInstance, UploadRawFile, UploadUserFile, UploadInstance, UploadProps} from 'element-plus';
 import {genFileId} from 'element-plus';
 import {Lock} from "@element-plus/icons-vue";
@@ -186,10 +184,13 @@ import {RULE_MOBILE, RULE_EMAIL} from "@/utils/rules-util";
 import {ElMessage} from "element-plus";
 import {logout} from "@/api/system/sys-login-api";
 import {useUserStore} from "@/stores/user.ts";
+import {useDictionaryStore} from "@/stores/dictionary";
 import {useI18n} from "vue-i18n";
 
 const {t} = useI18n();
 const userStore = useUserStore();
+const dictionaryStore = useDictionaryStore();
+const sexOptions = computed(() => dictionaryStore.getOptions('sex'));
 const upload = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
 const uploadUrl = `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/avatar/upload`;
@@ -228,18 +229,8 @@ const mpRules = reactive({
   newPassword: [{min: 6, max: 32, message: t('common.lengthLimit', {min: 6, max: 32}), trigger: 'blur'}],
   newPasswordSecond: [{min: 6, max: 32, message: t('common.lengthLimit', {min: 6, max: 32}), trigger: 'blur'}]
 });
-const getSex = (sex: number) => {
-  switch (sex) {
-    case 0:
-      return t('user.sexSecret');
-    case 1:
-      return t('user.sexMale');
-    case 2:
-      return t('user.sexFemale');
-  }
-}
-
 onMounted(() => {
+  dictionaryStore.loadCache();
   initUserDetail();
 });
 

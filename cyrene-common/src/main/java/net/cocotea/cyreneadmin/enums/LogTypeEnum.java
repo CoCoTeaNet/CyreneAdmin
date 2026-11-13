@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 操作类型枚举值
+ * 操作类型枚举值（显示标签见字典 log_type）
  *
  * @author CoCoTea
  * @version v1.0.0
@@ -13,9 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum LogTypeEnum {
 
-    LOGIN(1, "登录日志"),
-    OPERATION(2, "操作日志");
+    LOGIN(1),
+    OPERATION(2);
 
     final Integer code;
-    final String desc;
 }

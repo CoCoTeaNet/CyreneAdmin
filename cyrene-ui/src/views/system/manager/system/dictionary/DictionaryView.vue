@@ -47,9 +47,9 @@
           @node-collapse="onNodeCollapse"
         >
           <template #default="{ data }">
-            <span class="dm-tree-node" :class="{ 'is-disabled': !data.isRoot && data.enableStatus === 1 }">
+            <span class="dm-tree-node" :class="{ 'is-disabled': !data.isRoot && data.enableStatus === 0 }">
               <el-icon v-if="data.isRoot" class="dm-node-root-icon"><FolderOpened/></el-icon>
-              <span v-else class="dm-status-dot" :class="data.enableStatus === 0 ? 'is-on' : 'is-off'"></span>
+              <span v-else class="dm-status-dot" :class="data.enableStatus === 1 ? 'is-on' : 'is-off'"></span>
               <span class="dm-node-label">{{ data.dictionaryName }}</span>
               <span v-if="data.children && data.children.length" class="dm-node-count">{{ data.children.length }}</span>
             </span>
@@ -87,8 +87,8 @@
             <div class="dm-detail-title-row">
               <div class="dm-detail-title">
                 <h2 :title="selectedNode.dictionaryName">{{ selectedNode.dictionaryName }}</h2>
-                <el-tag v-if="!selectedNode.isRoot" size="small" :type="selectedNode.enableStatus === 0 ? 'success' : 'info'">
-                  {{ selectedNode.enableStatus === 0 ? t('common.enable') : t('common.disable') }}
+                <el-tag v-if="!selectedNode.isRoot" size="small" :type="selectedNode.enableStatus === 1 ? 'success' : 'info'">
+                  {{ selectedNode.enableStatus === 1 ? t('common.enable') : t('common.disable') }}
                 </el-tag>
                 <span class="dm-child-count">{{ t('dictionary.childCount', {count: childRows.length}) }}</span>
               </div>
@@ -137,17 +137,24 @@
               <el-table-column prop="dictionaryName" :label="t('dictionary.labelName')" sortable show-overflow-tooltip min-width="170">
                 <template #default="{ row }">
                   <span class="dm-name-link" @click.stop="onSelectNode(row.id, true)">
-                    <span class="dm-status-dot" :class="row.enableStatus === 0 ? 'is-on' : 'is-off'"></span>
+                    <span class="dm-status-dot" :class="row.enableStatus === 1 ? 'is-on' : 'is-off'"></span>
                     <span class="dm-name-text">{{ row.dictionaryName }}</span>
                     <el-icon class="dm-drill-icon"><ArrowRight/></el-icon>
                   </span>
                 </template>
               </el-table-column>
+              <el-table-column prop="dictionaryValue" :label="t('dictionary.dictionaryValue')" show-overflow-tooltip min-width="130"/>
+              <el-table-column prop="nameEn" :label="t('dictionary.nameEn')" show-overflow-tooltip min-width="130"/>
+              <el-table-column prop="tagType" :label="t('dictionary.tagType')" width="100">
+                <template #default="{ row }">
+                  <el-tag v-if="row.tagType" size="small" :type="row.tagType">{{ t('dictionary.tagTypes.' + row.tagType) }}</el-tag>
+                </template>
+              </el-table-column>
               <el-table-column prop="remark" :label="t('dictionary.remark')" show-overflow-tooltip min-width="140"/>
               <el-table-column prop="enableStatus" :label="t('dictionary.isEnable')" width="100">
                 <template #default="{ row }">
-                  <el-tag size="small" :type="row.enableStatus === 0 ? 'success' : 'info'">
-                    {{ row.enableStatus === 0 ? t('common.yes') : t('common.no') }}
+                  <el-tag size="small" :type="row.enableStatus === 1 ? 'success' : 'info'">
+                    {{ row.enableStatus === 1 ? t('common.yes') : t('common.no') }}
                   </el-tag>
                 </template>
               </el-table-column>
@@ -184,13 +191,24 @@
         <el-form-item prop="dictionaryName" :label="t('dictionary.name')">
           <el-input v-model="editForm.dictionaryName" :placeholder="t('dictionary.name')"/>
         </el-form-item>
+        <el-form-item prop="dictionaryValue" :label="t('dictionary.dictionaryValue')">
+          <el-input v-model="editForm.dictionaryValue" :placeholder="t('dictionary.valuePlaceholder')"/>
+        </el-form-item>
+        <el-form-item prop="nameEn" :label="t('dictionary.nameEn')">
+          <el-input v-model="editForm.nameEn" :placeholder="t('dictionary.nameEnPlaceholder')"/>
+        </el-form-item>
+        <el-form-item prop="tagType" :label="t('dictionary.tagType')">
+          <el-select v-model="editForm.tagType" clearable :placeholder="t('dictionary.tagTypePlaceholder')" style="width: 100%">
+            <el-option v-for="c in tagTypeOptions" :key="c" :label="t('dictionary.tagTypes.' + c)" :value="c"/>
+          </el-select>
+        </el-form-item>
         <el-form-item prop="remark" :label="t('dictionary.remark')">
           <el-input v-model="editForm.remark" :placeholder="t('dictionary.remark')"/>
         </el-form-item>
         <el-form-item prop="enableStatus" :label="t('dictionary.isEnable')">
           <el-radio-group v-model="editForm.enableStatus">
-            <el-radio :value="0">{{ t('common.yes') }}</el-radio>
-            <el-radio :value="1">{{ t('common.no') }}</el-radio>
+            <el-radio :value="1">{{ t('common.yes') }}</el-radio>
+            <el-radio :value="0">{{ t('common.no') }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item prop="sort" :label="t('dictionary.sortLabel')">
@@ -226,8 +244,10 @@ import {
   FolderOpened, Plus, Refresh, RefreshLeft, Search
 } from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
+import {useDictionaryStore} from "@/stores/dictionary";
 
 const {t} = useI18n();
+const dictionaryStore = useDictionaryStore();
 
 type FormInstance = InstanceType<typeof ElForm>
 type DictNode = DictionaryModel & { isRoot?: boolean }
@@ -265,9 +285,10 @@ const rules = reactive({
   remark: [{min: 2, max: 255, message: t('common.lengthLimit', {min: 2, max: 255}), trigger: 'blur'}]
 });
 const enableStatusList = ref<any>([
-  {label: 'common.enable', value: 0},
-  {label: 'common.disable', value: 1}
+  {label: 'common.enable', value: 1},
+  {label: 'common.disable', value: 0}
 ]);
+const tagTypeOptions = ['primary', 'success', 'info', 'warning', 'danger'];
 
 // ---------- 计算属性 ----------
 
@@ -314,7 +335,7 @@ const flatten = (nodes: DictNode[]): DictNode[] =>
 
 const allNodes = computed(() => flatten(records.value));
 const totalCount = computed(() => allNodes.value.length);
-const enabledCount = computed(() => allNodes.value.filter(n => n.enableStatus === 0).length);
+const enabledCount = computed(() => allNodes.value.filter(n => n.enableStatus === 1).length);
 const disabledCount = computed(() => totalCount.value - enabledCount.value);
 
 const findNode = (nodes: DictNode[], id: string): DictNode | undefined => {
@@ -471,7 +492,7 @@ const onRowClick = (row: DictNode, column: any): void => {
 const onAdd = (): void => {
   editForm.value = {
     parentId: selectedId.value === ROOT_ID ? undefined : selectedId.value,
-    enableStatus: 0,
+    enableStatus: 1,
     sort: 0
   };
   dialogFormVisible.value = true;
@@ -482,6 +503,9 @@ const onEdit = (row: DictNode): void => {
     id: row.id,
     parentId: row.parentId === ROOT_ID ? undefined : row.parentId,
     dictionaryName: row.dictionaryName,
+    dictionaryValue: row.dictionaryValue,
+    nameEn: row.nameEn,
+    tagType: row.tagType,
     remark: row.remark,
     enableStatus: row.enableStatus,
     sort: row.sort
@@ -513,6 +537,7 @@ const onRemove = (row: DictNode): void => {
       if (path.some(n => n.id === row.id)) {
         selectedId.value = row.parentId || ROOT_ID;
       }
+      dictionaryStore.loadCache(true);
       loadTableData();
     });
   }).catch(() => {
@@ -533,6 +558,7 @@ const onDeleteBatch = (): void => {
       if (path.some(n => deleted.has(n.id!))) {
         selectedId.value = ROOT_ID;
       }
+      dictionaryStore.loadCache(true);
       loadTableData();
     });
   }).catch(() => {
@@ -549,11 +575,13 @@ const doUpdate = (formEl: FormInstance | undefined): void => {
         dialogFormVisible.value = false;
         // 新增后定位到父节点，便于查看新子项
         selectedId.value = payload.parentId!;
+        dictionaryStore.loadCache(true);
         loadTableData();
       });
     } else {
       reqSuccessFeedback(update(payload), t('common.updateSuccess'), () => {
         dialogFormVisible.value = false;
+        dictionaryStore.loadCache(true);
         loadTableData();
       });
     }
@@ -565,6 +593,7 @@ const handleChange = (data: any): void => {
 };
 
 onMounted(() => {
+  dictionaryStore.loadCache();
   loadTableData();
 });
 </script>
