@@ -1,7 +1,7 @@
 <template>
   <el-row align="middle" class="header-container">
-    <el-col :span="16" class="header-left">
-      <div class="collapse-btn" @click="menuStore.setCollapseMenu">
+    <el-col :span="menuStore.isMaximize ? 24 : 16" class="header-left">
+      <div class="collapse-btn" v-show="!menuStore.isMaximize" @click="menuStore.setCollapseMenu">
         <el-icon :size="20">
           <expand v-if="menuStore.isCollapseMenu"/>
           <fold v-else/>
@@ -10,7 +10,7 @@
       <admin-tab />
     </el-col>
 
-    <el-col :span="8" class="header-right">
+    <el-col :span="8" class="header-right" v-show="!menuStore.isMaximize">
       <div class="action-items">
         <!-- 语言切换 -->
         <el-dropdown trigger="click" class="lang-dropdown">

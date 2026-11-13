@@ -10,6 +10,7 @@ export const useMenuStore = defineStore('menu', {
     state: () => ({
         isCollapseMenu: false,
         isLabelFading: false,
+        isMaximize: false,
         tabItems: [],
         menus: []
     }),
@@ -44,6 +45,23 @@ export const useMenuStore = defineStore('menu', {
                 this.initTabItems();
             }
             localStorage.setItem("userTabs", JSON.stringify(this.tabItems));
+        },
+        /**
+         * 关闭其他标签页，仅保留指定标签
+         */
+        removeOtherTabItems(id: string) {
+            const keep = this.tabItems.find((item: TabItem) => item.id === id);
+            if (!keep) return;
+            this.tabItems = [keep];
+            keep.isActive = true;
+            router.push({ path: keep.url ? keep.url : '' });
+            localStorage.setItem("userTabs", JSON.stringify(this.tabItems));
+        },
+        /**
+         * 切换内容最大化（隐藏侧边栏与头部操作区，保留标签栏以便退出）
+         */
+        toggleMaximize() {
+            this.isMaximize = !this.isMaximize;
         },
         addTabItem(tab: TabItem) {
             tab.id = md5(tab.url);

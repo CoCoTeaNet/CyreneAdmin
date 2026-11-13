@@ -71,6 +71,12 @@ export default {
     tab: {
         refresh: 'Refresh current',
         closeAll: 'Close all',
+        ctxRefresh: 'Refresh',
+        close: 'Close',
+        closeOthers: 'Close other tabs',
+        maximize: 'Maximize',
+        exitMaximize: 'Exit maximize',
+        openInNewWindow: 'Open in new window',
     },
     notFound: {
         message: 'Sorry, the resource you visited does not exist...',

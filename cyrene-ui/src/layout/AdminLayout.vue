@@ -1,6 +1,6 @@
 <template>
   <el-container style="height: 100vh;">
-    <el-aside :class="['admin-aside', { 'is-collapsed': menuStore.isCollapseMenu }]">
+    <el-aside v-show="!menuStore.isMaximize" :class="['admin-aside', { 'is-collapsed': menuStore.isCollapseMenu }]">
       <NavMenu style="height: 100%;overflow: auto" />
     </el-aside>
 

@@ -71,6 +71,12 @@ export default {
     tab: {
         refresh: '刷新当前',
         closeAll: '关闭所有',
+        ctxRefresh: '刷新',
+        close: '关闭',
+        closeOthers: '关闭其他标签',
+        maximize: '最大化',
+        exitMaximize: '退出最大化',
+        openInNewWindow: '新窗口打开',
     },
     notFound: {
         message: '很抱歉！你访问的资源不存在......',
