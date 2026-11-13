@@ -258,6 +258,8 @@ export default {
         assignMenu: '赋予菜单',
         assignPermission: '授予权限',
         confirmDeleteSelected: '确认删除所选角色?',
+        operation: '操作',
+        updateTitle: '更新角色',
     },
     user: {
         username: '用户账号',
@@ -293,6 +295,7 @@ export default {
         addTitle: '新增用户',
         accountName: '账号名',
         inputAccount: '请输入账号名',
+        nickname: '用户昵称',
         inputNickname: '请输入账号昵称',
         password: '用户密码',
         passwordPlaceholder: '密码长度6~30',

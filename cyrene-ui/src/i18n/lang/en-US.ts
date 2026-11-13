@@ -258,6 +258,8 @@ export default {
         assignMenu: 'Assign Menus',
         assignPermission: 'Grant Permissions',
         confirmDeleteSelected: 'Delete the selected roles?',
+        operation: 'Actions',
+        updateTitle: 'Update Role',
     },
     user: {
         username: 'Username',
@@ -293,6 +295,7 @@ export default {
         addTitle: 'Add User',
         accountName: 'Username',
         inputAccount: 'Please enter username',
+        nickname: 'Nickname',
         inputNickname: 'Please enter nickname',
         password: 'Password',
         passwordPlaceholder: 'Password length 6~30',

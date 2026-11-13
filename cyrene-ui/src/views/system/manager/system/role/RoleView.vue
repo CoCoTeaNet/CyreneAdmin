@@ -30,6 +30,11 @@
             <el-button size="small" @click="showDialogMenu(scope.row, 0)">{{ t('role.assignPermission') }}</el-button>
           </template>
         </el-table-column>
+        <el-table-column fixed="right" :label="t('role.operation')" width="100">
+          <template #default="scope">
+            <el-button size="small" :icon="Edit" @click="onEdit(scope.row)">{{ t('common.edit') }}</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </template>
 
@@ -62,7 +67,7 @@
         </template>
       </el-dialog>
 
-      <el-dialog v-model="dialogEditVisible">
+      <el-dialog v-model="dialogEditVisible" :title="editForm.id ? t('role.updateTitle') : t('role.add')">
         <el-form ref="sstFormRef" :model="editForm" :rules="rules" label-width="100px">
           <el-form-item prop="roleName" :label="t('role.roleName')">
             <el-input v-model="editForm.roleName"></el-input>
@@ -71,7 +76,7 @@
             <el-input v-model="editForm.roleKey"></el-input>
           </el-form-item>
           <el-form-item prop="sort" :label="t('role.sort')">
-            <el-input type="number" v-model="editForm.sort"></el-input>
+            <el-input-number v-model="editForm.sort" :min="0" :max="9999" controls-position="right" style="width: 100%"/>
           </el-form-item>
         </el-form>
         <template #footer>
@@ -92,7 +97,7 @@ import roleApi, {grantPermissionsByRoleId} from "@/api/system/sys-role-api";
 import {listByTreeAsRoleSelection, listByRoleId} from "@/api/system/sys-menu-api";
 import TableManage from "@/components/container/TableManage.vue";
 import {ElMessage, ElMessageBox, FormInstance} from "element-plus";
-import {DeleteFilled, Plus, Refresh, Search} from "@element-plus/icons-vue";
+import {DeleteFilled, Edit, Plus, Refresh, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
 
 const {t} = useI18n();
@@ -252,7 +257,15 @@ const onResetSearchForm = () => {
 }
 
 const onCreate = () => {
+  editForm.value = {roleName: '', roleKey: '', sort: 1};
   dialogEditVisible.value = true;
+  nextTick(() => sstFormRef.value?.clearValidate());
+}
+
+const onEdit = (row: RoleModel): void => {
+  editForm.value = {id: row.id, roleName: row.roleName, roleKey: row.roleKey, sort: row.sort};
+  dialogEditVisible.value = true;
+  nextTick(() => sstFormRef.value?.clearValidate());
 }
 
 const onDeleteBatch = () => {
