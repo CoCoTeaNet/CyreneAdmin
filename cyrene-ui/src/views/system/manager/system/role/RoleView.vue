@@ -14,8 +14,8 @@
     </template>
 
     <template #operate>
-      <el-button type="primary" @click="onCreate" :icon="Plus">{{ t('role.add') }}</el-button>
-      <el-button plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">{{ t('role.batchDelete') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:role:add')" type="primary" @click="onCreate" :icon="Plus">{{ t('role.add') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:role:delete')" plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">{{ t('role.batchDelete') }}</el-button>
     </template>
 
     <template #default>
@@ -26,13 +26,13 @@
         <el-table-column prop="sort" :label="t('role.sort')" sortable/>
         <el-table-column :label="t('role.permissionAction')">
           <template #default="scope">
-            <el-button size="small" @click="showDialogMenu(scope.row, 1)">{{ t('role.assignMenu') }}</el-button>
-            <el-button size="small" @click="showDialogMenu(scope.row, 0)">{{ t('role.assignPermission') }}</el-button>
+            <el-button v-if="userStore.hasPermission('system:role:grant')" size="small" @click="showDialogMenu(scope.row, 1)">{{ t('role.assignMenu') }}</el-button>
+            <el-button v-if="userStore.hasPermission('system:role:grant')" size="small" @click="showDialogMenu(scope.row, 0)">{{ t('role.assignPermission') }}</el-button>
           </template>
         </el-table-column>
         <el-table-column fixed="right" :label="t('role.operation')" width="100">
           <template #default="scope">
-            <el-button size="small" :icon="Edit" @click="onEdit(scope.row)">{{ t('common.edit') }}</el-button>
+            <el-button v-if="userStore.hasPermission('system:role:update')" size="small" :icon="Edit" @click="onEdit(scope.row)">{{ t('common.edit') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -40,20 +40,18 @@
 
     <template #page>
       <el-pagination background layout="total, sizes, prev, pager, next, jumper"
-                     :total="pageVo.total"
-                     v-model:page-count="pageVo.pageNo"
-                     v-model:page-size="pageParam.pageSize"
-                     :page-sizes=[5,10,15]
-      />
+                     :total="pageVo.total" :page-size="pageParam.pageSize" :page-sizes=[5,10,15]
+                     @current-change="onPageChange" @size-change="onSizeChange"/>
     </template>
 
     <template #form>
       <!-- 权限操作 -->
       <el-dialog v-model="dialogMenuVisible" :title="dialogMenuStatus == 1 ? t('role.assignMenu') : t('role.assignPermission')" width="50%">
-        <el-tree v-model:default-checked-keys="defaultSelectMenuIdList"
+        <el-tree ref="menuTreeRef"
                  @check-change="checkChange"
                  :data="menuOptions"
                  show-checkbox
+                 :check-strictly="dialogMenuStatus === 0"
                  default-expand-all
                  node-key="id"
                  highlight-current
@@ -99,18 +97,23 @@ import TableManage from "@/components/container/TableManage.vue";
 import {ElMessage, ElMessageBox, FormInstance} from "element-plus";
 import {DeleteFilled, Edit, Plus, Refresh, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
+const userStore = useUserStore();
 
 // 树形选择框配置
 const defaultProps = {
   value: 'id',
   label: 'menuName',
   children: 'children',
-  checkStrictly: true
+  // 权限分区下，菜单节点仅作为分组展示，不允许勾选
+  disabled: (data: any) => dialogMenuStatus.value === 0 && data.isMenu === 1
 }
 
 const multipleSelection = ref<any[]>([]);
+// 权限树实例，用于异步回显已勾选节点
+const menuTreeRef = ref<any>();
 // 授予 权限/菜单 对话框
 const dialogMenuVisible = ref<boolean>(false);
 // 授予 权限/菜单 对话框标题
@@ -156,6 +159,16 @@ const loadTableData = () => {
   });
 }
 
+const onPageChange = (currentPage: number) => {
+  pageParam.value.pageNo = currentPage;
+  nextTick(() => loadTableData());
+}
+
+const onSizeChange = (size: number) => {
+  pageParam.value.pageSize = size;
+  nextTick(() => loadTableData());
+}
+
 const onUpdateFormConfirm = (formEl: any): void => {
   formEl.validate((valid: boolean) => {
     if (valid) {
@@ -180,10 +193,11 @@ const onUpdateFormConfirm = (formEl: any): void => {
  * 确认修改权限
  */
 const dialogConfirm = () => {
-  let param: any[] = [];
-  defaultSelectMenuIdList.value.forEach((item: string) => {
-    param.push({roleId: selectId.value, menuId: item});
-  });
+  const param = {
+    roleId: selectId.value,
+    isMenu: dialogMenuStatus.value,
+    menuIds: defaultSelectMenuIdList.value
+  };
   reqSuccessFeedback(grantPermissionsByRoleId(param), t('common.updateSuccess'), () => {
     dialogMenuVisible.value = false;
   });
@@ -222,12 +236,11 @@ const getMenus = (t: number, callback: Function) => {
  * @param roleId 角色id
  */
 const getMenusByRoleId = (roleId: string) => {
-  let selectIdList: string[] = [];
-  reqCommonFeedback(listByRoleId(roleId), (data: any) => {
-    data.forEach((item: any) => {
-      selectIdList.push(item.id);
-    });
+  reqCommonFeedback(listByRoleId(roleId, dialogMenuStatus.value), (data: any) => {
+    const selectIdList: string[] = (data ?? []).map((item: any) => String(item.id));
     defaultSelectMenuIdList.value = selectIdList;
+    // el-tree 的 default-checked-keys 只在初始化时生效，异步回显必须主动设置
+    nextTick(() => menuTreeRef.value?.setCheckedKeys(selectIdList, false));
   });
 }
 

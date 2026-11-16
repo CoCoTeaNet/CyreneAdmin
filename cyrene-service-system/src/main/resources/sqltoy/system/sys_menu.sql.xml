@@ -13,6 +13,7 @@
             inner join sys_role_menu c on (a.role_id=c.role_id)
             inner join sys_menu d on (d.id = c.menu_id)
             where a.user_id in (:userIds)
+            and b.is_deleted = 0
             and d.is_menu = 1
             and d.is_deleted = 0
             and d.menu_status = 0

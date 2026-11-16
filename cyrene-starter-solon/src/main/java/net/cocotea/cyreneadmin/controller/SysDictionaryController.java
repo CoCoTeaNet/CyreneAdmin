@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.lang.tree.Tree;
@@ -10,6 +11,7 @@ import net.cocotea.cyreneadmin.model.dto.SysDictionaryTreeDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryUpdateDTO;
 import net.cocotea.cyreneadmin.model.vo.SysDictionaryVO;
 import net.cocotea.cyreneadmin.service.SysDictionaryService;
+import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.model.ApiResult;
 import net.cocotea.cyreneadmin.model.BusinessException;
 import org.noear.solon.annotation.*;
@@ -42,7 +44,7 @@ public class SysDictionaryController {
      */
     @Mapping("/add")
     @Post
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:dictionary:add")
     public ApiResult<Boolean> add(@Validated @Body SysDictionaryAddDTO dictionaryAddDTO) throws BusinessException {
         boolean b = sysDictionaryService.add(dictionaryAddDTO);
         return ApiResult.ok(b);
@@ -57,7 +59,7 @@ public class SysDictionaryController {
      */
     @Mapping("/deleteBatch")
     @Post
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:dictionary:delete")
     public ApiResult<Boolean> deleteBatch(@Validated @Body List<BigInteger> list) throws BusinessException {
         boolean b = sysDictionaryService.deleteBatch(list);
         return ApiResult.ok(b);
@@ -72,7 +74,7 @@ public class SysDictionaryController {
      */
     @Mapping("/update")
     @Post
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:dictionary:update")
     public ApiResult<Boolean> update(@Validated @Body SysDictionaryUpdateDTO param) throws BusinessException {
         boolean b = sysDictionaryService.update(param);
         return ApiResult.ok(b);
@@ -89,6 +91,19 @@ public class SysDictionaryController {
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     public ApiResult<List<Tree<BigInteger>>> listByTree(@Validated @Body SysDictionaryTreeDTO dictionaryPageDTO) {
         return ApiResult.ok(sysDictionaryService.listByTree(dictionaryPageDTO));
+    }
+
+    /**
+     * 分页查询字典
+     *
+     * @param pageDTO {@link SysDictionaryPageDTO}
+     * @return 分页结果
+     */
+    @Mapping("/listByPage")
+    @Post
+    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    public ApiResult<ApiPage<SysDictionaryVO>> listByPage(@Validated @Body SysDictionaryPageDTO pageDTO) {
+        return ApiResult.ok(sysDictionaryService.listByPage(pageDTO));
     }
 
     /**

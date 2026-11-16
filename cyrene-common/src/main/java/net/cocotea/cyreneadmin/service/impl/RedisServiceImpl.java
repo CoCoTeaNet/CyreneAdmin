@@ -93,6 +93,23 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
+    public long deleteByPattern(String pattern) {
+        return redisClient.openAndGet(session -> {
+            ScanParams params = new ScanParams().match(pattern).count(200);
+            String cursor = ScanParams.SCAN_POINTER_START;
+            long deleted = 0;
+            do {
+                ScanResult<String> result = session.jedis().scan(cursor, params);
+                if (!result.getResult().isEmpty()) {
+                    deleted += session.deleteKeys(result.getResult());
+                }
+                cursor = result.getCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+            return deleted;
+        });
+    }
+
+    @Override
     public void set(String key, String value) {
         redisClient.open(session -> session.key(key).expire(0).set(value));
     }

@@ -44,8 +44,8 @@ export function listByTreeAsRoleSelection(data: any) {
 }
 
 /**
- * 通过角色获取菜单
+ * 通过角色获取已授权菜单（isMenu 分区：1菜单 0权限按钮）
  */
-export function listByRoleId(data: any) {
-    return request(`system/menu/listByRoleId/${data}`, {}, get);
+export function listByRoleId(roleId: string, isMenu: number) {
+    return request(`system/menu/listByRoleId/${roleId}?isMenu=${isMenu}`, {}, get);
 }

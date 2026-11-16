@@ -19,6 +19,7 @@ import net.cocotea.cyreneadmin.model.po.SysUserRole;
 import net.cocotea.cyreneadmin.model.vo.SysMenuTreeVO;
 import net.cocotea.cyreneadmin.model.vo.SysMenuVO;
 import net.cocotea.cyreneadmin.service.SysMenuService;
+import net.cocotea.cyreneadmin.service.SysRoleService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
 import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
@@ -28,13 +29,15 @@ import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.lambda.LambdaQuery;
 import org.sagacity.sqltoy.model.Page;
 import org.sagacity.sqltoy.utils.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,10 +46,10 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 public class SysMenuServiceImpl implements SysMenuService {
-    private static final Logger logger = LoggerFactory.getLogger(SysMenuServiceImpl.class);
 
     private final LightDao lightDao;
     private final RedisService redisService;
+    private final SysRoleService roleService;
 
     @Override
     public boolean add(SysMenuAddDTO param) {
@@ -65,8 +68,13 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     @Override
     public boolean deleteBatch(List<BigInteger> idList) {
+        if (idList == null || idList.isEmpty()) {
+            return false;
+        }
         idList.forEach(this::delete);
-        return !idList.isEmpty();
+        // 菜单及权限编码已变化，清理所有用户的权限缓存
+        clearAllPermissionCache();
+        return true;
     }
 
     @Override
@@ -86,14 +94,7 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     @Override
     public List<Tree<BigInteger>> listByTree(SysMenuTreeDTO treeDTO) {
-        List<TreeNode<BigInteger>> nodeList = findMenuVOList(treeDTO).stream()
-                .map(menuVO -> {
-                    TreeNode<BigInteger> node = new TreeNode<>(menuVO.getId(), menuVO.getParentId(), menuVO.getMenuName(), menuVO.getSort());
-                    node.setExtra(BeanUtil.beanToMap(menuVO));
-                    return node;
-                }).toList();
-
-        return TreeUtil.build(nodeList, BigInteger.ZERO);
+        return buildTree(findMenuVOList(treeDTO), treeDTO.getIsMenu());
     }
 
     private List<SysMenuVO> findMenuVOList(SysMenuTreeDTO treeDTO) {
@@ -113,6 +114,8 @@ public class SysMenuServiceImpl implements SysMenuService {
     public boolean update(SysMenuUpdateDTO param) {
         SysMenu sysMenu = lightDao.convertType(param, SysMenu.class);
         Long update = lightDao.update(sysMenu);
+        // 权限编码可能变化，清理所有用户的权限缓存
+        clearAllPermissionCache();
         return update > 0;
     }
 
@@ -124,10 +127,17 @@ public class SysMenuServiceImpl implements SysMenuService {
         List<BigInteger> roleIds = LambdaQuery.create(SysUserRole.class).bind(lightDao)
                 .eq(true, SysUserRole::getUserId, loginId)
                 .find().stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
+        // 空集合时 in 条件会被 sqltoy 忽略，必须提前返回避免查出全部菜单/权限
+        if (roleIds.isEmpty()) {
+            return List.of();
+        }
         // 3、查询角色含有的菜单
         List<BigInteger> menuIds = LambdaQuery.create(SysRoleMenu.class).bind(lightDao)
                 .in(true, SysRoleMenu::getRoleId, roleIds)
                 .find().stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList());
+        if (menuIds.isEmpty()) {
+            return List.of();
+        }
         // 4、根据菜单ID查询菜单信息
         List<SysMenu> list = LambdaQuery.create(SysMenu.class).bind(lightDao)
                 .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
@@ -161,9 +171,10 @@ public class SysMenuServiceImpl implements SysMenuService {
     }
 
     @Override
-    public List<SysMenuVO> listByRoleId(BigInteger roleId) {
+    public List<SysMenuVO> listByRoleId(BigInteger roleId, Integer isMenu) {
         List<SysMenu> list = LambdaQuery.create(SysMenu.class).bind(lightDao)
                 .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .eq(isMenu != null, SysMenu::getIsMenu, isMenu)
                 .inSql(roleId != null, SysMenu::getId, "select menu_id from sys_role_menu where role_id = :roleId", MapUtil.of("roleId", roleId))
                 .orderBy(true, true, SysMenu::getSort)
                 .orderBy(true, false, SysMenu::getId)
@@ -173,8 +184,10 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     @Override
     public List<SysMenuVO> cachePermission(BigInteger userId) {
-        // 缓存权限
-        List<SysMenuVO> permissions = listByUserId(IsEnum.N.getCode());
+        // 缓存权限（过滤空权限码，避免鉴权集合出现 null）
+        List<SysMenuVO> permissions = listByUserId(IsEnum.N.getCode()).stream()
+                .filter(item -> StringUtil.isNotBlank(item.getPermissionCode()))
+                .toList();
         redisService.save(String.format(RedisKeyConst.USER_PERMISSION, userId), JSONUtil.toJsonStr(permissions), 3600 * 24L);
         return permissions;
     }
@@ -182,14 +195,36 @@ public class SysMenuServiceImpl implements SysMenuService {
     @Override
     public List<SysMenuVO> getCachePermission(BigInteger userId) {
         String s = redisService.get(String.format(RedisKeyConst.USER_PERMISSION, userId));
-        logger.info("[{}]-permissions={}", userId, s);
+        // 缓存不存在时返回 null，由调用方回源并写入缓存
+        if (StringUtil.isBlank(s)) {
+            return null;
+        }
         return JSONUtil.toList(s, SysMenuVO.class);
     }
 
     @Override
+    public void clearAllPermissionCache() {
+        redisService.deleteByPattern(String.format(RedisKeyConst.USER_PERMISSION, "*"));
+    }
+
+    @Override
     public List<Tree<BigInteger>> listByTreeAsRoleSelection(SysMenuTreeDTO treeDTO) {
-        List<TreeNode<BigInteger>> nodeList = findMenuVOList(treeDTO)
-                .stream()
+        return buildTree(findMenuVOList(treeDTO), treeDTO.getIsMenu());
+    }
+
+    /**
+     * 构建菜单树
+     * <p>
+     * 权限按钮(is_menu=0)的父节点是菜单节点，若只查询按钮本身，父节点缺失会导致
+     * {@link TreeUtil#build} 整棵树为空，因此需要补齐祖先菜单作为分组节点。
+     *
+     * @param menuList 菜单/权限列表
+     * @param isMenu   是否菜单，0=权限按钮
+     * @return 树形结构
+     */
+    private List<Tree<BigInteger>> buildTree(List<SysMenuVO> menuList, Integer isMenu) {
+        List<SysMenuVO> nodes = IsEnum.N.getCode().equals(isMenu) ? fillMenuAncestors(menuList) : menuList;
+        List<TreeNode<BigInteger>> nodeList = nodes.stream()
                 .map(menuVO -> {
                     TreeNode<BigInteger> node = new TreeNode<>(menuVO.getId(), menuVO.getParentId(), menuVO.getMenuName(), menuVO.getSort());
                     node.setExtra(BeanUtil.beanToMap(menuVO));
@@ -198,8 +233,48 @@ public class SysMenuServiceImpl implements SysMenuService {
         return TreeUtil.build(nodeList, BigInteger.ZERO);
     }
 
+    /**
+     * 补齐权限按钮缺失的祖先菜单节点，保证树结构可正常构建
+     *
+     * @param menuList 权限按钮列表
+     * @return 含祖先菜单的节点列表
+     */
+    private List<SysMenuVO> fillMenuAncestors(List<SysMenuVO> menuList) {
+        Map<BigInteger, SysMenuVO> nodeMap = new LinkedHashMap<>();
+        menuList.forEach(menu -> nodeMap.put(menu.getId(), menu));
+        Set<BigInteger> missingIds = collectMissingParentIds(nodeMap);
+        // 逐层向上补齐，直到根节点或父节点已被删除
+        while (!missingIds.isEmpty()) {
+            List<SysMenu> parents = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                    .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                    .in(true, SysMenu::getId, missingIds)
+                    .find();
+            if (parents.isEmpty()) {
+                break;
+            }
+            Convert.toList(SysMenuVO.class, parents).forEach(parent -> nodeMap.putIfAbsent(parent.getId(), parent));
+            missingIds = collectMissingParentIds(nodeMap);
+        }
+        return new ArrayList<>(nodeMap.values());
+    }
+
+    private Set<BigInteger> collectMissingParentIds(Map<BigInteger, SysMenuVO> nodeMap) {
+        return nodeMap.values().stream()
+                .map(SysMenuVO::getParentId)
+                .filter(parentId -> parentId != null && !BigInteger.ZERO.equals(parentId))
+                .filter(parentId -> !nodeMap.containsKey(parentId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
     @Override
     public List<Tree<BigInteger>> userMenu() {
+        // 超级管理员不受授权关联约束，直接返回全部可见菜单
+        if (roleService.isSuperAdmin(LoginUtils.loginId())) {
+            SysMenuTreeDTO treeDTO = new SysMenuTreeDTO();
+            treeDTO.setIsMenu(IsEnum.Y.getCode());
+            treeDTO.setMenuStatus(0);
+            return listByTree(treeDTO);
+        }
         Map<String, Object> params = MapUtil.builder(new HashMap<String, Object>())
                 .put("userIds", List.of(LoginUtils.loginId()))
                 .build();

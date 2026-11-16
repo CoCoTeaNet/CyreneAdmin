@@ -11,8 +11,8 @@ export const API_URL = process.env.API_URL || `${TEST_BASE_URL}/api`;
 /** 前端页面地址（与 playwright.config.ts 的 baseURL 同源读取） */
 export const PAGE_BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 
-/** 测试用户密码（与运行中的后端 app.yml 中 myapp.password 一致） */
-export const TEST_PASSWORD = process.env.TEST_PASSWORD || 'admin#123456';
+/** 测试用户密码（与运行中的后端 app-test.yml 中 myapp.password 一致） */
+export const TEST_PASSWORD = process.env.TEST_PASSWORD || 'Cyr3ne@2024!T3st';
 
 /** 测试超时（毫秒） */
 export const TEST_TIMEOUT = 30000;
@@ -20,7 +20,7 @@ export const TEST_TIMEOUT = 30000;
 /** API 请求超时（毫秒） */
 export const API_TIMEOUT = 10000;
 
-/** Redis 配置（与运行中的后端对齐：127.0.0.1:6379, db=1） */
+/** Redis 配置（与 app-test.yml 的 myapp.rd1 对齐：127.0.0.1:16379, db=1） */
 export const TEST_REDIS_HOST = process.env.TEST_REDIS_HOST || '127.0.0.1';
-export const TEST_REDIS_PORT = Number(process.env.TEST_REDIS_PORT || 6379);
+export const TEST_REDIS_PORT = Number(process.env.TEST_REDIS_PORT || 16379);
 export const TEST_REDIS_DB = process.env.TEST_REDIS_DB || '1';

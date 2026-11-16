@@ -15,8 +15,7 @@
                 #[and a.id = :id]
                 #[and a.request_way = :requestWay]
                 #[and a.api_path = :apiPath]
-                #[and b.username like :operator]
-                #[and b.nickname like :operator]
+                #[and (b.username like :operator or b.nickname like :operator)]
                 order by a.id desc
             ]]>
         </value>

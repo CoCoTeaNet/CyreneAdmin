@@ -108,6 +108,8 @@ public class SysLoginController {
     @Mapping("/loginInfo")
     public ApiResult<SysLoginUserVO> loginInfo() {
         SysLoginUserVO r = sysUserService.loginUser();
+        // 前端按钮级权限：超管返回 ["*"]，其余用户返回已授权的权限标识
+        r.setPermissions(StpUtil.getPermissionList());
         return ApiResult.ok(r);
     }
 

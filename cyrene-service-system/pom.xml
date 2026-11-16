@@ -28,6 +28,20 @@
             <artifactId>sa-token-core</artifactId>
         </dependency>
 
+        <!-- 事务注解：Solon 与 Spring Boot 双 starter 各自织入，运行时由 starter 提供实现 -->
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>solon-data</artifactId>
+            <version>3.10.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>6.2.19</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

@@ -20,11 +20,13 @@ import net.cocotea.cyreneadmin.model.BusinessException;
 import net.cocotea.cyreneadmin.service.RedisService;
 import net.cocotea.cyreneadmin.util.LoginUtils;
 import net.cocotea.cyreneadmin.util.SecurityUtils;
+import org.noear.solon.data.annotation.Tran;
 import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.lambda.LambdaDelete;
 import org.sagacity.sqltoy.lambda.LambdaQuery;
 import org.sagacity.sqltoy.model.Page;
 import org.sagacity.sqltoy.utils.StringUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -47,18 +49,24 @@ public class SysUserServiceImpl implements SysUserService {
     private final SecurityUtils securityUtils;
     private final LightDao lightDao;
 
+    @Tran
+    @Transactional
     @Override
     public boolean add(SysUserAddDTO addDTO) {
-        SysUser sysUser = lightDao.convertType(addDTO, SysUser.class);
-        if (StringUtil.isNotBlank(addDTO.getPassword())) {
-            sysUser.setPassword(securityUtils.getPwd(addDTO.getPassword()));
-        } else {
-            sysUser.setPassword(appSystemProp.getPassword());
+        SysUser existUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getUsername, addDTO.getUsername())
+                .getOne();
+        if (existUser != null) {
+            throw new BusinessException("已存在该用户名");
         }
+        SysUser sysUser = lightDao.convertType(addDTO, SysUser.class);
+        // 未填密码时使用默认密码，同样走 SM3+salt，避免明文落库
+        String rawPwd = StringUtil.isNotBlank(addDTO.getPassword()) ? addDTO.getPassword() : appSystemProp.getPassword();
+        sysUser.setPassword(securityUtils.getPwd(rawPwd));
         Object userId = lightDao.save(sysUser);
 
         // 授予用户角色
-        if (!(addDTO.getRoleIds().isEmpty())) {
+        if (addDTO.getRoleIds() != null && !addDTO.getRoleIds().isEmpty()) {
             for (BigInteger roleId : addDTO.getRoleIds()) {
                 SysUserRole sysUserRole = new SysUserRole().setUserId(LoginUtils.parse(userId)).setRoleId(roleId);
                 lightDao.save(sysUserRole);
@@ -72,13 +80,24 @@ public class SysUserServiceImpl implements SysUserService {
     public boolean delete(BigInteger id) {
         // 假删除，用户关联的数据不必操作
         SysUser sysUser = new SysUser().setId(id).setIsDeleted(IsEnum.Y.getCode());
+        // 删除后权限缓存立即失效，避免残留会话继续使用旧权限
+        redisService.delete(String.format(RedisKeyConst.USER_PERMISSION, id));
         return lightDao.update(sysUser) > 0;
     }
 
+    @Tran
+    @Transactional
     @Override
     public boolean update(SysUserUpdateDTO updateDTO) {
+        SysUser existUser = LambdaQuery.create(SysUser.class).bind(lightDao)
+                .eq(true, SysUser::getUsername, updateDTO.getUsername())
+                .ne(true, SysUser::getId, updateDTO.getId())
+                .getOne();
+        if (existUser != null) {
+            throw new BusinessException("已存在该用户名");
+        }
         SysUser sysUser = Convert.convert(SysUser.class, updateDTO);
-        if (!(updateDTO.getRoleIds() == null || updateDTO.getRoleIds().isEmpty())) {
+        if (updateDTO.getRoleIds() != null && !updateDTO.getRoleIds().isEmpty()) {
             // 删除用户角色关联
             LambdaDelete.create(SysUserRole.class).bind(lightDao)
                     .eq(true, SysUserRole::getUserId, updateDTO.getId())
@@ -88,6 +107,8 @@ public class SysUserServiceImpl implements SysUserService {
                 SysUserRole sysUserRole = new SysUserRole().setUserId(updateDTO.getId()).setRoleId(roleId);
                 lightDao.save(sysUserRole);
             }
+            // 角色变化后清理该用户权限缓存
+            redisService.delete(String.format(RedisKeyConst.USER_PERMISSION, updateDTO.getId()));
         }
         // 更新密码
         if (StringUtil.isNotBlank(updateDTO.getPassword())) {
@@ -132,9 +153,11 @@ public class SysUserServiceImpl implements SysUserService {
         // 校验验证码
         String key = String.format(RedisKeyConst.VERIFY_CODE_LOGIN, loginDTO.getCaptchaId());
         String code = redisService.get(key);
-        if (!loginDTO.getCaptcha().equals(code)) {
+        if (code == null || !code.equals(loginDTO.getCaptcha())) {
             throw new BusinessException("验证码错误");
         }
+        // 验证码一次性使用，避免同一验证码被重复用于撞库
+        redisService.delete(key);
         // 校验密码
         String pwd = securityUtils.getPwd(loginDTO.getPassword());
         SysUser sysUser = LambdaQuery.create(SysUser.class).bind(lightDao)
@@ -146,6 +169,8 @@ public class SysUserServiceImpl implements SysUserService {
         if (sysUser == null) {
             throw new BusinessException("登录失败，用户名或密码错误");
         }
+        // 账号状态字典 account_status：仅 1=正常 允许登录
+        checkAccountStatus(sysUser.getAccountStatus(), false);
         // 记住我模式
         if (loginDTO.getRememberMe()) {
             StpUtil.login(sysUser.getId(), new SaLoginParameter().setTimeout(3600 * 24 * 365));
@@ -158,8 +183,6 @@ public class SysUserServiceImpl implements SysUserService {
         loginSysUser.setLastLoginIp(realIp);
         loginSysUser.setLastLoginTime(LocalDateTime.now());
         lightDao.update(loginSysUser);
-        // 删除验证码缓存
-        redisService.delete(key);
         return StpUtil.getTokenValue();
     }
 
@@ -171,6 +194,9 @@ public class SysUserServiceImpl implements SysUserService {
                 .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
                 .eq(true, SysUser::getId, loginId)
                 .getOne();
+        if (sysUser == null) {
+            throw new BusinessException("用户不存在");
+        }
         SysUserVO sysUserVO = Convert.convert(SysUserVO.class, sysUser);
         // 用户角色
         Map<BigInteger, List<SysUserRoleVO>> roleMap = userRoleMap(Collections.singletonList(loginId));
@@ -189,6 +215,8 @@ public class SysUserServiceImpl implements SysUserService {
             StpUtil.logout();
             throw new BusinessException("用户已退出登录");
         }
+        // 账号被停用/冻结/封禁后，已登录会话同样失效
+        checkAccountStatus(sysUser.getAccountStatus(), true);
         return new SysLoginUserVO().setId(sysUser.getId())
                 .setUsername(sysUser.getUsername())
                 .setNickname(sysUser.getNickname())
@@ -228,6 +256,9 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public Map<BigInteger, SysUser> getMap(List<BigInteger> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return MapUtil.empty();
+        }
         List<SysUser> list = LambdaQuery.create(SysUser.class).bind(lightDao)
                 .eq(true, SysUser::getIsDeleted, IsEnum.N.getCode())
                 .in(true, SysUser::getId, ids)
@@ -245,6 +276,13 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public void getAvatar(String avatar, OutputStream outputStream) throws BusinessException {
+        // 头像名只允许文件名，禁止路径分隔符与上级目录，避免目录穿越
+        if (StringUtil.isBlank(avatar)
+                || avatar.contains("..")
+                || avatar.contains("/")
+                || avatar.contains("\\")) {
+            throw new BusinessException("非法头像名称");
+        }
         String fullPath = appSystemProp.getAvatarPath() + avatar;
         File file = FileUtil.file(fullPath);
         if (file.exists()) {
@@ -252,6 +290,28 @@ public class SysUserServiceImpl implements SysUserService {
         } else {
             throw new BusinessException("File is not found");
         }
+    }
+
+    /**
+     * 校验账号状态，仅 1=正常 放行
+     *
+     * @param accountStatus 账号状态
+     * @param logout        不通过时是否注销当前会话
+     */
+    private void checkAccountStatus(Integer accountStatus, boolean logout) {
+        if (Integer.valueOf(1).equals(accountStatus)) {
+            return;
+        }
+        if (logout) {
+            StpUtil.logout();
+        }
+        String label = switch (accountStatus == null ? -1 : accountStatus) {
+            case 0 -> "已停用";
+            case 2 -> "已冻结";
+            case 3 -> "已封禁";
+            default -> "未知";
+        };
+        throw new BusinessException("账号状态异常（" + label + "），禁止登录");
     }
 
     private Map<BigInteger, List<SysUserRoleVO>> userRoleMap(List<BigInteger> userIds) {

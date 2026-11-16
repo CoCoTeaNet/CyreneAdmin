@@ -19,7 +19,7 @@
     </template>
 
     <template #operate>
-      <el-button type="primary" @click="onAdd" :icon="Plus">{{ t('menu.addMenu') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:menu:add')" type="primary" @click="onAdd" :icon="Plus">{{ t('menu.addMenu') }}</el-button>
     </template>
 
     <!-- 表格视图 -->
@@ -56,8 +56,8 @@
         <!-- 单行操作 -->
         <el-table-column fixed="right" width="200" :label="t('dictionary.operation')">
           <template #default="scope">
-            <el-button size="small" @click="onEdit(scope.row)" :icon="Edit">{{ t('common.edit') }}</el-button>
-            <el-button size="small" plain type="danger" @click="onRemove(scope.row)" :icon="DeleteFilled">
+            <el-button v-if="userStore.hasPermission('system:menu:update')" size="small" @click="onEdit(scope.row)" :icon="Edit">{{ t('common.edit') }}</el-button>
+            <el-button v-if="userStore.hasPermission('system:menu:delete')" size="small" plain type="danger" @click="onRemove(scope.row)" :icon="DeleteFilled">
               {{ t('common.delete') }}
             </el-button>
           </template>
@@ -126,9 +126,11 @@ import listUtil from "@/utils/list-util";
 import {DeleteFilled, Edit, Plus, RefreshRight, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
 import {useDictionaryStore} from "@/stores/dictionary";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
 const dictionaryStore = useDictionaryStore();
+const userStore = useUserStore();
 const menuTypeOptions = computed(() => dictionaryStore.getOptions('menu_type'));
 const yesNoOptions = computed(() => dictionaryStore.getOptions('yes_no'));
 const menuStatusOptions = computed(() => dictionaryStore.getOptions('menu_status'));

@@ -14,7 +14,7 @@
     </template>
 
     <template #operate>
-      <el-button type="danger" @click="onBatchDelete" :icon="DeleteFilled">{{ t('dictionary.batchDelete') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:log:delete')" type="danger" @click="onBatchDelete" :icon="DeleteFilled">{{ t('dictionary.batchDelete') }}</el-button>
     </template>
 
     <template #default>
@@ -45,7 +45,7 @@
 
         <el-table-column fixed="right" :label="t('dictionary.operation')" width="80">
           <template #default="scope">
-            <el-button size="small" type="danger" plain @click="onDelete(scope.row.id)" :icon="DeleteFilled">
+            <el-button v-if="userStore.hasPermission('system:log:delete')" size="small" type="danger" plain @click="onDelete(scope.row.id)" :icon="DeleteFilled">
               {{ t('common.delete') }}
             </el-button>
           </template>
@@ -70,9 +70,11 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {DeleteFilled, Refresh, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
 import {useDictionaryStore} from "@/stores/dictionary";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
 const dictionaryStore = useDictionaryStore();
+const userStore = useUserStore();
 
 // 分页参数
 const pageParam = ref<PageParam>({pageNo: 1, pageSize: 20, searchObject: {}});

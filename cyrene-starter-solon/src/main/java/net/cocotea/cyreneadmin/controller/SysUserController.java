@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.io.FileUtil;
@@ -53,7 +54,7 @@ public class SysUserController {
      * @return 成功返回TRUE
      */
     @LogPersistence
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:add")
     @Post
     @Mapping("/add")
     public ApiResult<Boolean> add(@Validated @Body SysUserAddDTO addDTO) throws BusinessException {
@@ -67,7 +68,7 @@ public class SysUserController {
      * @param updateDTO {@link SysUserUpdateDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:update")
     @Post @Mapping("/update")
     public ApiResult<Boolean> update(@Validated @Body SysUserUpdateDTO updateDTO) throws BusinessException {
         boolean b = sysUserService.update(updateDTO);
@@ -81,9 +82,9 @@ public class SysUserController {
      * @return 成功返回TRUE
      */
     @LogPersistence
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:delete")
     @Post @Mapping("/delete/{id}")
-    public ApiResult<Boolean> delete(@Path BigInteger id) throws BusinessException {
+    public ApiResult<Boolean> delete(@Path("id") BigInteger id) throws BusinessException {
         boolean b = sysUserService.delete(id);
         return ApiResult.ok(b);
     }
@@ -94,7 +95,7 @@ public class SysUserController {
      * @param idList 用户ID集合
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:delete")
     @Post @Mapping("/deleteBatch")
     public ApiResult<Boolean> deleteBatch(@Body List<BigInteger> idList) throws BusinessException {
         boolean b = sysUserService.deleteBatch(idList);
@@ -170,6 +171,9 @@ public class SysUserController {
     @Mapping("/avatar/upload")
     public ApiResult<Boolean> uploadAvatar(@Param("file") UploadedFile uploadedFile) throws BusinessException, IOException {
         FileUploadUtils.filter(uploadedFile.getName(), appSystemProp.getSupportFiletype());
+        if (uploadedFile.getContentSize() > 5 * 1024 * 1024L) {
+            throw new BusinessException("头像大小不能超过5MB");
+        }
         String saveName = IdUtil.objectId() + CharPool.UNDERLINE + uploadedFile.getName();
         String fullPath = appSystemProp.getAvatarPath() + saveName;
         File file = new File(fullPath);

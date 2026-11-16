@@ -267,11 +267,14 @@ function StartBackend {
         Cleanup
         exit 1
     }
+    # -D must be passed directly to java: java -jar does not read JAVA_OPTS.
+    # DB/Redis/password are pinned explicitly because Solon 3.10 does not pick up
+    # the app-test.yml profile here; this mirrors run-tests.sh.
+    $jdbcUrl = "jdbc:mysql://127.0.0.1:13306/cyrene_admin?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&tinyInt1isBit=false"
     $wrapperLines = @(
         "@echo off",
         "cd /d $RootDir",
-        "set JAVA_OPTS=-Xmx512m -Dsolon.profiles.active=test --myapp.db1.password=test123456",
-        "`"$javaCmd`" -jar `"$jar`" --server.port=$BackendPort",
+        "`"$javaCmd`" -Xmx512m -Dsolon.profiles.active=test -jar `"$jar`" --server.port=$BackendPort --myapp.db1.jdbcUrl=`"$jdbcUrl`" --myapp.db1.username=root --myapp.db1.password=test123456 --myapp.rd1.server=127.0.0.1:16379 --myapp.rd1.db=1 --myapp.password=`"Cyr3ne@2024!T3st`" --myapp.auto-ddl.enabled=false",
         "exit /b %ERRORLEVEL%"
     )
     Set-Content -Path $StartScript -Value ($wrapperLines -join "`r`n") -Encoding ASCII
@@ -379,6 +382,11 @@ function RunTests {
         $env:BASE_URL = "http://127.0.0.1:$FrontendPort"
         # utils/config.ts reads API_URL (not API_BASE); keep it in sync with run-tests.sh
         $env:API_URL = "http://localhost:$BackendPort/api"
+        # Keep the test DB password and Redis port in sync with app-test.yml
+        # (both can be overridden by external environment variables).
+        if (-not $env:TEST_PASSWORD) { $env:TEST_PASSWORD = "Cyr3ne@2024!T3st" }
+        if (-not $env:TEST_REDIS_PORT) { $env:TEST_REDIS_PORT = "16379" }
+        if (-not $env:TEST_REDIS_DB) { $env:TEST_REDIS_DB = "1" }
         $headlessArg = if ($Headed) { "--headed" } else { "" }
         $filterArg = if ($ApiOnly) { "tests/api/" } else { "tests/" }
         $cmd = "npx --yes playwright test $filterArg --workers=1 $headlessArg"

@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.io.FileUtil;
@@ -58,7 +59,7 @@ public class SysUserController {
      * @return 成功返回TRUE
      */
     @LogPersistence
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:add")
     @PostMapping("/add")
     public ApiResult<Boolean> add(@Valid @RequestBody SysUserAddDTO addDTO) throws BusinessException {
         boolean b = userService.add(addDTO);
@@ -71,7 +72,7 @@ public class SysUserController {
      * @param updateDTO {@link SysUserUpdateDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:update")
     @PostMapping("/update")
     public ApiResult<Boolean> update(@Valid @RequestBody SysUserUpdateDTO updateDTO) throws BusinessException {
         boolean b = userService.update(updateDTO);
@@ -85,7 +86,7 @@ public class SysUserController {
      * @return 成功返回TRUE
      */
     @LogPersistence
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:delete")
     @PostMapping("/delete/{id}")
     public ApiResult<Boolean> delete(@PathVariable("id") BigInteger id) throws BusinessException {
         boolean b = userService.delete(id);
@@ -98,7 +99,7 @@ public class SysUserController {
      * @param idList 用户ID集合
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:user:delete")
     @PostMapping("/deleteBatch")
     public ApiResult<Boolean> deleteBatch(@RequestBody List<BigInteger> idList) throws BusinessException {
         boolean b = userService.deleteBatch(idList);
@@ -178,6 +179,9 @@ public class SysUserController {
             throw new BusinessException("未配置相关信息");
         }
         FileUploadUtils.filter(multipartFile.getOriginalFilename(), appSystemProp.getSupportFiletype());
+        if (multipartFile.getSize() > 5 * 1024 * 1024L) {
+            throw new BusinessException("头像大小不能超过5MB");
+        }
         String saveName = IdUtil.objectId() + CharPool.UNDERLINE + multipartFile.getOriginalFilename();
         String fullPath = appSystemProp.getAvatarPath() + saveName;
         File file = new File(fullPath);

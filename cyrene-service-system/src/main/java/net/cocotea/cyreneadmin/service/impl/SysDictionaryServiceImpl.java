@@ -19,6 +19,7 @@ import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.lambda.LambdaQuery;
+import org.sagacity.sqltoy.model.Page;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -60,7 +61,17 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
 
     @Override
     public ApiPage<SysDictionaryVO> listByPage(SysDictionaryPageDTO dto) {
-        return null;
+        SysDictionaryVO query = dto.getSysDictionary();
+        Page<SysDictionary> page = LambdaQuery.create(SysDictionary.class).bind(lightDao)
+                .eq(true, SysDictionary::getIsDeleted, IsEnum.N.getCode())
+                .eq(query != null && query.getParentId() != null, SysDictionary::getParentId, query == null ? null : query.getParentId())
+                .like(query != null && query.getDictionaryName() != null, SysDictionary::getDictionaryName, query == null ? null : query.getDictionaryName())
+                .like(query != null && query.getDictionaryValue() != null, SysDictionary::getDictionaryValue, query == null ? null : query.getDictionaryValue())
+                .eq(query != null && query.getEnableStatus() != null, SysDictionary::getEnableStatus, query == null ? null : query.getEnableStatus())
+                .orderBy(true, true, SysDictionary::getSort)
+                .orderBy(true, false, SysDictionary::getId)
+                .findPage(ApiPage.create(dto));
+        return ApiPage.rest(page, SysDictionaryVO.class);
     }
 
     @Override

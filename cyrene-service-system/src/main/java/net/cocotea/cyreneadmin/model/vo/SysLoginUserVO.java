@@ -60,4 +60,9 @@ public class SysLoginUserVO implements Serializable {
      */
     private String token;
 
+    /**
+     * 权限标识集合，超级管理员为 ["*"]，前端据此控制按钮显隐
+     */
+    private List<String> permissions;
+
 }

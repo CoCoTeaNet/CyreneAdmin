@@ -3,6 +3,9 @@
 -- 仅包含有效菜单数据 (is_deleted = 0)
 -- =============================================
 
+-- 清理历史遗留的 VIP/SVIP 菜单（业务已移除，保留软删除标记）
+UPDATE sys_menu SET is_deleted = 1 WHERE id IN (1255211293510893568, 1255199758382170112);
+
 -- System Management (Parent)
 INSERT IGNORE INTO sys_menu (id, menu_name, permission_code, router_path, parent_id, menu_type, is_menu, menu_status, component_path, is_external_link, icon_path, sort, create_by, create_time, update_by, update_time, is_deleted, revision) VALUES
 (1393000177613242368, 'System Management', ':sys-manager', '/sys-manager', 0, 0, 1, 0, '', 0, 'Grid', 2, 1699771308310499328, '2025-07-10 22:45:23', 1699771308310499328, '2025-12-08 12:16:31', 0, NULL);
@@ -28,7 +31,19 @@ INSERT IGNORE INTO sys_menu (id, menu_name, permission_code, router_path, parent
 (1150464392514519040, 'Dictionary Management', ':admin:dictionary-manager', '/admin/sys-dictionary-manager', 1393000177613242368, 1, 1, 0, '', 0, 'Notebook', 50, 1699771308310499328, '2023-09-10 16:14:46', 1699771308310499328, '2025-07-11 22:48:11', 0, NULL),
 (1150484898768764928, 'System Logs', ':admin:log-manager', '/admin/sys-log-manager', 1393000177613242368, 1, 1, 0, '', 0, 'Monitor', 10, 1699771308310499328, '2023-09-10 17:36:15', 1699771308310499328, '2025-12-08 12:12:03', 0, NULL);
 
--- VIP & SVIP (Top Level)
+-- Button permissions (menu_type=2, is_menu=0); permission_code is checked by @SaCheckPermission
 INSERT IGNORE INTO sys_menu (id, menu_name, permission_code, router_path, parent_id, menu_type, is_menu, menu_status, component_path, is_external_link, icon_path, sort, create_by, create_time, update_by, update_time, is_deleted, revision) VALUES
-(1255211293510893568, 'VIP', 'ps:vip', NULL, 0, 1, 0, 0, NULL, 0, NULL, 1, 1699771308310499328, '2024-06-25 17:21:33', 1699771308310499328, '2024-06-25 17:21:33', 0, NULL),
-(1255199758382170112, 'SVIP', 'ps:svip', '', 0, 1, 0, 0, '', 0, '', 2, 1699771308310499328, '2024-06-25 16:35:43', 1699771308310499328, '2024-06-25 17:21:41', 0, NULL);
+(9100000000000000101, 'Add User', 'system:user:add', NULL, 1150191026649972736, 2, 0, 0, NULL, 0, NULL, 1, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000102, 'Update User', 'system:user:update', NULL, 1150191026649972736, 2, 0, 0, NULL, 0, NULL, 2, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000103, 'Delete User', 'system:user:delete', NULL, 1150191026649972736, 2, 0, 0, NULL, 0, NULL, 3, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000201, 'Add Role', 'system:role:add', NULL, 1150130227206176768, 2, 0, 0, NULL, 0, NULL, 1, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000202, 'Update Role', 'system:role:update', NULL, 1150130227206176768, 2, 0, 0, NULL, 0, NULL, 2, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000203, 'Delete Role', 'system:role:delete', NULL, 1150130227206176768, 2, 0, 0, NULL, 0, NULL, 3, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000204, 'Grant Role', 'system:role:grant', NULL, 1150130227206176768, 2, 0, 0, NULL, 0, NULL, 4, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000301, 'Add Menu', 'system:menu:add', NULL, 1699771910151151618, 2, 0, 0, NULL, 0, NULL, 1, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000302, 'Update Menu', 'system:menu:update', NULL, 1699771910151151618, 2, 0, 0, NULL, 0, NULL, 2, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000303, 'Delete Menu', 'system:menu:delete', NULL, 1699771910151151618, 2, 0, 0, NULL, 0, NULL, 3, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000401, 'Add Dictionary', 'system:dictionary:add', NULL, 1150464392514519040, 2, 0, 0, NULL, 0, NULL, 1, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000402, 'Update Dictionary', 'system:dictionary:update', NULL, 1150464392514519040, 2, 0, 0, NULL, 0, NULL, 2, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000403, 'Delete Dictionary', 'system:dictionary:delete', NULL, 1150464392514519040, 2, 0, 0, NULL, 0, NULL, 3, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL),
+(9100000000000000501, 'Delete Log', 'system:log:delete', NULL, 1150484898768764928, 2, 0, 0, NULL, 0, NULL, 1, 1699771308310499328, '2025-01-01 00:00:00', NULL, NULL, 0, NULL);

@@ -33,12 +33,13 @@ public interface SysMenuService extends BaseService<ApiPage<SysMenuVO>, SysMenuP
     List<SysMenuVO> listByUserId(Integer isMenu);
 
     /**
-     * 获取角色请所有菜单
+     * 获取角色已授权菜单
      *
      * @param roleId 角色主键id
+     * @param isMenu 分区：1菜单 0权限按钮，null不过滤
      * @return 菜单列表
      */
-    List<SysMenuVO> listByRoleId(BigInteger roleId);
+    List<SysMenuVO> listByRoleId(BigInteger roleId, Integer isMenu);
 
     /**
      * 缓存用户权限
@@ -52,9 +53,14 @@ public interface SysMenuService extends BaseService<ApiPage<SysMenuVO>, SysMenuP
      * 获取用户缓存权限
      *
      * @param userId 用户主键id
-     * @return 用户权限
+     * @return 用户权限，缓存不存在返回 null
      */
     List<SysMenuVO> getCachePermission(BigInteger userId);
+
+    /**
+     * 清除全部用户的权限缓存（菜单/权限发生变化时调用）
+     */
+    void clearAllPermissionCache();
 
     /**
      * 通关角色获取菜单下拉选项

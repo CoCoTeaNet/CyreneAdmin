@@ -1,6 +1,4 @@
 import axios from "axios";
-import {ApiResultEnum} from "@/api/ApiResultEnum";
-import {router} from "@/router";
 import {useUserStore} from "@/stores/user.ts";
 
 const userStore = useUserStore();
@@ -28,12 +26,7 @@ export async function request(url: string, data: any, method: any): Promise<any>
         // `transformResponse` 在传递给 then/catch 前，允许修改响应数据
         transformResponse: [function (data: any) {
             // 对 data 进行任意转换处理
-            let dataJson = JSON.parse(data);
-            // 无权限，跳转admin首页
-            if (dataJson.code === ApiResultEnum.NOT_PERMISSION) {
-                router.push({name: 'Home'});
-            }
-            return dataJson;
+            return JSON.parse(data);
         }],
         // `headers` 是即将被发送的自定义请求头
         headers: {

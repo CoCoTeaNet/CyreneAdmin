@@ -52,8 +52,9 @@ public class BeanConfig {
         context.wrapAndPut(SysDictionaryService.class, new SysDictionaryServiceImpl(lightDao));
         context.wrapAndPut(SysLogService.class, new SysLogServiceImpl(systemProp, lightDao));
         context.wrapAndPut(SysDashboardService.class, new SysDashboardServiceImpl(lightDao, redisService));
-        context.wrapAndPut(SysRoleService.class, new SysRoleServiceImpl(lightDao));
-        context.wrapAndPut(SysMenuService.class, new SysMenuServiceImpl(lightDao, redisService));
+        context.wrapAndPut(SysRoleService.class, new SysRoleServiceImpl(lightDao, redisService));
+        SysRoleService roleService = context.getBean(SysRoleService.class);
+        context.wrapAndPut(SysMenuService.class, new SysMenuServiceImpl(lightDao, redisService, roleService));
         context.wrapAndPut(SysUserService.class, new SysUserServiceImpl(systemProp, redisService, securityUtils, lightDao));
 
         context.beanInterceptorAdd(Valid.class, new ParameterInterceptor());

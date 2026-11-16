@@ -59,7 +59,7 @@
           {{ t('dictionary.noMatch') }}
         </div>
         <el-empty v-if="!hasData" :description="t('dictionary.emptyTree')" :image-size="90">
-          <el-button type="primary" :icon="Plus" @click="onAdd">{{ t('dictionary.add') }}</el-button>
+          <el-button v-if="userStore.hasPermission('system:dictionary:add')" type="primary" :icon="Plus" @click="onAdd">{{ t('dictionary.add') }}</el-button>
         </el-empty>
       </div>
 
@@ -93,11 +93,11 @@
                 <span class="dm-child-count">{{ t('dictionary.childCount', {count: childRows.length}) }}</span>
               </div>
               <div class="dm-detail-actions">
-                <el-button type="primary" :icon="Plus" @click="onAdd">
+                <el-button v-if="userStore.hasPermission('system:dictionary:add')" type="primary" :icon="Plus" @click="onAdd">
                   {{ selectedNode.isRoot ? t('dictionary.add') : t('dictionary.addChild') }}
                 </el-button>
-                <el-button :icon="Edit" :disabled="selectedNode.isRoot" @click="onEditSelected">{{ t('common.edit') }}</el-button>
-                <el-button plain type="danger" :icon="DeleteFilled" :disabled="selectedNode.isRoot" @click="onRemoveSelected">
+                <el-button v-if="userStore.hasPermission('system:dictionary:update')" :icon="Edit" :disabled="selectedNode.isRoot" @click="onEditSelected">{{ t('common.edit') }}</el-button>
+                <el-button v-if="userStore.hasPermission('system:dictionary:delete')" plain type="danger" :icon="DeleteFilled" :disabled="selectedNode.isRoot" @click="onRemoveSelected">
                   {{ t('common.delete') }}
                 </el-button>
               </div>
@@ -163,14 +163,14 @@
               <el-table-column prop="createTime" :label="t('dictionary.createTime')" width="170" show-overflow-tooltip/>
               <el-table-column fixed="right" width="170" :label="t('dictionary.operation')" class-name="dm-op-col">
                 <template #default="{ row }">
-                  <el-button size="small" text type="primary" :icon="Edit" @click.stop="onEdit(row)">{{ t('common.edit') }}</el-button>
-                  <el-button size="small" text type="danger" :icon="DeleteFilled" @click.stop="onRemove(row)">{{ t('common.delete') }}</el-button>
+                  <el-button v-if="userStore.hasPermission('system:dictionary:update')" size="small" text type="primary" :icon="Edit" @click.stop="onEdit(row)">{{ t('common.edit') }}</el-button>
+                  <el-button v-if="userStore.hasPermission('system:dictionary:delete')" size="small" text type="danger" :icon="DeleteFilled" @click.stop="onRemove(row)">{{ t('common.delete') }}</el-button>
                 </template>
               </el-table-column>
             </el-table>
             <el-empty v-else :description="hasFilter ? t('dictionary.noMatch') : t('dictionary.emptyChildren')" :image-size="110">
               <el-button v-if="hasFilter" :icon="RefreshLeft" @click="resetFilter">{{ t('dictionary.clearFilter') }}</el-button>
-              <el-button v-else type="primary" :icon="Plus" @click="onAdd">
+              <el-button v-else-if="userStore.hasPermission('system:dictionary:add')" type="primary" :icon="Plus" @click="onAdd">
                 {{ selectedNode.isRoot ? t('dictionary.add') : t('dictionary.addChild') }}
               </el-button>
             </el-empty>
@@ -245,9 +245,11 @@ import {
 } from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
 import {useDictionaryStore} from "@/stores/dictionary";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
 const dictionaryStore = useDictionaryStore();
+const userStore = useUserStore();
 
 type FormInstance = InstanceType<typeof ElForm>
 type DictNode = DictionaryModel & { isRoot?: boolean }

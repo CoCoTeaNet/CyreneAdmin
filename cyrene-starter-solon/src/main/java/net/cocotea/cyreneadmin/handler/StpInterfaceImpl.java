@@ -34,7 +34,12 @@ public class StpInterfaceImpl implements StpInterface {
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
         StpUtil.checkLogin();
-        List<SysMenuVO> cachePermissionList = menuService.getCachePermission((BigInteger) loginId);
+        BigInteger myLoginId = LoginUtils.parse(loginId);
+        // 超级管理员拥有全部权限
+        if (roleService.isSuperAdmin(myLoginId)) {
+            return List.of("*");
+        }
+        List<SysMenuVO> cachePermissionList = menuService.getCachePermission(myLoginId);
         List<String> list;
         // 1关闭了缓存 2缓存失效了 3有缓存
         if (!appSystemProp.getPermissionCache()) {
@@ -42,7 +47,7 @@ public class StpInterfaceImpl implements StpInterface {
             list = new ArrayList<>(menuList.size());
             menuList.forEach(item -> list.add(item.getPermissionCode()));
         } else if (cachePermissionList == null) {
-            List<SysMenuVO> permission = menuService.cachePermission((BigInteger) loginId);
+            List<SysMenuVO> permission = menuService.cachePermission(myLoginId);
             list = new ArrayList<>(permission.size());
             permission.forEach(i -> list.add(i.getPermissionCode()));
         } else {

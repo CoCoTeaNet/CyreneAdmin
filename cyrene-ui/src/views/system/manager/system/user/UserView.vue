@@ -27,8 +27,8 @@
     </template>
 
     <template #operate>
-      <el-button :icon="Plus" type="primary" @click="onCreate">{{ t('user.addUser') }}</el-button>
-      <el-button :icon="DeleteFilled" plain type="danger" @click="onDeleteBatch">{{ t('user.batchDelete') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:user:add')" :icon="Plus" type="primary" @click="onCreate">{{ t('user.addUser') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:user:delete')" :icon="DeleteFilled" plain type="danger" @click="onDeleteBatch">{{ t('user.batchDelete') }}</el-button>
     </template>
 
     <template #default>
@@ -64,8 +64,8 @@
         <el-table-column prop="lastLoginTime" width="200" :label="t('user.lastLoginTime')"/>
         <el-table-column fixed="right" :label="t('user.operation')" width="180">
           <template #default="scope">
-            <el-button :icon="Edit" size="small" @click="onEdit(scope.row)">{{ t('common.edit') }}</el-button>
-            <el-button :icon="DeleteFilled" size="small" type="danger" plain @click="onDelete(scope.row.id)">
+            <el-button v-if="userStore.hasPermission('system:user:update')" :icon="Edit" size="small" @click="onEdit(scope.row)">{{ t('common.edit') }}</el-button>
+            <el-button v-if="userStore.hasPermission('system:user:delete')" :icon="DeleteFilled" size="small" type="danger" plain @click="onDelete(scope.row.id)">
               {{ t('common.delete') }}
             </el-button>
           </template>
@@ -95,9 +95,11 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {DeleteFilled, Plus, Search, RefreshRight, Edit} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
 import {useDictionaryStore} from "@/stores/dictionary";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
 const dictionaryStore = useDictionaryStore();
+const userStore = useUserStore();
 
 const formShow = ref<boolean>(false);
 const editType = ref<string>("create");

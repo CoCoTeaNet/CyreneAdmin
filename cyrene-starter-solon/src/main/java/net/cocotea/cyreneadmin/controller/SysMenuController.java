@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.lang.tree.Tree;
@@ -38,7 +39,7 @@ public class SysMenuController {
      * @param addDTO {@link SysMenuAddDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:menu:add")
     @Post
     @Mapping("add")
     public ApiResult<Boolean> add(@Validated @Body SysMenuAddDTO addDTO) throws BusinessException {
@@ -52,7 +53,7 @@ public class SysMenuController {
      * @param idList ID集合
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:menu:delete")
     @Post
     @Mapping("deleteBatch")
     public ApiResult<Boolean> deleteBatch(@Validated @Body List<BigInteger> idList) throws BusinessException {
@@ -66,7 +67,7 @@ public class SysMenuController {
      * @param updateDTO {@link SysMenuUpdateDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:menu:update")
     @Post
     @Mapping("update")
     public ApiResult<Boolean> update(@Validated @Body SysMenuUpdateDTO updateDTO) throws BusinessException {
@@ -115,16 +116,18 @@ public class SysMenuController {
     }
 
     /**
-     * 通关角色获取请所有菜单
+     * 通过角色获取已授权菜单
      *
      * @param roleId 角色ID
+     * @param isMenu 分区：1菜单 0权限按钮，不传不过滤
      * @return {@link SysMenuVO}
      */
     @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
     @Get
     @Mapping("listByRoleId/{roleId}")
-    public ApiResult<List<SysMenuVO>> listByRoleId(@Path("roleId") BigInteger roleId) {
-        List<SysMenuVO> menus = sysMenuService.listByRoleId(roleId);
+    public ApiResult<List<SysMenuVO>> listByRoleId(@Path("roleId") BigInteger roleId,
+                                                   @Param(value = "isMenu", required = false) Integer isMenu) {
+        List<SysMenuVO> menus = sysMenuService.listByRoleId(roleId, isMenu);
         return ApiResult.ok(menus);
     }
 }

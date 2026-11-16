@@ -14,5 +14,6 @@ interface UserModel {
     roleName?: string,
     password?: string,
     token?: string,
-    loginStatus?: boolean
+    loginStatus?: boolean,
+    permissions?: string[]
 }

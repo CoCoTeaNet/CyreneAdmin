@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import net.cocotea.cyreneadmin.model.dto.SysLogPageDTO;
@@ -48,7 +49,7 @@ public class SysLogController {
      * @param ids 日志ID集合
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:log:delete")
     @Post @Mapping("/deleteBatch")
     public ApiResult<Boolean> deleteBatch(@Body List<BigInteger> ids) throws BusinessException {
         boolean b = sysLogService.deleteBatch(ids);

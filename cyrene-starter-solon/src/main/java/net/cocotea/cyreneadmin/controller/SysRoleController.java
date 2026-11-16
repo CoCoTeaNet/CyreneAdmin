@@ -1,11 +1,12 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
 import net.cocotea.cyreneadmin.model.dto.SysRoleAddDTO;
+import net.cocotea.cyreneadmin.model.dto.SysRoleGrantDTO;
 import net.cocotea.cyreneadmin.model.dto.SysRolePageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysRoleUpdateDTO;
-import net.cocotea.cyreneadmin.model.vo.SysRoleMenuVO;
 import net.cocotea.cyreneadmin.model.vo.SysRoleVO;
 import net.cocotea.cyreneadmin.service.SysRoleService;
 import net.cocotea.cyreneadmin.model.ApiPage;
@@ -38,7 +39,7 @@ public class SysRoleController {
      * @param addDTO {@link SysRoleAddDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:role:add")
     @Post
     @Mapping("/add")
     public ApiResult<Boolean> add(@Validated @Body SysRoleAddDTO addDTO) throws BusinessException {
@@ -52,7 +53,7 @@ public class SysRoleController {
      * @param updateDTO {@link SysRoleUpdateDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:role:update")
     @Post @Mapping("/update")
     public ApiResult<Boolean> update(@Validated @Body SysRoleUpdateDTO updateDTO) throws BusinessException {
         boolean b = sysRoleService.update(updateDTO);
@@ -65,9 +66,9 @@ public class SysRoleController {
      * @param id 角色ID
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:role:delete")
     @Post @Mapping("/delete/{id}")
-    public ApiResult<Boolean> delete(@Path BigInteger id) throws BusinessException {
+    public ApiResult<Boolean> delete(@Path("id") BigInteger id) throws BusinessException {
         boolean b = sysRoleService.delete(id);
         return ApiResult.ok(b);
     }
@@ -78,7 +79,7 @@ public class SysRoleController {
      * @param idList 角色ID集合
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:role:delete")
     @Post @Mapping("/deleteBatch")
     public ApiResult<Boolean> deleteBatch(@Body List<BigInteger> idList) throws BusinessException {
         boolean b = sysRoleService.deleteBatch(idList);
@@ -86,15 +87,15 @@ public class SysRoleController {
     }
 
     /**
-     * 给角色赋予权限
+     * 给角色赋予权限（按菜单/权限分区替换，空集合清空该分区）
      *
-     * @param updateDTO {@link SysRoleMenuVO}
+     * @param grantDTO {@link SysRoleGrantDTO}
      * @return 成功返回TRUE
      */
-    @SaCheckRole(value = {"role:super:admin", "role:simple:admin"}, mode = SaMode.OR)
+    @SaCheckPermission("system:role:grant")
     @Post @Mapping("/grantPermissionsByRoleId")
-    public ApiResult<Boolean> grantPermissionsByRoleId(@Validated @Body List<SysRoleMenuVO> updateDTO) throws BusinessException {
-        boolean b = sysRoleService.grantPermissionsByRoleId(updateDTO);
+    public ApiResult<Boolean> grantPermissionsByRoleId(@Validated @Body SysRoleGrantDTO grantDTO) throws BusinessException {
+        boolean b = sysRoleService.grantPermissionsByRoleId(grantDTO);
         return ApiResult.ok(b);
     }
 

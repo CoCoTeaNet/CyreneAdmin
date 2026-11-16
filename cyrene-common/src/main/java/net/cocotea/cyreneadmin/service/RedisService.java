@@ -111,6 +111,14 @@ public interface RedisService {
      */
     long countKeys(String pattern);
 
+    /**
+     * 按匹配表达式批量删除键，使用 SCAN 增量遍历，避免 KEYS 阻塞 Redis
+     *
+     * @param pattern 匹配表达式
+     * @return 删除的键数量
+     */
+    long deleteByPattern(String pattern);
+
     void set(String redisKey, String s);
 
 }

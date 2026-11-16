@@ -242,8 +242,10 @@ const initUserDetail = () => {
     editForm.value = data;
     detailUser.value = Object.assign(detailUser.value, data);
     userStore.updateUserInfo(detailUser.value);
-    if (data) {
-      let arr = data.avatar.split('/');
+    // 重置头像展示，避免重复调用时累积，且兼容未设置头像的空值
+    fileList.value = [];
+    if (data?.avatar) {
+      const arr = String(data.avatar).split('/');
       fileList.value.push({
         name: arr[arr.length - 1],
         url: `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/getAvatar?avatar=${data.avatar}`

@@ -134,7 +134,8 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `revision` int(11) DEFAULT NULL COMMENT '乐观锁',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='系统用户表';
 
 

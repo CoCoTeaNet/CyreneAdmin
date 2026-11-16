@@ -35,6 +35,10 @@ public class StpInterfaceInterceptor implements StpInterface {
     public List<String> getPermissionList(Object loginId, String loginType) {
         StpUtil.checkLogin();
         BigInteger myLoginId = LoginUtils.parse(loginId);
+        // 超级管理员拥有全部权限
+        if (sysRoleService.isSuperAdmin(myLoginId)) {
+            return List.of("*");
+        }
         List<SysMenuVO> cachePermissionList = sysMenuService.getCachePermission(myLoginId);
         List<String> list;
         // 1关闭了缓存 2缓存失效了 3有缓存

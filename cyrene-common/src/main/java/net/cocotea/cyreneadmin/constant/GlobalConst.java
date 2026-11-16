@@ -20,4 +20,14 @@ public class GlobalConst {
      * 系统机器人
      */
     public static final String SYS_ROBOT = "sysRobot";
+
+    /**
+     * 超级管理员角色键
+     */
+    public static final String ROLE_SUPER_ADMIN = "role:super:admin";
+
+    /**
+     * 普通管理员角色键
+     */
+    public static final String ROLE_SIMPLE_ADMIN = "role:simple:admin";
 }

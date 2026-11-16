@@ -19,15 +19,15 @@
     </template>
 
     <template #operate>
-      <el-button type="primary" @click="onAdd" :icon="Plus">{{ t('permission.addPermission') }}</el-button>
-      <el-button plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">{{ t('user.batchDelete') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:menu:add')" type="primary" @click="onAdd" :icon="Plus">{{ t('permission.addPermission') }}</el-button>
+      <el-button v-if="userStore.hasPermission('system:menu:delete')" plain type="danger" @click="onDeleteBatch" :icon="DeleteFilled">{{ t('user.batchDelete') }}</el-button>
     </template>
 
     <!-- 表格视图 -->
     <template #default>
       <el-table v-if="isShowTable" stripe row-key="id" :data="records" v-model:default-expand-all="isExpandAll"
                 @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="80"/>
+        <el-table-column type="selection" width="80" :selectable="(row: any) => row.isMenu === 0"/>
         <el-table-column prop="menuName" width="300" :label="t('permission.permissionName')"/>
         <el-table-column prop="permissionCode" width="400" :label="t('permission.permissionCode')"/>
         <el-table-column prop="sort" width="200" :label="t('permission.sort')" sortable/>
@@ -36,8 +36,8 @@
         <!-- 单行操作 -->
         <el-table-column fixed="right" width="200" :label="t('dictionary.operation')">
           <template #default="scope">
-            <el-button size="small" @click="onEdit(scope.row)" :icon="Edit">{{ t('common.edit') }}</el-button>
-            <el-button size="small" plain type="danger" @click="onRemove(scope.row)" :icon="DeleteFilled">
+            <el-button v-if="scope.row.isMenu === 0 && userStore.hasPermission('system:menu:update')" size="small" @click="onEdit(scope.row)" :icon="Edit">{{ t('common.edit') }}</el-button>
+            <el-button v-if="scope.row.isMenu === 0 && userStore.hasPermission('system:menu:delete')" size="small" plain type="danger" @click="onRemove(scope.row)" :icon="DeleteFilled">
               {{ t('common.delete') }}
             </el-button>
           </template>
@@ -92,8 +92,10 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import listUtil from "@/utils/list-util";
 import {DeleteFilled, Edit, Plus, Refresh, Search} from "@element-plus/icons-vue";
 import {useI18n} from "vue-i18n";
+import {useUserStore} from "@/stores/user.ts";
 
 const {t} = useI18n();
+const userStore = useUserStore();
 
 type FormInstance = InstanceType<typeof ElForm>
 const sttFormRef = ref<FormInstance>();
