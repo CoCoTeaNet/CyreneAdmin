@@ -26,9 +26,9 @@ public class ServiceBeanDefinitionRegistryPostProcessor implements BeanDefinitio
         registerBeanDefinition(registry, "sysDictionaryService", SysDictionaryServiceImpl.class, lightDaoRef);
         registerBeanDefinition(registry, "sysLogService", SysLogServiceImpl.class, appSystemPropRef, lightDaoRef);
         registerBeanDefinition(registry, "sysDashboardService", SysDashboardServiceImpl.class, lightDaoRef, redisServiceRef);
-        registerBeanDefinition(registry, "sysRoleService", SysRoleServiceImpl.class, lightDaoRef);
+        registerBeanDefinition(registry, "sysRoleService", SysRoleServiceImpl.class, lightDaoRef, redisServiceRef);
         registerBeanDefinition(registry, "sysMenuService", SysMenuServiceImpl.class, lightDaoRef, redisServiceRef, "sysRoleService");
-        registerBeanDefinition(registry, "sysUserService", SysUserServiceImpl.class, appSystemPropRef, redisServiceRef, securityUtilsRef, lightDaoRef);
+        registerBeanDefinition(registry, "sysUserService", SysUserServiceImpl.class, appSystemPropRef, redisServiceRef, securityUtilsRef, lightDaoRef, "sysRoleService");
     }
 
     private void registerBeanDefinition(BeanDefinitionRegistry registry, String beanName, Class<?> beanClass, String... beanNames) {

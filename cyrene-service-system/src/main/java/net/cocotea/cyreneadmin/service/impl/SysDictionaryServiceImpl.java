@@ -7,6 +7,8 @@ import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.core.text.CharPool;
 import lombok.RequiredArgsConstructor;
+import org.noear.solon.data.annotation.Tran;
+import org.springframework.transaction.annotation.Transactional;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysDictionaryTreeDTO;
@@ -46,17 +48,22 @@ public class SysDictionaryServiceImpl implements SysDictionaryService {
         return o != null;
     }
 
+    @Tran
+    @Transactional
     @Override
     public boolean deleteBatch(List<BigInteger> idList) {
+        if (idList == null || idList.isEmpty()) {
+            return false;
+        }
         idList.forEach(this::delete);
-        return !idList.isEmpty();
+        return true;
     }
 
     @Override
     public boolean update(SysDictionaryUpdateDTO param) {
         SysDictionary sysDictionary = lightDao.convertType(param, SysDictionary.class);
         Long update = lightDao.update(sysDictionary);
-        return update != null;
+        return update != null && update > 0;
     }
 
     @Override

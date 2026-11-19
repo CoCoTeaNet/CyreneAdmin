@@ -1,5 +1,6 @@
 <template>
-  <el-select :model-value="value" filterable reserve-keyword :placeholder="t('common.inputKeyword')" :loading="loading">
+  <el-select :model-value="modelValue" filterable reserve-keyword :placeholder="t('common.inputKeyword')" :loading="loading"
+             @update:model-value="onUpdate">
     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
       <div style="display: flex;align-items: center;">
         <el-space>
@@ -11,7 +12,6 @@
   </el-select>
 </template>
 
-<!-- todo bug: warn:Missing required prop: "value"  -->
 <script lang="ts" setup>
 import {onMounted, ref} from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
@@ -32,9 +32,17 @@ onMounted(()=>{
   loadIcons();
 });
 
-defineProps<{
-  value: string
+withDefaults(defineProps<{
+  modelValue?: string
+}>(), {modelValue: ''});
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
 }>();
+
+const onUpdate = (value: string) => {
+  emit('update:modelValue', value);
+}
 
 // 加载element图标
 let l: ListItem[] = [];

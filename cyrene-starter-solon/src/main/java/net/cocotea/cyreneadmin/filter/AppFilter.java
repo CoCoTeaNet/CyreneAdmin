@@ -44,6 +44,7 @@ public class AppFilter implements Filter {
     public void doFilter(Context ctx, FilterChain chain) throws Throwable {
         //1.开始计时（用于计算响应时长）
         long start = System.currentTimeMillis();
+        boolean failed = false;
         try {
             chain.doFilter(ctx);
 
@@ -59,6 +60,7 @@ public class AppFilter implements Filter {
 
             onlineUsersRenewal();
         } catch (Exception e) {
+            failed = true;
             ctx.status(ApiResultEnum.SUCCESS.getCode());
             //4.异常捕促与控制
             log.error(e.getMessage());
@@ -95,7 +97,10 @@ public class AppFilter implements Filter {
         //5.获得接口响应时长
         long times = System.currentTimeMillis() - start;
         log.info("用时：{}ms", times);
-        saveSystemLog(ctx, LogStatusEnum.SUCCESS.getCode());
+        // 失败请求已在上方写入错误日志，避免同一请求重复记录成功日志
+        if (!failed) {
+            saveSystemLog(ctx, LogStatusEnum.SUCCESS.getCode());
+        }
     }
 
     /**

@@ -220,6 +220,122 @@ test.describe('P0 安全与授权回归', () => {
     await post(request, token, `/system/role/delete/${roleId}`);
   });
 
+  test('非超管禁止提权：不得授予超管角色、篡改超管标识或越权授权', async ({ request }) => {
+    const token = await apiLoginRequest(request);
+    const SUPER_ROLE_ID = '1699771910151151616';
+
+    const roleName = `P0Ops${suffix}`;
+    const roleKey = `role:p0ops:${suffix}`;
+    expect((await post(request, token, '/system/role/add', { roleName, roleKey, sort: 99 })).code).toBe(200);
+    const rolePage = await post(request, token, '/system/role/listByPage', {
+      pageNo: 1, pageSize: 10, sysRole: { roleName },
+    });
+    const roleId = rolePage.data.records.find((r: any) => r.roleName === roleName)?.id;
+    expect(roleId).toBeTruthy();
+
+    // 运维角色：用户新增/更新、角色新增/更新/授权
+    const opsButtons = [
+      '9100000000000000101', '9100000000000000102',
+      '9100000000000000201', '9100000000000000202', '9100000000000000204',
+    ];
+    const grantOps = await post(request, token, '/system/role/grantPermissionsByRoleId', {
+      roleId, isMenu: 0, menuIds: opsButtons,
+    });
+    expect(grantOps.code).toBe(200);
+
+    const username = `p0ops${suffix}`;
+    const addOps = await post(request, token, '/system/user/add', {
+      username, nickname: 'P0提权', sex: '1', roleIds: [roleId], accountStatus: '1',
+    });
+    expect(addOps.code).toBe(200);
+    const userId = await findUserId(request, token, username);
+    const opsToken = await apiLoginRequest(request, username, TEST_PASSWORD);
+
+    // 1. 把自己升级成超管
+    const selfEscalate = await post(request, opsToken, '/system/user/update', {
+      id: userId, username, roleIds: [roleId, SUPER_ROLE_ID],
+    });
+    expect(selfEscalate.code).not.toBe(200);
+    expect(selfEscalate.message).toContain('不能修改自己的角色');
+
+    // 2. 把普通用户升级成超管
+    const victim = `p0victim${suffix}`;
+    const addVictim = await post(request, token, '/system/user/add', {
+      username: victim, nickname: 'P0目标', sex: '1', roleIds: [roleId], accountStatus: '1',
+    });
+    expect(addVictim.code).toBe(200);
+    const victimId = await findUserId(request, token, victim);
+    const victimEscalate = await post(request, opsToken, '/system/user/update', {
+      id: victimId, username: victim, roleIds: [SUPER_ROLE_ID],
+    });
+    expect(victimEscalate.code).not.toBe(200);
+    expect(victimEscalate.message).toContain('超出自身权限');
+
+    // 自身角色范围内维护他人仍然放行
+    const victimOk = await post(request, opsToken, '/system/user/update', {
+      id: victimId, username: victim, nickname: 'P0目标改', roleIds: [roleId],
+    });
+    expect(victimOk.code).toBe(200);
+
+    // 3. 把自己的角色标识改成超管
+    const hijackKey = await post(request, opsToken, '/system/role/update', {
+      id: roleId, roleName, roleKey: 'role:super:admin',
+    });
+    expect(hijackKey.code).not.toBe(200);
+    expect(hijackKey.message).toContain('超级管理员');
+
+    // 4. 直接创建超管角色
+    const forgeRole = await post(request, opsToken, '/system/role/add', {
+      roleName: `P0Forge${suffix}`, roleKey: 'role:super:admin', sort: 99,
+    });
+    expect(forgeRole.code).not.toBe(200);
+    expect(forgeRole.message).toContain('超级管理员');
+
+    // 5. 授予自己没有的按钮
+    const overGrant = await post(request, opsToken, '/system/role/grantPermissionsByRoleId', {
+      roleId, isMenu: 0, menuIds: ['9100000000000000303'],
+    });
+    expect(overGrant.code).not.toBe(200);
+    expect(overGrant.message).toContain('超出自身权限');
+
+    // 6. 授予自己已有的按钮放行
+    const ownGrant = await post(request, opsToken, '/system/role/grantPermissionsByRoleId', {
+      roleId, isMenu: 0, menuIds: opsButtons,
+    });
+    expect(ownGrant.code).toBe(200);
+
+    // 7. 非超管不能改密或删除超管账号
+    const adminPage = await post(request, token, '/system/user/listByPage', {
+      pageNo: 1, pageSize: 10, sysUser: { username: 'admin' },
+    });
+    const adminId = adminPage.data.records.find((r: any) => r.username === 'admin')?.id;
+    const touchAdmin = await post(request, opsToken, '/system/user/update', {
+      id: adminId, username: 'admin', nickname: 'hacked', roleIds: [SUPER_ROLE_ID],
+    });
+    expect(touchAdmin.code).not.toBe(200);
+    expect(touchAdmin.message).toContain('无权操作该用户');
+
+    await post(request, token, `/system/user/delete/${victimId}`);
+    await post(request, token, `/system/user/delete/${userId}`);
+    await post(request, token, `/system/role/delete/${roleId}`);
+  });
+
+  test('头像上传接口需登录', async ({ request }) => {
+    const res = await request.post(`${API_URL}/system/user/avatar/upload`, {
+      multipart: {
+        file: {
+          name: 'avatar.png',
+          mimeType: 'image/png',
+          buffer: Buffer.from(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            'base64',
+          ),
+        },
+      },
+    });
+    expect((await res.json()).code).toBe(4001);
+  });
+
   test('更新为已存在用户名应被拒绝，保持自身用户名可更新', async ({ request }) => {
     const token = await apiLoginRequest(request);
     const username = `p1dup${suffix}`;

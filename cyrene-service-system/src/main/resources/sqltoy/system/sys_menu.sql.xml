@@ -6,7 +6,7 @@
     <sql id="sys_menu_findUserMenu">
         <value>
             <![CDATA[
-            select a.user_id, c.menu_id as id,
+            select distinct a.user_id, c.menu_id as id,
             d.menu_name,d.permission_code,d.router_path,d.parent_id,d.menu_type,d.is_menu,d.menu_status,d.component_path,d.is_external_link,d.icon_path,d.sort
             from sys_user_role a
             inner join sys_role b on (a.role_id=b.id)
@@ -17,7 +17,7 @@
             and d.is_menu = 1
             and d.is_deleted = 0
             and d.menu_status = 0
-            order by d.sort,d.id desc
+            order by sort, id desc
             ]]>
         </value>
     </sql>

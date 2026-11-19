@@ -1,6 +1,7 @@
 import {ElMessage} from "element-plus";
 import {router} from "@/router";
 import {ApiResultEnum} from "@/api/ApiResultEnum";
+import i18n from "@/i18n";
 
 // 控制未登录的时候很多错误弹窗请求
 let isLostSession: boolean = true;
@@ -12,8 +13,8 @@ let isLostSession: boolean = true;
  * @param errorMsg 失败消息
  * @param successCallback 成功回调
  */
-export function reqFeedback(apiFn: any, successMsg: string, errorMsg: string, successCallback: Function) {
-    apiFn.then((res: any) => {
+export function reqFeedback(apiFn: any, successMsg: string, errorMsg: string, successCallback: Function): Promise<void> {
+    return apiFn.then((res: any) => {
         if (res.code === ApiResultEnum.SUCCESS) {
             if (successMsg) {
                 ElMessage.success(successMsg);
@@ -44,17 +45,18 @@ export function reqFeedback(apiFn: any, successMsg: string, errorMsg: string, su
             }
         }
     }).catch((e: any) => {
-        console.log(e)
+        // HTTP/网络异常同样提示，避免静默失败让页面一直处于加载态
+        ElMessage.error(e?.response?.data?.message || e?.message || i18n.global.t('common.requestFailed'));
     });
 }
 
-export function reqSuccessFeedback(apiFn: any, msg: string, successCallback: Function) {
-    reqFeedback(apiFn, msg, '', successCallback);
+export function reqSuccessFeedback(apiFn: any, msg: string, successCallback: Function): Promise<void> {
+    return reqFeedback(apiFn, msg, '', successCallback);
 }
 
 /**
  * 常用api请求反馈模板
  */
-export function reqCommonFeedback(apiFn: any, successCallback: Function) {
-    reqFeedback(apiFn, '', '', successCallback);
+export function reqCommonFeedback(apiFn: any, successCallback: Function): Promise<void> {
+    return reqFeedback(apiFn, '', '', successCallback);
 }

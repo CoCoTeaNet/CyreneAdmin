@@ -12,6 +12,7 @@ import net.cocotea.cyreneadmin.model.po.SysUser;
 import net.cocotea.cyreneadmin.model.po.SysUserRole;
 import net.cocotea.cyreneadmin.model.vo.*;
 import net.cocotea.cyreneadmin.properties.AppSystemProp;
+import net.cocotea.cyreneadmin.service.SysRoleService;
 import net.cocotea.cyreneadmin.service.SysUserService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
 import net.cocotea.cyreneadmin.enums.IsEnum;
@@ -48,11 +49,13 @@ public class SysUserServiceImpl implements SysUserService {
     private final RedisService redisService;
     private final SecurityUtils securityUtils;
     private final LightDao lightDao;
+    private final SysRoleService roleService;
 
     @Tran
     @Transactional
     @Override
     public boolean add(SysUserAddDTO addDTO) {
+        checkAssignableRoles(addDTO.getRoleIds(), null);
         SysUser existUser = LambdaQuery.create(SysUser.class).bind(lightDao)
                 .eq(true, SysUser::getUsername, addDTO.getUsername())
                 .getOne();
@@ -78,17 +81,24 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public boolean delete(BigInteger id) {
+        checkAssignableRoles(null, id);
         // 假删除，用户关联的数据不必操作
         SysUser sysUser = new SysUser().setId(id).setIsDeleted(IsEnum.Y.getCode());
         // 删除后权限缓存立即失效，避免残留会话继续使用旧权限
         redisService.delete(String.format(RedisKeyConst.USER_PERMISSION, id));
-        return lightDao.update(sysUser) > 0;
+        boolean result = lightDao.update(sysUser) > 0;
+        // 删除后强制下线，已建立的会话不能继续使用
+        if (result) {
+            StpUtil.kickout(id);
+        }
+        return result;
     }
 
     @Tran
     @Transactional
     @Override
     public boolean update(SysUserUpdateDTO updateDTO) {
+        checkAssignableRoles(updateDTO.getRoleIds(), updateDTO.getId());
         SysUser existUser = LambdaQuery.create(SysUser.class).bind(lightDao)
                 .eq(true, SysUser::getUsername, updateDTO.getUsername())
                 .ne(true, SysUser::getId, updateDTO.getId())
@@ -115,12 +125,60 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser.setPassword(securityUtils.getPwd(updateDTO.getPassword()));
         }
         Long flag = lightDao.update(sysUser);
+        // 停用或冻结后立即踢出会话，避免旧 token 继续访问其他接口
+        if (flag > 0 && !StringUtil.isBlank(updateDTO.getAccountStatus())
+                && !"1".equals(updateDTO.getAccountStatus())) {
+            StpUtil.kickout(updateDTO.getId());
+        }
         return flag > 0;
+    }
+
+    /**
+     * 非超管只能操作角色范围不超过自身的用户，且只能分配自身已拥有的角色、不能调整自己的角色
+     */
+    private void checkAssignableRoles(List<BigInteger> roleIds, BigInteger targetUserId) {
+        BigInteger operatorId = LoginUtils.loginId();
+        if (operatorId == null || roleService.isSuperAdmin(operatorId)) {
+            return;
+        }
+        boolean self = targetUserId != null && targetUserId.equals(operatorId);
+        Set<BigInteger> ownRoleIds = null;
+        if (targetUserId != null && !self) {
+            ownRoleIds = roleIdsOf(operatorId);
+            // 防止改密/删除高权限账号，目标用户角色必须是操作者角色的子集
+            if (!ownRoleIds.containsAll(roleIdsOf(targetUserId))) {
+                throw new BusinessException("无权操作该用户");
+            }
+        }
+        // 未提交角色表示不调整角色
+        if (roleIds == null || roleIds.isEmpty()) {
+            return;
+        }
+        if (self) {
+            if (!roleIdsOf(operatorId).equals(new HashSet<>(roleIds))) {
+                throw new BusinessException("不能修改自己的角色");
+            }
+            return;
+        }
+        if (ownRoleIds == null) {
+            ownRoleIds = roleIdsOf(operatorId);
+        }
+        if (!ownRoleIds.containsAll(roleIds)) {
+            throw new BusinessException("无权分配超出自身权限的角色");
+        }
+    }
+
+    private Set<BigInteger> roleIdsOf(BigInteger userId) {
+        return LambdaQuery.create(SysUserRole.class).bind(lightDao)
+                .eq(true, SysUserRole::getUserId, userId)
+                .find().stream().map(SysUserRole::getRoleId).collect(Collectors.toSet());
     }
 
     @Override
     public boolean deleteBatch(List<BigInteger> idList) {
-        if (idList != null) {
+        if (idList != null && !idList.isEmpty()) {
+            // 先整体校验，避免批量删除中途失败留下部分数据
+            idList.forEach(id -> checkAssignableRoles(null, id));
             idList.forEach(this::delete);
         }
         return idList != null && !idList.isEmpty();

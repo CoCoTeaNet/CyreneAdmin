@@ -9,7 +9,6 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * @author CoCoTea
@@ -50,31 +49,6 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public String get(String key) {
         return redisClient.openAndGet(session -> session.key(key).get());
-    }
-
-    @Override
-    public void hashPut(String key, String hashKey, String value) {
-        redisClient.open(session -> session.key(key).hashSet(hashKey, value));
-    }
-
-    @Override
-    public void hashPut(String key, String hashKey, Object value) {
-
-    }
-
-    @Override
-    public Object hashGet(String key, String hashKey) {
-        return null;
-    }
-
-    @Override
-    public Map<Object, Object> hashGetEntries(String key) {
-        return Map.of();
-    }
-
-    @Override
-    public void hashRemove(String key, Object... hashKeys) {
-
     }
 
     @Override

@@ -162,6 +162,7 @@ const loadTableData = (): void => {
   reqCommonFeedback(listByTree(param), (data: any) => {
     listUtil.treeMap(data, (item: { disabled: boolean; menuType: number; }) => item.disabled = (item.menuType != 0));
     records.value = data;
+  }).finally(() => {
     loading.value = false;
   });
 }

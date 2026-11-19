@@ -15,6 +15,8 @@ import jakarta.validation.Valid;
 import net.cocotea.cyreneadmin.model.dto.SysLoginDTO;
 import net.cocotea.cyreneadmin.model.vo.SysCaptchaVO;
 import net.cocotea.cyreneadmin.model.vo.SysLoginUserVO;
+import net.cocotea.cyreneadmin.enums.LogTypeEnum;
+import net.cocotea.cyreneadmin.service.SysLogService;
 import net.cocotea.cyreneadmin.service.SysMenuService;
 import net.cocotea.cyreneadmin.service.SysUserService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
@@ -52,6 +54,9 @@ public class SysLoginController {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private SysLogService sysLogService;
+
     /**
      * 后台系统用户登录
      *
@@ -75,6 +80,8 @@ public class SysLoginController {
         String token = userService.login(loginDTO, IpUtils.getIp(request));
         // 删除缓存
         redisService.delete(key);
+        // 保存登录日志
+        sysLogService.saveByLogType(LogTypeEnum.LOGIN.getCode(), IpUtils.getIp(request), request.getMethod());
         return ApiResult.ok(token);
     }
 

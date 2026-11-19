@@ -47,7 +47,8 @@ export async function request(url: string, data: any, method: any): Promise<any>
         // 如果 `validateStatus` 返回 `true` (或者设置为 `null` 或 `undefined`)，promise 将被 resolve;
         // 否则，promise 将被 reject
         validateStatus: function (status: number) {
-            return status === 200;
+            // 2xx 均视为成功，其余状态交由 ApiFeedback 统一提示
+            return status >= 200 && status < 300;
         }
     }
 

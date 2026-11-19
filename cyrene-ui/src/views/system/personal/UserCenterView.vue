@@ -113,6 +113,7 @@
         <el-form-item prop="avatar" :label="t('userCenter.changeAvatar')" :auto-upload="false" list-type="picture-card">
           <el-upload ref="upload"
                      :action="uploadUrl"
+                     :headers="uploadHeaders"
                      list-type="picture-card"
                      drag
                      :auto-upload="false"
@@ -194,6 +195,8 @@ const sexOptions = computed(() => dictionaryStore.getOptions('sex'));
 const upload = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
 const uploadUrl = `${import.meta.env.VITE_API_CONTEXT_PATH}/system/user/avatar/upload`;
+// el-upload 不走 axios 封装，需要手动携带登录令牌
+const uploadHeaders = computed(() => ({Authorization: userStore.userinfo.token}));
 
 const validatePhone = (rule: any, value: any, callback: any) => {
   if (!RULE_MOBILE.test(value)) {
@@ -298,19 +301,27 @@ const onModifyPassword = (mpFormRef: any) => {
  * 头像上传成功
  */
 const handleAvatarSuccess = (resp: any) => {
-  editForm.value.avatar = resp.data;
+  // 上传接口已直接把头像写入用户记录，响应 data 只是成功标记
+  if (resp?.code !== 200) {
+    ElMessage.error(resp?.message || t('common.requestFailed'));
+    return;
+  }
+  initUserDetail();
 }
 
 /**
  * 头像上传前校验
  */
 const beforeAvatarUpload = (rawFile: UploadRawFile) => {
-  if (rawFile.type === 'image/jpeg' || rawFile.type === 'image/png' || rawFile.type === 'image/jpg') {
-    return true;
-  } else {
+  if (!['image/jpeg', 'image/png', 'image/jpg'].includes(rawFile.type)) {
     ElMessage.error(t('userCenter.unsupportedImage'));
     return false;
   }
+  if (rawFile.size > 5 * 1024 * 1024) {
+    ElMessage.error(t('userCenter.imageSizeLimit', {size: 5}));
+    return false;
+  }
+  return true;
 }
 
 const handleExceed: UploadProps['onExceed'] = (files) => {

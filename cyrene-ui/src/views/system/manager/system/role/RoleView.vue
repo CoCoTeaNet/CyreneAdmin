@@ -155,6 +155,7 @@ const loadTableData = () => {
   };
   reqCommonFeedback(roleApi.listByPage(param), (data: any) => {
     pageVo.value = data;
+  }).finally(() => {
     loading.value = false;
   });
 }

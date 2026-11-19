@@ -151,4 +151,13 @@ test.describe('导航与布局', () => {
       }
     }
   });
+
+  test('2.17 进入菜单页后侧边栏应高亮当前菜单', async ({ page }) => {
+    await navigateTo(page, '/admin/sys-user-manager');
+    await page.waitForTimeout(1500);
+
+    const activeItem = page.locator('.el-menu .el-menu-item.is-active').first();
+    await expect(activeItem).toBeVisible({ timeout: 5000 });
+    expect((await activeItem.textContent())?.trim().length).toBeGreaterThan(0);
+  });
 });

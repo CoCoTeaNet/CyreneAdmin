@@ -27,6 +27,7 @@ export default {
         show: 'Show',
         hide: 'Hide',
         lengthLimit: 'Length must be between {min} and {max}',
+        requestFailed: 'Request failed, please try again later',
         unit: {
             day: 'day(s)',
             hour: 'hour(s)',
@@ -331,5 +332,6 @@ export default {
         pwdNotMatch: 'The two passwords do not match',
         updateAndRelogin: 'Updated successfully, you will be re-logged in',
         unsupportedImage: 'Unsupported image type',
+        imageSizeLimit: 'Avatar size cannot exceed {size}MB',
     },
 }

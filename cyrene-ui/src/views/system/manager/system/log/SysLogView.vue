@@ -109,6 +109,7 @@ const loadTableData = () => {
   };
   reqCommonFeedback(operationLogApi.listByPage(param), (data: any) => {
     pageVo.value = data;
+  }).finally(() => {
     loading.value = false;
   });
 }

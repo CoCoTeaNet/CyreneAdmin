@@ -1,6 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { loginViaAPI, navigateTo } from '../utils/auth';
+import { apiLoginRequest, loginViaAPI, navigateTo } from '../utils/auth';
 import { waitForTableLoad } from '../utils/helpers';
+import { API_URL, TEST_PASSWORD } from '../utils/config';
+
+const REGULAR_ROLE_ID = '1150175648716701696';
+const AVATAR_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
 
 test.describe('个人中心', () => {
   test.beforeEach(async ({ context }) => {
@@ -107,5 +114,54 @@ test.describe('个人中心', () => {
 
     const modifyPwdBtn = page.locator('button', { hasText: /修改密码|Modify Password|Change Password/i });
     await expect(modifyPwdBtn.first()).toBeVisible({ timeout: 5000 });
+  });
+
+  test('11.10 上传头像后保存的是文件名而非 true', async ({ context, page, request }) => {
+    const adminToken = await apiLoginRequest(request);
+    const username = `p1avatar${Date.now()}`;
+    const addRes = await request.post(`${API_URL}/system/user/add`, {
+      headers: {Authorization: adminToken, 'Content-Type': 'application/json'},
+      data: {username, nickname: 'P1头像', sex: '1', roleIds: [REGULAR_ROLE_ID], accountStatus: '1'},
+    });
+    expect((await addRes.json()).code).toBe(200);
+
+    try {
+      const userToken = await apiLoginRequest(request, username, TEST_PASSWORD);
+      await loginViaAPI(context, username, TEST_PASSWORD);
+      await navigateTo(page, '/admin/sys-user-center');
+      await page.waitForTimeout(1500);
+
+      await page.setInputFiles('input[type="file"]', {
+        name: 'avatar.png', mimeType: 'image/png', buffer: AVATAR_PNG,
+      });
+      await page.locator('button', {hasText: /上传头像|Upload Avatar/i}).first().click();
+
+      // 上传后列表预览应指回服务端头像地址
+      await expect.poll(async () =>
+        (await page.locator('.el-upload-list__item img').last().getAttribute('src')) || '',
+      {timeout: 10000}).toContain('getAvatar');
+
+      // 保存资料后落库值应是文件名
+      await page.locator('button', {hasText: /更新信息|Update/i}).first().click();
+      await page.waitForTimeout(1500);
+
+      const detailRes = await request.get(`${API_URL}/system/user/getDetail`, {
+        headers: {Authorization: userToken},
+      });
+      const detail = await detailRes.json();
+      expect(detail.code).toBe(200);
+      expect(detail.data.avatar).toBeTruthy();
+      expect(detail.data.avatar).not.toBe('true');
+    } finally {
+      const userId = (await (await request.post(`${API_URL}/system/user/listByPage`, {
+        headers: {Authorization: adminToken, 'Content-Type': 'application/json'},
+        data: {pageNo: 1, pageSize: 10, sysUser: {username}},
+      })).json()).data.records.find((r: any) => r.username === username)?.id;
+      if (userId) {
+        await request.post(`${API_URL}/system/user/delete/${userId}`, {
+          headers: {Authorization: adminToken},
+        });
+      }
+    }
   });
 });

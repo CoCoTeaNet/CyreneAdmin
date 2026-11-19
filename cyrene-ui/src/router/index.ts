@@ -17,8 +17,27 @@ router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized):b
     if ('/' == to.path) {
         return {name: 'Home'};
     }
+    // 未登录直接进入后台路由时先行拦截，避免先渲染再被 4001 打回
+    if (to.name !== 'Login' && !hasLoginToken()) {
+        return {name: 'Login'};
+    }
     return true;
 });
+
+/**
+ * 是否持有登录令牌：本地缓存优先，兼容 SA-Token 的 Cookie 会话
+ */
+function hasLoginToken(): boolean {
+    try {
+        const token = JSON.parse(`${localStorage.getItem('userInfo')}`)?.token;
+        if (token) {
+            return true;
+        }
+    } catch {
+        // 缓存损坏按未登录处理
+    }
+    return document.cookie.split(';').some(item => item.trim().startsWith('Authorization='));
+}
 
 router.afterEach(function (to: any, from: any) {
     let title = '';

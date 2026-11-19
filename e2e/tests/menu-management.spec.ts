@@ -109,6 +109,31 @@ test.describe('菜单管理', () => {
     await expect(page.locator('.el-table').first()).toBeVisible();
   });
 
+  test('6.15 菜单图标选择应回写到表单', async ({ page }) => {
+    await navigateTo(page, '/admin/sys-menu-manager');
+    await waitForTableLoad(page, 10000);
+
+    const editBtn = page.locator('.el-table__body .el-table__row').first().locator('button', { hasText: /编辑|Edit/i });
+    await editBtn.click();
+    await waitForDialog(page, true);
+
+    const dialog = page.locator('.el-dialog');
+    const iconSelect = dialog.locator('.el-form-item').filter({ hasText: /图标|Icon/i }).locator('.el-select').first();
+    await iconSelect.click();
+    await page.waitForTimeout(500);
+
+    const option = page.locator('.el-select-dropdown__item').first();
+    await expect(option).toBeVisible({ timeout: 5000 });
+    const optionText = ((await option.textContent()) || '').trim();
+    await option.click();
+
+    // 选中值必须回显，否则说明 update:modelValue 未生效
+    await expect(iconSelect).toContainText(optionText, { timeout: 5000 });
+
+    await dialog.locator('button', { hasText: /取消|Cancel/i }).first().click();
+    await waitForDialog(page, false);
+  });
+
   test('6.8 菜单表格应包含类型和状态列', async ({ page }) => {
     await navigateTo(page, '/admin/sys-menu-manager');
     await waitForTableLoad(page, 10000);

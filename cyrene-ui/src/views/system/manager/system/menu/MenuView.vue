@@ -89,7 +89,7 @@
             <el-input v-model="editForm.sort" type="number"></el-input>
           </el-form-item>
           <el-form-item :label="t('menu.menuIcon')">
-            <icon-selection v-model="editForm.iconPath" value=""/>
+            <icon-selection v-model="editForm.iconPath"/>
           </el-form-item>
           <el-form-item :label="t('menu.parentMenu')">
             <el-cascader clearable v-model="editForm.parentId" :placeholder="t('common.selectNode')"
@@ -201,6 +201,7 @@ const loadTableData = (): void => {
   reqCommonFeedback(listByTree(param), (data: any) => {
     listUtil.treeMap(data, (item: { disabled: boolean; menuType: number; }) => item.disabled = (item.menuType != 0));
     records.value = data;
+  }).finally(() => {
     loading.value = false;
   });
 }

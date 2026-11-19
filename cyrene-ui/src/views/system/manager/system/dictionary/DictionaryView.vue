@@ -401,8 +401,9 @@ const loadTableData = (): void => {
   loading.value = true;
   reqCommonFeedback(listByTree({}), (data: DictNode[]) => {
     records.value = data || [];
-    loading.value = false;
     afterLoad();
+  }).finally(() => {
+    loading.value = false;
   });
 };
 

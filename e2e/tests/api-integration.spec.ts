@@ -242,4 +242,78 @@ test.describe('API 接口测试', () => {
     expect(male.nameEn).toBeTruthy();
     expect(male.tagType).toBeTruthy();
   });
+
+  test('10.19 未登录访问 dashboard 统计与系统信息应返回 4001', async ({ request }) => {
+    for (const path of ['/system/dashboard/getCount', '/system/dashboard/getSystemInfo']) {
+      const response = await request.get(`${API_URL}${path}`, { headers: { 'Authorization': '' } });
+      const body = await response.json();
+      expect(body.code).toBe(4001);
+    }
+  });
+
+  test('10.20 分页大小应被限制在 200 条以内', async ({ request }) => {
+    const token = await apiLoginRequest(request, TEST_USER.username, TEST_USER.password);
+    const response = await request.post(`${API_URL}/system/log/listByPage`, {
+      headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+      data: { pageNo: 1, pageSize: 5000, sysLog: {} },
+    });
+    const body = await response.json();
+    expect(body.code).toBe(200);
+    expect(Number(body.data.pageSize)).toBe(200);
+  });
+
+  test('10.21 字典批量删除空集合应返回 false 而非报错', async ({ request }) => {
+    const token = await apiLoginRequest(request, TEST_USER.username, TEST_USER.password);
+    const response = await request.post(`${API_URL}/system/dictionary/deleteBatch`, {
+      headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+      data: [],
+    });
+    const body = await response.json();
+    expect(body.code).toBe(200);
+    expect(body.data).toBe(false);
+  });
+
+  test('10.22 菜单上级不能设置为自己的子菜单', async ({ request }) => {
+    const token = await apiLoginRequest(request, TEST_USER.username, TEST_USER.password);
+    const headers = { 'Authorization': token, 'Content-Type': 'application/json' };
+    const ts = Date.now();
+    const parentName = `p2parent${ts}`;
+    const childName = `p2child${ts}`;
+
+    const findId = async (menuName: string) => {
+      const res = await request.post(`${API_URL}/system/menu/listByPage`, {
+        headers,
+        data: { pageNo: 1, pageSize: 10, sysMenu: { menuName } },
+      });
+      const body = await res.json();
+      return body.data.records.find((r: any) => r.menuName === menuName)?.id;
+    };
+
+    await request.post(`${API_URL}/system/menu/add`, {
+      headers,
+      data: { menuName: parentName, isMenu: '0', menuType: '0', parentId: '0' },
+    });
+    const parentId = await findId(parentName);
+    expect(parentId).toBeTruthy();
+
+    await request.post(`${API_URL}/system/menu/add`, {
+      headers,
+      data: { menuName: childName, isMenu: '0', menuType: '0', parentId: String(parentId) },
+    });
+    const childId = await findId(childName);
+    expect(childId).toBeTruthy();
+
+    const updateRes = await request.post(`${API_URL}/system/menu/update`, {
+      headers,
+      data: { id: String(parentId), menuName: parentName, isMenu: '0', menuType: '0', parentId: String(childId) },
+    });
+    const updateBody = await updateRes.json();
+    expect(updateBody.code).not.toBe(200);
+    expect(updateBody.message).toContain('子菜单');
+
+    await request.post(`${API_URL}/system/menu/deleteBatch`, {
+      headers,
+      data: [childId, parentId],
+    });
+  });
 });

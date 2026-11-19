@@ -27,6 +27,7 @@ export default {
         show: '显示',
         hide: '隐藏',
         lengthLimit: '长度限制{min}~{max}',
+        requestFailed: '请求失败，请稍后重试',
         unit: {
             day: '天',
             hour: '小时',
@@ -331,5 +332,6 @@ export default {
         pwdNotMatch: '两次密码不一致',
         updateAndRelogin: '更新成功，即将重新登录',
         unsupportedImage: '不支持的图片类型',
+        imageSizeLimit: '头像大小不能超过{size}MB',
     },
 }

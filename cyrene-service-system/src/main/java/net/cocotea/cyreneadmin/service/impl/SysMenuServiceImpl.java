@@ -23,6 +23,7 @@ import net.cocotea.cyreneadmin.service.SysRoleService;
 import net.cocotea.cyreneadmin.constant.RedisKeyConst;
 import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
+import net.cocotea.cyreneadmin.model.BusinessException;
 import net.cocotea.cyreneadmin.service.RedisService;
 import net.cocotea.cyreneadmin.util.LoginUtils;
 import org.sagacity.sqltoy.dao.LightDao;
@@ -33,6 +34,7 @@ import org.sagacity.sqltoy.utils.StringUtil;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -113,10 +115,44 @@ public class SysMenuServiceImpl implements SysMenuService {
     @Override
     public boolean update(SysMenuUpdateDTO param) {
         SysMenu sysMenu = lightDao.convertType(param, SysMenu.class);
+        checkParentCycle(sysMenu);
         Long update = lightDao.update(sysMenu);
         // 权限编码可能变化，清理所有用户的权限缓存
         clearAllPermissionCache();
         return update > 0;
+    }
+
+    /**
+     * 校验上级菜单不能是自身或自身的子孙节点，避免菜单树成环
+     */
+    private void checkParentCycle(SysMenu sysMenu) {
+        BigInteger id = sysMenu.getId();
+        BigInteger parentId = sysMenu.getParentId();
+        if (id == null || parentId == null || BigInteger.ZERO.equals(parentId)) {
+            return;
+        }
+        if (parentId.equals(id)) {
+            throw new BusinessException("上级菜单不能选择自己");
+        }
+        Map<BigInteger, BigInteger> parentMap = LambdaQuery.create(SysMenu.class).bind(lightDao)
+                .eq(true, SysMenu::getIsDeleted, IsEnum.N.getCode())
+                .find().stream()
+                .collect(Collectors.toMap(
+                        SysMenu::getId,
+                        m -> m.getParentId() == null ? BigInteger.ZERO : m.getParentId(),
+                        (a, b) -> a
+                ));
+        Set<BigInteger> visited = new HashSet<>();
+        BigInteger cursor = parentId;
+        while (cursor != null && !BigInteger.ZERO.equals(cursor)) {
+            if (cursor.equals(id)) {
+                throw new BusinessException("上级菜单不能选择自己的子菜单");
+            }
+            if (!visited.add(cursor)) {
+                break;
+            }
+            cursor = parentMap.get(cursor);
+        }
     }
 
     @Override

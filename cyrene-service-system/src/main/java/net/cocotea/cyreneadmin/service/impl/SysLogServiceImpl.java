@@ -4,6 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import lombok.RequiredArgsConstructor;
+import org.noear.solon.data.annotation.Tran;
+import org.springframework.transaction.annotation.Transactional;
 import net.cocotea.cyreneadmin.model.dto.SysLogAddDTO;
 import net.cocotea.cyreneadmin.model.dto.SysLogPageDTO;
 import net.cocotea.cyreneadmin.model.dto.SysLogUpdateDTO;
@@ -36,10 +38,15 @@ public class SysLogServiceImpl implements SysLogService {
         return save != null;
     }
 
+    @Tran
+    @Transactional
     @Override
     public boolean deleteBatch(List<BigInteger> idList) throws BusinessException {
+        if (idList == null || idList.isEmpty()) {
+            return false;
+        }
         idList.forEach(this::delete);
-        return !idList.isEmpty();
+        return true;
     }
 
     @Override

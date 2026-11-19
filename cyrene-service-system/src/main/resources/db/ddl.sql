@@ -147,3 +147,27 @@ CREATE TABLE IF NOT EXISTS `sys_user_role` (
   `role_id` bigint(20) NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='用户角色关联表';
+
+-- 关联表冗余数据清理与唯一约束、反查索引（幂等：已存在则跳过）
+DELETE a FROM sys_role_menu a INNER JOIN sys_role_menu b ON a.role_id = b.role_id AND a.menu_id = b.menu_id AND a.id < b.id;
+DELETE a FROM sys_user_role a INNER JOIN sys_user_role b ON a.user_id = b.user_id AND a.role_id = b.role_id AND a.id < b.id;
+
+SET @cyrene_ddl = (SELECT IF((SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'sys_role_menu' AND index_name = 'uk_role_menu') = 0, 'ALTER TABLE sys_role_menu ADD UNIQUE KEY uk_role_menu (role_id, menu_id)', 'SELECT 1'));
+PREPARE cyrene_stmt FROM @cyrene_ddl;
+EXECUTE cyrene_stmt;
+DEALLOCATE PREPARE cyrene_stmt;
+
+SET @cyrene_ddl = (SELECT IF((SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'sys_role_menu' AND index_name = 'idx_role_menu_menu_id') = 0, 'ALTER TABLE sys_role_menu ADD KEY idx_role_menu_menu_id (menu_id)', 'SELECT 1'));
+PREPARE cyrene_stmt FROM @cyrene_ddl;
+EXECUTE cyrene_stmt;
+DEALLOCATE PREPARE cyrene_stmt;
+
+SET @cyrene_ddl = (SELECT IF((SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'sys_user_role' AND index_name = 'uk_user_role') = 0, 'ALTER TABLE sys_user_role ADD UNIQUE KEY uk_user_role (user_id, role_id)', 'SELECT 1'));
+PREPARE cyrene_stmt FROM @cyrene_ddl;
+EXECUTE cyrene_stmt;
+DEALLOCATE PREPARE cyrene_stmt;
+
+SET @cyrene_ddl = (SELECT IF((SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'sys_user_role' AND index_name = 'idx_user_role_role_id') = 0, 'ALTER TABLE sys_user_role ADD KEY idx_user_role_role_id (role_id)', 'SELECT 1'));
+PREPARE cyrene_stmt FROM @cyrene_ddl;
+EXECUTE cyrene_stmt;
+DEALLOCATE PREPARE cyrene_stmt;

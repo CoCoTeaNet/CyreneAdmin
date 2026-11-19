@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
@@ -167,6 +168,7 @@ public class SysUserController {
      * @param uploadedFile {@link UploadedFile}
      * @return 成功返回 true
      */
+    @SaCheckLogin
     @Post
     @Mapping("/avatar/upload")
     public ApiResult<Boolean> uploadAvatar(@Param("file") UploadedFile uploadedFile) throws BusinessException, IOException {

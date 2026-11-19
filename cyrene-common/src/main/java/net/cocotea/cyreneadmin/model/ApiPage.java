@@ -74,10 +74,15 @@ public class ApiPage<T> {
         return new ApiPage<>(page, elementType);
     }
 
+    /**
+     * 单页最大条数，防止一次拉取过多数据
+     */
+    private static final int MAX_PAGE_SIZE = 200;
+
     public static <T> Page<T> create(ApiPageDTO pageDTO) {
         Page<T> page = new Page<>();
-        page.setPageNo(pageDTO.getPageNo());
-        page.setPageSize(pageDTO.getPageSize());
+        page.setPageNo(Math.max(pageDTO.getPageNo(), 1));
+        page.setPageSize(Math.min(pageDTO.getPageSize(), MAX_PAGE_SIZE));
         return page;
     }
 

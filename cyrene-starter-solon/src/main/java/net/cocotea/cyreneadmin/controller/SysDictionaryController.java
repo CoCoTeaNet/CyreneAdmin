@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
@@ -113,6 +114,7 @@ public class SysDictionaryController {
      */
     @Mapping("/cache")
     @Post
+    @SaCheckLogin
     public ApiResult<Map<String, List<SysDictionaryVO>>> cache() {
         return ApiResult.ok(sysDictionaryService.listForCache());
     }

@@ -19,6 +19,7 @@ import net.cocotea.cyreneadmin.enums.IsEnum;
 import net.cocotea.cyreneadmin.model.ApiPage;
 import net.cocotea.cyreneadmin.model.BusinessException;
 import net.cocotea.cyreneadmin.service.RedisService;
+import net.cocotea.cyreneadmin.util.LoginUtils;
 import org.noear.solon.data.annotation.Tran;
 import org.sagacity.sqltoy.dao.LightDao;
 import org.sagacity.sqltoy.lambda.LambdaDelete;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +44,10 @@ public class SysRoleServiceImpl implements SysRoleService {
 
     @Override
     public boolean add(SysRoleAddDTO addDTO) throws BusinessException {
+        // 超管角色标识是系统唯一提权入口，只允许超管创建
+        if (GlobalConst.ROLE_SUPER_ADMIN.equals(addDTO.getRoleKey()) && !isOperatorSuperAdmin()) {
+            throw new BusinessException("无权创建超级管理员角色");
+        }
         SysRole sysRole = lightDao.convertType(addDTO, SysRole.class);
         SysRole existSysRole = LambdaQuery.create(SysRole.class).bind(lightDao)
                 .eq(true, SysRole::getIsDeleted, IsEnum.N.getCode())
@@ -74,6 +80,12 @@ public class SysRoleServiceImpl implements SysRoleService {
         }
         // 超级管理员角色标识不允许变更，避免系统失去唯一超管入口
         boolean changeRoleKey = StringUtil.isNotBlank(updateDTO.getRoleKey());
+        // 非超管不能修改超管角色，也不能把已有角色改成超管标识
+        if (!isOperatorSuperAdmin()
+                && (GlobalConst.ROLE_SUPER_ADMIN.equals(current.getRoleKey())
+                || GlobalConst.ROLE_SUPER_ADMIN.equals(updateDTO.getRoleKey()))) {
+            throw new BusinessException("无权修改超级管理员角色");
+        }
         if (GlobalConst.ROLE_SUPER_ADMIN.equals(current.getRoleKey())
                 && changeRoleKey
                 && !GlobalConst.ROLE_SUPER_ADMIN.equals(updateDTO.getRoleKey())) {
@@ -101,8 +113,13 @@ public class SysRoleServiceImpl implements SysRoleService {
     @Override
     public boolean grantPermissionsByRoleId(SysRoleGrantDTO grantDTO) throws BusinessException {
         BigInteger roleId = new BigInteger(grantDTO.getRoleId());
-        if (loadRole(roleId) == null) {
+        SysRole targetRole = loadRole(roleId);
+        if (targetRole == null) {
             throw new BusinessException("角色不存在");
+        }
+        // 超管角色默认拥有全部权限，授权数据对其无意义且会被误用为提权入口
+        if (GlobalConst.ROLE_SUPER_ADMIN.equals(targetRole.getRoleKey())) {
+            throw new BusinessException("超级管理员角色默认拥有全部权限，无需授权");
         }
         // 校验授权项与分区一致，避免通过“权限分区”写入菜单导致授权数据越界
         List<String> menuIds = grantDTO.getMenuIds();
@@ -118,6 +135,10 @@ public class SysRoleServiceImpl implements SysRoleService {
                     .count();
             if (validCount != grantMenuIds.size()) {
                 throw new BusinessException("存在不属于当前授权分区的菜单");
+            }
+            // 非超管只能授予自身已拥有的菜单或按钮，避免给自己或他人提权
+            if (!isOperatorSuperAdmin() && !ownGrantedIds(grantDTO.getIsMenu()).containsAll(grantMenuIds)) {
+                throw new BusinessException("无权授予超出自身权限的菜单或按钮");
             }
         }
         // 只替换当前分区（菜单或权限按钮），避免两类授权互相覆盖
@@ -180,10 +201,11 @@ public class SysRoleServiceImpl implements SysRoleService {
         LambdaDelete.create(SysRoleMenu.class).bind(lightDao)
                 .eq(true, SysRoleMenu::getRoleId, id)
                 .delete();
+        // 必须在删除用户角色关联前清理缓存，否则已查不到该角色下的用户
+        clearUserPermissionCache(id);
         LambdaDelete.create(SysUserRole.class).bind(lightDao)
                 .eq(true, SysUserRole::getRoleId, id)
                 .delete();
-        clearUserPermissionCache(id);
         return updated > 0;
     }
 
@@ -192,6 +214,32 @@ public class SysRoleServiceImpl implements SysRoleService {
                 .eq(true, SysRole::getIsDeleted, IsEnum.N.getCode())
                 .eq(true, SysRole::getId, id)
                 .getOne();
+    }
+
+    private boolean isOperatorSuperAdmin() {
+        BigInteger operatorId = LoginUtils.loginId();
+        return operatorId != null && isSuperAdmin(operatorId);
+    }
+
+    /**
+     * 操作者自身在当前授权分区内已拥有的菜单或按钮ID
+     */
+    private Set<BigInteger> ownGrantedIds(Integer isMenu) {
+        BigInteger operatorId = LoginUtils.loginId();
+        if (operatorId == null) {
+            return Set.of();
+        }
+        List<BigInteger> roleIds = LambdaQuery.create(SysUserRole.class).bind(lightDao)
+                .eq(true, SysUserRole::getUserId, operatorId)
+                .find().stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
+        if (roleIds.isEmpty()) {
+            return Set.of();
+        }
+        return LambdaQuery.create(SysRoleMenu.class).bind(lightDao)
+                .in(true, SysRoleMenu::getRoleId, roleIds)
+                .inSql(true, SysRoleMenu::getMenuId, "select id from sys_menu where is_menu = :isMenu",
+                        MapUtil.of("isMenu", isMenu))
+                .find().stream().map(SysRoleMenu::getMenuId).collect(Collectors.toSet());
     }
 
     /**
@@ -213,6 +261,7 @@ public class SysRoleServiceImpl implements SysRoleService {
                 .eq(true, SysRole::getRoleKey, query.getRoleKey())
                 .like(true, SysRole::getRoleName, query.getRoleName())
                 .like(true, SysRole::getRemark, query.getRemark())
+                .orderBy(true, false, SysRole::getId)
                 .findPage(ApiPage.create(pageDTO));
         return ApiPage.rest(page, SysRoleVO.class);
     }

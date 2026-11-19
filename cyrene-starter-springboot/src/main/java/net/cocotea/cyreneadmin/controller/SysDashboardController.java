@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import jakarta.annotation.Resource;
 import net.cocotea.cyreneadmin.model.vo.SysOverviewVO;
 import net.cocotea.cyreneadmin.model.vo.SystemInfoVO;
@@ -38,6 +39,7 @@ public class SysDashboardController {
      *
      * @return {@link SysOverviewVO}
      */
+    @SaCheckLogin
     @GetMapping("getCount")
     public ApiResult<List<SysOverviewVO>> getCount() {
         List<SysOverviewVO> voList = sysDashboardService.getCount();
@@ -49,6 +51,7 @@ public class SysDashboardController {
      *
      * @return {@link SystemInfoVO}
      */
+    @SaCheckLogin
     @GetMapping("getSystemInfo")
     public ApiResult<SystemInfoVO> getSystemInfo() {
         SystemInfoVO vo = sysDashboardService.getSystemInfo();

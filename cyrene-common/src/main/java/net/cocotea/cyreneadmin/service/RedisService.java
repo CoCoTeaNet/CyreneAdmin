@@ -1,7 +1,5 @@
 package net.cocotea.cyreneadmin.service;
 
-import java.util.Map;
-
 /**
  * redis包装服务
  *
@@ -58,50 +56,6 @@ public interface RedisService {
      * @return 值
      */
     String get(String key);
-
-    /**
-     * 哈希
-     *
-     * @param key     集合key
-     * @param hashKey 元素key
-     * @param value   元素值
-     */
-    void hashPut(String key, String hashKey, String value);
-
-    /**
-     * 哈希
-     *
-     * @param key     集合key
-     * @param hashKey 元素key
-     * @param value   元素值
-     */
-    void hashPut(String key, String hashKey, Object value);
-
-    /**
-     * 哈希集合 根据hashKey取value
-     *
-     * @param key     集合key
-     * @param hashKey 元素key
-     * @return 储存值
-     */
-    Object hashGet(String key, String hashKey);
-
-    /**
-     * 哈希集合 根据hashKey取value
-     *
-     * @param key     集合key
-     * @param hashKey 元素key
-     * @return 储存值
-     */
-    Map<Object, Object> hashGetEntries(String key);
-
-    /**
-     * 哈希集合 删除某几个值
-     *
-     * @param key      集合key
-     * @param hashKeys 元素key
-     */
-    void hashRemove(String key, Object... hashKeys);
 
     /**
      * 统计匹配键的数量，使用 SCAN 增量遍历，避免 KEYS 阻塞 Redis

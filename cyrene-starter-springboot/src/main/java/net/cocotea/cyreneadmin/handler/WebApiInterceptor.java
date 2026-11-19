@@ -29,6 +29,11 @@ import java.math.BigInteger;
 public class WebApiInterceptor implements HandlerInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(WebApiInterceptor.class);
 
+    /**
+     * 异常处理器已写入错误日志的标记，请求属性名
+     */
+    public static final String REQUEST_LOG_SAVED_ATTR = "cyrene.request.log.saved";
+
     @Resource
     private RedisService redisService;
 
@@ -63,9 +68,19 @@ public class WebApiInterceptor implements HandlerInterceptor {
                 redisService.save(key, loginId, 30L);
             });
         }
-        // 保存登录日志与操作日志,如果没有登录不去保存
-        saveSystemLog(request, handler);
         return HandlerInterceptor.super.preHandle(request, response, handler);
+    }
+
+    /**
+     * 请求结束后再写成功日志：控制器抛异常时由全局异常处理器写错误日志，
+     * 避免失败请求同时出现成功与失败两条日志。
+     */
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        if (ex != null || request.getAttribute(REQUEST_LOG_SAVED_ATTR) != null) {
+            return;
+        }
+        saveSystemLog(request, handler);
     }
 
     /**

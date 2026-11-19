@@ -20,11 +20,9 @@
 import {useRoute} from "vue-router";
 import {computed} from "vue";
 import ChildMenu from "@/layout/modules/ChildMenu.vue";
-import {useUserStore} from "@/stores/user.ts";
 import {useMenuStore} from "@/stores/menu.ts";
 import { useWindowSize } from "@vueuse/core";
 
-const userStore = useUserStore();
 const menuStore = useMenuStore();
 const route = useRoute();
 
@@ -34,7 +32,7 @@ const route = useRoute();
 let menuState = computed(() => {
   initMenu();
   const path = route.path;
-  const routes = userStore.userinfo.menuList;
+  const routes = menuStore.menus;
   let state = {defaultOpened: [""], defaultActive: ""};
   if (routes) {
     let stack: Array<string> = [];

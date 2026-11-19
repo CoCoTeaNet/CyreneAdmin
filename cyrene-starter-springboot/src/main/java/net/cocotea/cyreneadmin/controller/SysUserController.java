@@ -1,5 +1,6 @@
 package net.cocotea.cyreneadmin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
@@ -173,6 +174,7 @@ public class SysUserController {
      * @param multipartFile {@link MultipartFile}
      * @return 成功返回 true
      */
+    @SaCheckLogin
     @PostMapping("/avatar/upload")
     public ApiResult<Boolean> uploadAvatar(@RequestParam("file") MultipartFile multipartFile) throws BusinessException, IOException {
         if (StrUtil.isBlank(appSystemProp.getAvatarPath())) {

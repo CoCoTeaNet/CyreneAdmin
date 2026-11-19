@@ -9,6 +9,7 @@
             select a.user_id, a.role_id, b.role_name
             from sys_user_role a inner join sys_role b on (a.role_id=b.id)
             where a.user_id in (:userIds)
+            and b.is_deleted = 0
             ]]>
         </value>
     </sql>
